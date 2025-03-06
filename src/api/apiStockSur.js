@@ -46,7 +46,7 @@ export const getAllProducts = async () => {
           params: { auth_token: import.meta.env.VITE_API_STOCKSUR_TOKEN, page_size: PAGE_SIZE, page_number: page }
         }).then(res => res.products);
       
-      if (pageResponse && pageResponse.data) {
+      if (pageResponse && pageResponse.products) {
         allProducts = [...allProducts, ...pageResponse.products];
       }
     }
