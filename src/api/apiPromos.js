@@ -32,3 +32,16 @@ export const getProductStock = async (sku) => {
     throw error;
   }
 };
+
+/**
+ * @description The POST request is built to obtain the list of all products with their technical data sheet. This information is found at the level of the parent product and only the variants are found at the level of the child product.
+ * @returns {Promise<*|undefined>}
+ */
+export const getAllProducts = async () => {
+  try {
+    return await apiService.post(apiConfigPromos, 'all-products', userData);
+  } catch (error) {
+    console.log('❌ Error in getAllProducts:', error);
+    throw error;
+  }
+};
