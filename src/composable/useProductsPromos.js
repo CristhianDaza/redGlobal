@@ -2,22 +2,22 @@ import { ref } from 'vue'
 import { getAllProductsPromos } from '../api'
 
 export function useProductsPromos() {
-  const isLoadingProductsComposable = ref(false)
+  const isLoadingProductsPromosComposable = ref(false)
   
-  const getProducts = async () => {
+  const getProductsPromos = async () => {
     try {
-      isLoadingProductsComposable.value = true
+      isLoadingProductsPromosComposable.value = true
       return await getAllProductsPromos()
     } catch (error) {
       console.error('Error in getProducts:', error)
       return error
     } finally {
-      isLoadingProductsComposable.value = false
+      isLoadingProductsPromosComposable.value = false
     }
   }
   
   return {
-    isLoadingProductsComposable,
-    getProducts
+    isLoadingProductsPromosComposable,
+    getProductsPromos
   }
 }

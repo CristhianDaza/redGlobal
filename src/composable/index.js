@@ -1,12 +1,22 @@
 import { useProductsPromos } from './useProductsPromos'
+import { useProductsMarpico } from './useProductsMarpico'
 
 const {
-  isLoadingProductsComposable,
-  getProducts
+  isLoadingProductsPromosComposable,
+  getProductsPromos
 } = useProductsPromos()
+
+const {
+  isLoadingProductsMarpicoComposable,
+  getProductsMarpico
+} = useProductsMarpico()
 
 export {
   // Promos API
-  isLoadingProductsComposable,
-  getProducts
+  isLoadingProductsPromosComposable,
+  getProductsPromos,
+  
+  // Marpico API
+  isLoadingProductsMarpicoComposable,
+  getProductsMarpico,
 }
