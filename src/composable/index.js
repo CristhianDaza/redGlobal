@@ -1,6 +1,7 @@
 import { useProductsPromos } from './useProductsPromos'
 import { useProductsMarpico } from './useProductsMarpico'
 import { useProductStockSur } from './useProductStockSur'
+import { useProductsCataProm } from './useProductsCataProm.js'
 
 const {
   isLoadingProductsPromosComposable,
@@ -17,6 +18,11 @@ const {
   getProductsStockSur
 } = useProductStockSur()
 
+const {
+  isLoadingProductsCataPromComposable,
+  getProductsCataProm
+} = useProductsCataProm()
+
 export {
   // Promos API
   isLoadingProductsPromosComposable,
@@ -29,4 +35,8 @@ export {
   // StockSur API
   isLoadingProductsStockSurComposable,
   getProductsStockSur,
+  
+  // CataProm API
+  isLoadingProductsCataPromComposable,
+  getProductsCataProm,
 }

@@ -11,6 +11,10 @@ import {
   // StockSur API
   getProductsStockSur,
   isLoadingProductsStockSurComposable,
+  
+  // CataProm API
+  getProductsCataProm,
+  isLoadingProductsCataPromComposable,
 } from '../composable'
 
 export const useProductsStore = defineStore('products', {
@@ -19,23 +23,32 @@ export const useProductsStore = defineStore('products', {
     isLoadingApiPromos: false,
     isLoadingApiMarpico: false,
     isLoadingApiStockSur: false,
+    isLoadingApiCataProm: false,
   }),
   actions: {
     async getAllProducts() {
       this.isLoadingApiPromos = isLoadingProductsPromosComposable
       this.isLoadingApiMarpico = isLoadingProductsMarpicoComposable
       this.isLoadingApiStockSur = isLoadingProductsStockSurComposable
+      this.isLoadingApiCataProm = isLoadingProductsCataPromComposable
       
-      const [productsPromos, productsMarpico, productsStockSur] = await Promise.all([
+      const [
+        productsPromos,
+        productsMarpico,
+        productsStockSur,
+        productsCataProm
+      ] = await Promise.all([
         getProductsPromos(),
         getProductsMarpico(),
         getProductsStockSur(),
+        getProductsCataProm(),
       ])
       
       this.products = {
         ...productsPromos,
         ...productsMarpico,
         ...productsStockSur,
+        ...productsCataProm,
       }
     }
   },
