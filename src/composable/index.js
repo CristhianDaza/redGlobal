@@ -1,7 +1,7 @@
 import { useProductsPromos } from './useProductsPromos'
 import { useProductsMarpico } from './useProductsMarpico'
 import { useProductStockSur } from './useProductStockSur'
-import { useProductsCataProm } from './useProductsCataProm.js'
+import { useProductsCataProm } from './useProductsCataProm'
 
 const {
   isLoadingProductsPromosComposable,
