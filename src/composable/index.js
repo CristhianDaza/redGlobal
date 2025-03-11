@@ -1,12 +1,12 @@
 import { useProductsPromos } from './useProductsPromos'
 
 const {
-  isLoadingApiPromos,
+  isLoadingProductsComposable,
   getProducts
 } = useProductsPromos()
 
 export {
   // Promos API
-  isLoadingApiPromos,
+  isLoadingProductsComposable,
   getProducts
 }

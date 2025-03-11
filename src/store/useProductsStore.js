@@ -1,21 +1,15 @@
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { getProducts, isLoadingApiPromos } from '../composable'
+import { getProducts, isLoadingProductsComposable } from '../composable'
 
 export const useProductsStore = defineStore('products', {
   state: () => ({
-    products: [],
-    isLoadingApiPromos: ref(false)
+    products: null,
+    isLoadingApiPromos: false,
   }),
   actions: {
     async getAllProducts() {
+      this.isLoadingApiPromos = isLoadingProductsComposable
       this.products = await getProducts()
-      this.isLoadingApiPromos = isLoadingApiPromos
-    }
-  },
-  getters: {
-    totalProducts() {
-      return this.products.length
     }
   },
 })
