@@ -10,7 +10,7 @@ const PAGE_SIZE = 50;
  * @description Fetch products in batches of PAGE_SIZE.
  * @returns {Promise<Array>} - All products combined.
  */
-export const getAllProducts = async () => {
+export const getAllProductsStockSur = async () => {
   try {
     let firstRequestUrl = `${apiUrl}?auth_token=${import.meta.env.VITE_API_STOCKSUR_TOKEN}&page_size=${PAGE_SIZE}&page_number=1`;
     

@@ -1,3 +1,3 @@
-import { useProductsStore } from './useProductsStore.js'
+import { useProductsStore } from './useProductsStore'
 
 export { useProductsStore }

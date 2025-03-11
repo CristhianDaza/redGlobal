@@ -1,5 +1,6 @@
 import { useProductsPromos } from './useProductsPromos'
 import { useProductsMarpico } from './useProductsMarpico'
+import { useProductStockSur } from './useProductStockSur'
 
 const {
   isLoadingProductsPromosComposable,
@@ -11,6 +12,11 @@ const {
   getProductsMarpico
 } = useProductsMarpico()
 
+const {
+  isLoadingProductsStockSurComposable,
+  getProductsStockSur
+} = useProductStockSur()
+
 export {
   // Promos API
   isLoadingProductsPromosComposable,
@@ -19,4 +25,8 @@ export {
   // Marpico API
   isLoadingProductsMarpicoComposable,
   getProductsMarpico,
+  
+  // StockSur API
+  isLoadingProductsStockSurComposable,
+  getProductsStockSur,
 }

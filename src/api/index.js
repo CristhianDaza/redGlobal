@@ -1,5 +1,6 @@
-import { getStockPromos, getStockByIdPromos, getAllProductsPromos } from './apiPromos.js'
-import { getAllProductsMarpico, getProductByIdMarpico } from './apiMarpico.js'
+import { getStockPromos, getStockByIdPromos, getAllProductsPromos } from './apiPromos'
+import { getAllProductsMarpico, getProductByIdMarpico } from './apiMarpico'
+import { getAllProductsStockSur } from './apiStockSur'
 
 export {
   // Promos
@@ -10,4 +11,7 @@ export {
   // Marpico
   getAllProductsMarpico,
   getProductByIdMarpico,
+  
+  // StockSur
+  getAllProductsStockSur,
 }
