@@ -24,8 +24,6 @@ export function useProductsMarpico() {
     } catch (error) {
       console.error('Error in getProducts:', error)
       return error
-    } finally {
-      isLoadingProductsMarpicoComposable.value = false
     }
   }
   
