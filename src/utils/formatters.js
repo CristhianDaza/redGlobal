@@ -141,3 +141,69 @@ export const constructTotalProductsMarpico = (materials) => {
   })
   return totalProducts
 }
+
+export const constructCategoryStockSur = (product) => {
+  return product?.categories?.map(category => category.name).filter(Boolean) || []
+}
+export const constructImagesStockSur = (variants) => {
+  if (!variants || !Array.isArray(variants)) return []
+  
+  return variants.map(variant => variant.picture?.original).filter(Boolean)
+}
+
+export const constructPackingStockSur = (packing) => {
+  if (!packing) return null
+  
+  const parts = []
+  
+  if (packing.width) parts.push(`Ancho: ${packing.width} cm`)
+  if (packing.height) parts.push(`Alto: ${packing.height} cm`)
+  if (packing.depth) parts.push(`Profundidad: ${packing.depth} cm`)
+  if (packing.volume) parts.push(`Volumen: ${packing.volume} m³`)
+  if (packing.quantity) parts.push(`Cantidad por caja: ${packing.quantity}`)
+  if (packing.weight) parts.push(`Peso: ${packing.weight} kg`)
+  
+  return parts.length > 0 ? parts.join(' | ') : null
+}
+
+export const constructPrintingStockSur = (suggestions) => {
+  if (!suggestions || !Array.isArray(suggestions) || suggestions.length === 0) {
+    return null
+  }
+  
+  const filteredSuggestions = suggestions
+    .filter(suggestion => ![1, 92, 93].includes(suggestion.id))
+    .map(suggestion => suggestion.label.trim())
+  
+  if (filteredSuggestions.length === 0) {
+    return null
+  }
+  
+  const formattedSuggestions = filteredSuggestions.length > 1
+    ? filteredSuggestions.slice(0, -1).join(', ') + ' o ' + filteredSuggestions.slice(-1)
+    : filteredSuggestions[0]
+  
+  return `Se sugiere: ${formattedSuggestions}.`
+}
+
+
+export const constructTableQuantityStockSur = (variants) => {
+  if (!variants || !Array.isArray(variants) || variants.length === 0) {
+    return []
+  }
+  
+  return variants.map(variant => ({
+    color: variant.color?.name,
+    colorName: variant.color?.name,
+    quantity: variant.stock_available,
+    price: variant.list_price,
+  }))
+}
+
+export const constructTotalProductsStockSur = (variants) => {
+  if (!variants || !Array.isArray(variants) || variants.length === 0) {
+    return 0
+  }
+  
+  return variants.reduce((total, variant) => total + (variant.stock_available || 0), 0)
+}

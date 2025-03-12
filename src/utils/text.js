@@ -31,3 +31,8 @@ export const formatText = (text, isUpperCase = false) => {
   }
   return decodedText
 }
+
+export const cleanText = (text) => {
+  if (!text) return ''
+  return text.replace(/\\?"/g, '').trim()
+}
