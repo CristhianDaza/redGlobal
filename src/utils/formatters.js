@@ -145,11 +145,6 @@ export const constructTotalProductsMarpico = (materials) => {
 export const constructCategoryStockSur = (product) => {
   return product?.categories?.map(category => category.name).filter(Boolean) || []
 }
-export const constructImagesStockSur = (variants) => {
-  if (!variants || !Array.isArray(variants)) return []
-  
-  return variants.map(variant => variant.picture?.original).filter(Boolean)
-}
 
 export const constructPackingStockSur = (packing) => {
   if (!packing) return null

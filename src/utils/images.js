@@ -14,3 +14,9 @@ export const constructImagesPromos = (children, mainImage) => {
   }
   return images
 }
+
+export const constructImagesStockSur = (variants) => {
+  if (!variants || !Array.isArray(variants)) return []
+  
+  return variants.map(variant => variant.picture?.original).filter(Boolean)
+}
