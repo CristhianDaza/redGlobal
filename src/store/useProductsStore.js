@@ -43,13 +43,13 @@ export const useProductsStore = defineStore('products', {
         getProductsStockSur(),
         getProductsCataProm(),
       ])
-      
-      this.products = {
+      const allProducts = [
         ...productsPromos,
         ...productsMarpico,
         ...productsStockSur,
-        ...productsCataProm,
-      }
+        ...productsCataProm
+      ]
+      this.products = allProducts.sort((a, b) => a.name.localeCompare(b.name))
     }
   },
 })
