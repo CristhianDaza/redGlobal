@@ -1,6 +1,7 @@
 import { formatText, cleanText } from './text';
 import { constructImagesPromos, constructImagesStockSur } from './images'
 import {
+  combineProducts,
   constructCategoryMarpico,
   constructCategoryStockSur,
   constructLabelsMarpico,
@@ -23,6 +24,7 @@ export {
   cleanText,
   
   // Formatters
+  combineProducts,
   constructCategoryMarpico,
   constructCategoryStockSur,
   constructLabelsMarpico,

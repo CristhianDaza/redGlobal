@@ -202,3 +202,18 @@ export const constructTotalProductsStockSur = (variants) => {
   
   return variants.reduce((total, variant) => total + (variant.stock_available || 0), 0)
 }
+
+export const combineProducts = (docs) => {
+  const combinedProducts = []
+  
+  docs.forEach(doc => {
+    const products = doc.data().products
+    if (Array.isArray(products)) {
+      combinedProducts.push(...products)
+    } else {
+      console.warn('Without products:', doc)
+    }
+  })
+  
+  return combinedProducts
+}
