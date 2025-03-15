@@ -1,46 +1,13 @@
-import { useProductsPromos } from './useProductsPromos'
-import { useProductsMarpico } from './useProductsMarpico'
+import { useFilters } from './useFilters'
 import { useProductStockSur } from './useProductStockSur'
 import { useProductsCataProm } from './useProductsCataProm'
-import { useFilters } from './useFilters'
-
-const {
-  isLoadingProductsPromosComposable,
-  getProductsPromos
-} = useProductsPromos()
-
-const {
-  isLoadingProductsMarpicoComposable,
-  getProductsMarpico
-} = useProductsMarpico()
-
-const {
-  isLoadingProductsStockSurComposable,
-  getProductsStockSur
-} = useProductStockSur()
-
-const {
-  isLoadingProductsCataPromComposable,
-  getProductsCataProm
-} = useProductsCataProm()
+import { useProductsMarpico } from './useProductsMarpico'
+import { useProductsPromos } from './useProductsPromos'
 
 export {
-  // Promos API
-  isLoadingProductsPromosComposable,
-  getProductsPromos,
-  
-  // Marpico API
-  isLoadingProductsMarpicoComposable,
-  getProductsMarpico,
-  
-  // StockSur API
-  isLoadingProductsStockSurComposable,
-  getProductsStockSur,
-  
-  // CataProm API
-  isLoadingProductsCataPromComposable,
-  getProductsCataProm,
-  
-  // Filters
   useFilters,
+  useProductStockSur,
+  useProductsCataProm,
+  useProductsMarpico,
+  useProductsPromos,
 }

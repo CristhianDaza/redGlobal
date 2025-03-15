@@ -11,8 +11,6 @@ const { filterProducts, clearFilters } = useFilters()
 
 const callAdmin = async () => {
   await storeProducts.getAllProducts(true)
-  console.log(storeProducts.products)
-  console.log(storeProducts.lastUpdateProducts)
 }
 
 onMounted(() => {

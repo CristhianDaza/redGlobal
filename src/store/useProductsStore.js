@@ -2,23 +2,11 @@ import { defineStore } from 'pinia'
 import { addDoc, collection, deleteDoc, doc, getDocs } from 'firebase/firestore'
 import { db } from '../../firebase.js'
 import { combineProducts } from '../utils'
-
 import {
-  // Promos API
-  getProductsPromos,
-  isLoadingProductsPromosComposable,
-  
-  // Marpico API
-  getProductsMarpico,
-  isLoadingProductsMarpicoComposable,
-  
-  // StockSur API
-  getProductsStockSur,
-  isLoadingProductsStockSurComposable,
-  
-  // CataProm API
-  getProductsCataProm,
-  isLoadingProductsCataPromComposable,
+  useProductsCataProm,
+  useProductsMarpico,
+  useProductsPromos,
+  useProductStockSur,
 } from '../composable'
 
 export const useProductsStore = defineStore('products', {
@@ -46,8 +34,12 @@ export const useProductsStore = defineStore('products', {
     },
     
     async _callServices() {
-      const isMustBeUpdated = await this._isMustBeUpdated()
+      const { getProductsPromos, isLoadingProductsPromosComposable } = useProductsPromos()
+      const { getProductsMarpico, isLoadingProductsMarpicoComposable } = useProductsMarpico()
+      const { getProductsStockSur, isLoadingProductsStockSurComposable } = useProductStockSur()
+      const { getProductsCataProm, isLoadingProductsCataPromComposable } = useProductsCataProm()
       
+      const isMustBeUpdated = await this._isMustBeUpdated()
       if (isMustBeUpdated) {
         await this._callProductsDb()
         return
