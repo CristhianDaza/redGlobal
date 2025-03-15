@@ -30,6 +30,7 @@ export const useProductsStore = defineStore('products', {
     isLoadingApiCataProm: false,
     isLoadingSaveProducts: false,
     lastUpdateProducts: null,
+    productsToView: [],
   }),
   actions: {
     async getAllProducts(isAdminUser = false) {
@@ -147,6 +148,15 @@ export const useProductsStore = defineStore('products', {
       const nowDay = now.getDate()
       this.lastUpdateProducts = lastUpdateDate
       return lastUpdateDay === nowDay
+    },
+    
+    setProductsToView(products) {
+      this.productsToView = products
+    }
+  },
+  getters: {
+    getProductsToView() {
+      return this.productsToView
     },
   },
 })

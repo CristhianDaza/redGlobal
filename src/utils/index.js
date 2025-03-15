@@ -1,5 +1,6 @@
-import { formatText, cleanText } from './text';
+import { formatText, cleanText, normalizeString } from './text';
 import { constructImagesPromos, constructImagesStockSur } from './images'
+import { filterProductsHelper } from './helpers'
 import {
   combineProducts,
   constructCategoryMarpico,
@@ -20,8 +21,9 @@ import {
 
 export {
   // Text
-  formatText,
   cleanText,
+  formatText,
+  normalizeString,
   
   // Formatters
   combineProducts,
@@ -43,4 +45,7 @@ export {
   // Images
   constructImagesPromos,
   constructImagesStockSur,
+  
+  // Helpers
+  filterProductsHelper,
 }

@@ -36,3 +36,9 @@ export const cleanText = (text) => {
   if (!text) return ''
   return text.replace(/\\?"/g, '').trim()
 }
+
+export const normalizeString = (str) => {
+  if (!str) return ''
+  if (Array.isArray(str)) str = str.join(' ')
+  return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase()
+}

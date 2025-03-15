@@ -2,6 +2,7 @@ import { useProductsPromos } from './useProductsPromos'
 import { useProductsMarpico } from './useProductsMarpico'
 import { useProductStockSur } from './useProductStockSur'
 import { useProductsCataProm } from './useProductsCataProm'
+import { useFilters } from './useFilters'
 
 const {
   isLoadingProductsPromosComposable,
@@ -39,4 +40,7 @@ export {
   // CataProm API
   isLoadingProductsCataPromComposable,
   getProductsCataProm,
+  
+  // Filters
+  useFilters,
 }
