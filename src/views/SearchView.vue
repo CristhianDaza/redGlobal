@@ -1,97 +1,184 @@
-<script setup>
-import { computed, defineAsyncComponent, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useProductsStore } from '../store'
+<script setup lang="ts">
+import type { ProductsRedGlobal } from '../types/common'
 
-const route = useRoute()
-const router = useRouter()
-const storeProducts = useProductsStore()
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
+import { useRoute, useRouter, LocationQuery } from 'vue-router';
+import { useProductsStore } from '../store/';
 
-const currentPage = ref(route.query.page || 1)
-const pageSize = ref(route.query.size || 15)
-const totalPages = computed(() => Math.ceil(storeProducts.getProductsToView?.length / pageSize.value) || 0)
+const route = useRoute();
+const router = useRouter();
+const storeProducts = useProductsStore();
 
-const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('../components/UI/RgCard.vue'))
+const currentPage = ref<number>(Number(route.query.page) || 1);
+const pageSize = ref<number>(Number(route.query.size) || 15);
 
+const productsLength = computed(() => storeProducts.getProductsToView?.length || 0);
+const totalPages = computed(() => Math.ceil(productsLength.value / pageSize.value));
 
-const nextPage = () => {
+const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('../components/UI/RgCard.vue'));
+
+const nextPage = (): void => {
   if (currentPage.value < totalPages.value) {
-    currentPage.value++
-    router.push({ query: { ...route.query, page: currentPage.value } })
+    currentPage.value++;
+    router.push({ query: { ...route.query, page: currentPage.value.toString() } });
   }
-}
+};
 
-const prevPage = () => {
+const prevPage = (): void => {
   if (currentPage.value > 1) {
-    currentPage.value--
-    router.push({ query: { ...route.query, page: currentPage.value } })
+    currentPage.value--;
+    router.push({ query: { ...route.query, page: currentPage.value.toString() } });
   }
-}
+};
 
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value
-  const end = start + pageSize.value
-  return storeProducts.getProductsToView?.slice(start, end)
-})
+const paginatedProducts = computed<ProductsRedGlobal[]>(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  const products = storeProducts.getProductsToView?.slice(start, end) || [];
+  return products.map(product => ({
+    ...product,
+  }));
+});
 
+const changePageSize = (newSize: number): void => {
+  pageSize.value = newSize;
+  currentPage.value = 1;
+  router.push({ 
+    query: { 
+      ...route.query, 
+      page: currentPage.value.toString(), 
+      size: newSize.toString() 
+    } 
+  });
+};
 
-const changePageSize = (newSize) => {
-  pageSize.value = newSize
-  currentPage.value = 1
-  router.push({ query: { ...route.query, page: currentPage.value, size: newSize } })
-}
+const handlePageSizeChange = (event: Event): void => {
+  const select = event.target as HTMLSelectElement;
+  changePageSize(Number(select.value));
+};
 
-const generatePageSizeOptions = (totalProducts) => {
-  const options = []
-  let step = 15
+const generatePageSizeOptions = (totalProducts: number): number[] => {
+  const options: number[] = [];
+  let step = 15;
 
   while (step < totalProducts) {
-    options.push(step)
-    step += 15
+    options.push(step);
+    step += 15;
   }
 
-  options.push(totalProducts)
-  return options
-}
+  if (!options.includes(totalProducts)) {
+    options.push(totalProducts);
+  }
 
-watch(() => route?.query, (newQuery) => {
-  currentPage.value = Number(newQuery.page) || 1
-  pageSize.value = Number(newQuery.size) || 15
-}, { immediate: true })
+  return options;
+};
+
+watch(
+  () => route.query,
+  (newQuery: LocationQuery) => {
+    currentPage.value = Number(newQuery.page) || 1;
+    pageSize.value = Number(newQuery.size) || 15;
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
-  <button
-    @click="prevPage"
-    class="prev"
-  > < </button>
-  <span>Página {{ currentPage }} de {{ totalPages }}</span>
-  <button
-    class="next"
-    @click="nextPage"
-  > > </button>
-
-  <div
-    class="containerProduct"
-    v-for="product in paginatedProducts"
-  >
-    <RgCard :productsView="product" />
+  <div class="search">
+    <h1>Productos</h1>
+    <div v-if="productsLength > 0" class="search__container">
+      <div class="search__pagination">
+        <button 
+          :disabled="currentPage === 1"
+          @click="prevPage"
+        >
+          Anterior
+        </button>
+        <span>Página {{ currentPage }} de {{ totalPages }}</span>
+        <button 
+          :disabled="currentPage === totalPages"
+          @click="nextPage"
+        >
+          Siguiente
+        </button>
+      </div>
+      <div class="search__size">
+        <label for="pageSize">Productos por página:</label>
+        <select 
+          id="pageSize"
+          :value="pageSize"
+          @change="handlePageSizeChange"
+        >
+          <option 
+            v-for="size in generatePageSizeOptions(productsLength)"
+            :key="size"
+            :value="size"
+          >
+            {{ size }}
+          </option>
+        </select>
+      </div>
+      <div class="search__products">
+        <RgCard
+          v-for="product in paginatedProducts"
+          :key="product.id"
+          :products-view="product"
+        />
+      </div>
+    </div>
+    <div v-else>
+      <p>No hay productos disponibles</p>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.containerProduct {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
+.search {
   padding: 20px;
 }
 
-.next {
-  margin-left: 10px;
+.search__container {
+  margin-top: 20px;
 }
-.prev {
-  margin-right: 10px;
+
+.search__pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search__pagination button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
+
+.search__pagination button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.search__size {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search__size select {
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.search__products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
 }
 </style>

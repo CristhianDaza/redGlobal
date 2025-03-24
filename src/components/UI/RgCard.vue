@@ -1,10 +1,9 @@
-<script setup>
-const props = defineProps({
-  productsView: {
-    type: Object,
-    required: true
-  }
-})
+<script setup lang="ts">
+import type { ProductsRedGlobal } from '../../types/common';
+
+const props = defineProps<{
+  productsView: ProductsRedGlobal;
+}>();
 </script>
 
 <template>

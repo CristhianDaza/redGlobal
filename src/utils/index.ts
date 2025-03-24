@@ -1,6 +1,6 @@
 import { formatText, cleanText, normalizeString } from './text';
-import { constructImagesPromos, constructImagesStockSur } from './images'
-import { filterProductsHelper } from './helpers'
+import { constructImagesPromos, constructImagesStockSur } from './images';
+import { filterProductsHelper } from './helpers';
 import {
   combineProducts,
   constructCategoryMarpico,
@@ -10,14 +10,15 @@ import {
   constructPackagingPromos,
   constructPackingStockSur,
   constructPrintingStockSur,
-  constructSizeMarpico,
   constructTableQuantityMarpico,
   constructTableQuantityPromos,
   constructTableQuantityStockSur,
   constructTotalProductsMarpico,
   constructTotalProductsStockSur,
   getDiscountsMarpico,
-} from './formatters'
+  constructSizeMarpico,
+  constructTotalProductsPromos,
+} from './formatters';
 
 export {
   // Text
@@ -34,18 +35,19 @@ export {
   constructPackagingPromos,
   constructPackingStockSur,
   constructPrintingStockSur,
-  constructSizeMarpico,
   constructTableQuantityMarpico,
   constructTableQuantityPromos,
   constructTableQuantityStockSur,
   constructTotalProductsMarpico,
   constructTotalProductsStockSur,
   getDiscountsMarpico,
-  
+  constructSizeMarpico,
+  constructTotalProductsPromos,
+
   // Images
   constructImagesPromos,
   constructImagesStockSur,
   
   // Helpers
   filterProductsHelper,
-}
+};

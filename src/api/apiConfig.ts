@@ -1,12 +1,14 @@
-import axios from 'axios';
+import type { ApiHeaders } from '../types/config'
 
-const createApiInstance = (baseURL, headers = {}) => {
+import axios, { AxiosInstance } from 'axios';
+
+const createApiInstance = (baseURL: string, headers: ApiHeaders = { 'Content-Type': 'application/json' }): AxiosInstance => {
   const instance = axios.create({ baseURL, headers });
 
   instance.interceptors.response.use(
     response => response,
     error => {
-      console.error(`❌ Error en la API (${baseURL}):`, error);
+      console.error(`Error en la API (${baseURL}):`, error);
       return Promise.reject(error);
     }
   );

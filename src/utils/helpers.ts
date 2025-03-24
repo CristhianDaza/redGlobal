@@ -1,6 +1,8 @@
-import { normalizeString } from './'
+import type { ProductsRedGlobal } from '../types/common';
 
-export const filterProductsHelper = (products, searchTerm) => {
+import { normalizeString } from './';
+
+export const filterProductsHelper = (products: ProductsRedGlobal[], searchTerm: string) => {
   const keywords = normalizeString(searchTerm)
     .split(/\s+/)
     .map(keyword => _singularize(keyword.trim()))
@@ -22,6 +24,6 @@ export const filterProductsHelper = (products, searchTerm) => {
   })
 }
 
-const _singularize = (word) => {
-  return word.replace(/(as|es|os|is|us|s)$/, '')
-}
+const _singularize = (word: string): string => {
+  return word.replace(/(as|es|os|is|us|s)$/, '');
+};

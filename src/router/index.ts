@@ -1,6 +1,6 @@
-import { createWebHistory, createRouter } from 'vue-router'
+import { createWebHistory, createRouter, RouteRecordRaw } from 'vue-router';
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import(/* webpackChunkName: "homeView" */ '../views/HomeView.vue'),
@@ -11,18 +11,18 @@ const routes = [
     component: () => import(/* webpackChunkName: "searchView" */ '../views/SearchView.vue'),
     name: 'search'
   }
-]
+];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
-      return savedPosition
+      return savedPosition;
     } else {
-      return { left: 0, top: 0 }
+      return { left: 0, top: 0 };
     }
   }
-})
+});
 
-export default router
+export default router;

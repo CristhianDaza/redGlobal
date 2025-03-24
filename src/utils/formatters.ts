@@ -1,12 +1,17 @@
-const _processString = (input) => {
-  if (typeof input !== 'string') {
-    return ''
-  }
-  const lowerCased = input.toLowerCase()
-  return lowerCased.charAt(0).toUpperCase() + lowerCased.slice(1)
-}
+import type { MarpicoProduct, MarpicoMaterial } from '../types/marpico';
+import type { Label, TableEntry, ProductsRedGlobal } from '@/types/common';
+import type { PromosPackaging, PromosProductChild, Stock } from '../types/promos';
+import type { StockSurProduct, StockSurPacking, StockSurIcono, StockSurVariant } from '../types/stocksur';
 
-export const constructPackagingPromos = (packaging) => {
+const _processString = (input: string | undefined): string => {
+  if (typeof input !== 'string') {
+    return '';
+  }
+  const lowerCased = input.toLowerCase();
+  return lowerCased.charAt(0).toUpperCase() + lowerCased.slice(1);
+};
+
+export const constructPackagingPromos = (packaging: PromosPackaging | undefined): string => {
   if (!packaging) return ''
   
   const parts = []
@@ -20,11 +25,13 @@ export const constructPackagingPromos = (packaging) => {
   if (packaging.cajaIndividual) parts.push(`Caja individual: ${packaging.cajaIndividual === 'SI' ? 'Sí' : 'No'}`)
   
   return parts.join(' | ')
-}
+};
 
-
-export const constructTableQuantityPromos = (children, stockData) => {
-  const table = []
+export const constructTableQuantityPromos = (
+  children: PromosProductChild[] | undefined,
+  stockData: Stock[]
+): TableEntry[] => {
+  const table: TableEntry[] = []
   if (children) {
     children.forEach(child => {
       const stockEntry = stockData.find(item => item.Material === child.skuHijo)
@@ -41,27 +48,31 @@ export const constructTableQuantityPromos = (children, stockData) => {
     })
   }
   return table
-}
+};
 
-export const constructCategoryMarpico = (product) => {
+export const constructTotalProductsPromos = (stock: Stock[]): number => {
+  return stock.reduce((acc, item) => acc + item.Stock, 0)
+};
+
+export const constructCategoryMarpico = (product: MarpicoProduct): string[] => {
   return [
     product?.subcategoria_1?.nombre,
     product?.subcategoria_2?.nombre,
     product?.subcategoria_3?.nombre,
     product?.subcategoria_4?.nombre,
     product?.subcategoria_5?.nombre
-  ].filter(Boolean)
-}
+  ].filter(Boolean).map(_processString)
+};
 
-export const getDiscountsMarpico = (materials) => {
+export const getDiscountsMarpico = (materials: MarpicoMaterial[]): number | null => {
   const discounts = materials
     .filter(material => material.descuento !== 0)
     .map(material => material.descuento)
   return discounts.length > 0 ? discounts[0] : null
-}
+};
 
-export const constructLabelsMarpico = (product) => {
-  const parts = []
+export const constructLabelsMarpico = (product: MarpicoProduct): Label[] => {
+  const parts: Label[] = [];
   if (product?.etiquetas) {
     product.etiquetas.forEach(label => {
       parts.push({
@@ -74,7 +85,7 @@ export const constructLabelsMarpico = (product) => {
   return parts
 }
 
-export const constructPackagingMarpico = (packaging) => {
+export const constructPackagingMarpico = (packaging: MarpicoProduct | undefined): string => {
   if (!packaging) return ''
   
   const parts = []
@@ -90,27 +101,28 @@ export const constructPackagingMarpico = (packaging) => {
   return parts.join(' | ')
 }
 
-export const constructSizeMarpico = (size) => {
+export const constructSizeMarpico = (size: MarpicoProduct | undefined): string => {
   if (!size) return ''
   
-  const parts = []
+  const parts: string[] = []
   
-  if (size.medidas_largo) parts.push(`Largo: ${Math.trunc(size.medidas_largo)} cm`)
-  if (size.medidas_ancho) parts.push(`Ancho: ${Math.trunc(size.medidas_ancho)} cm`)
-  if (size.medidas_alto) parts.push(`Alto: ${Math.trunc(size.medidas_alto)} cm`)
-  if (size.medidas_diametro) parts.push(`Diámetro: ${size.medidas_diametro} cm`)
+  if (size.medidas_largo) parts.push(`Largo: ${Number(size.medidas_largo)} cm`)
+  if (size.medidas_ancho) parts.push(`Ancho: ${Number(size.medidas_ancho)} cm`)
+  if (size.medidas_alto) parts.push(`Alto: ${Number(size.medidas_alto)} cm`)
+  if (size.medidas_diametro) parts.push(`Diámetro: ${Number(size.medidas_diametro)} cm`)
   
   return parts.join(' | ')
 }
 
-export const constructTableQuantityMarpico = (materials) => {
-  const quantity = []
+export const constructTableQuantityMarpico = (materials: MarpicoMaterial[] | undefined): TableEntry[] => {
+  if (!materials) return [];
+  const quantity: TableEntry[] = []
   
   materials.forEach(material => {
     const discountFactor = material.descuento / 100
     const discountedPrice = material.precio + (material.precio * discountFactor)
     
-    const item = {
+    const item: Partial<TableEntry> = {
       color: material.color_nombre,
       colorName: `${material.color_nombre}${material.variedad?.trim() && material.variedad.trim() !== '' ? ` (${material.variedad.trim()})` : ''}`,
       quantity: material.inventario_almacen?.[0]?.cantidad,
@@ -123,18 +135,18 @@ export const constructTableQuantityMarpico = (materials) => {
     }
     
     Object.keys(item).forEach(key => {
-      if (item[key] == null) {
-        delete item[key]
+      if (item[key as keyof TableEntry] == null) {
+        delete item[key as keyof TableEntry]
       }
     })
     
-    quantity.push(item)
+    quantity.push(item as TableEntry)
   })
   
   return quantity
 }
 
-export const constructTotalProductsMarpico = (materials) => {
+export const constructTotalProductsMarpico = (materials: MarpicoMaterial[]): number => {
   let totalProducts = 0
   materials.forEach(material => {
     totalProducts += material.inventario_almacen?.[0]?.cantidad
@@ -142,12 +154,12 @@ export const constructTotalProductsMarpico = (materials) => {
   return totalProducts
 }
 
-export const constructCategoryStockSur = (product) => {
+export const constructCategoryStockSur = (product: StockSurProduct): string[] => {
   return product?.categories?.map(category => category.name).filter(Boolean) || []
-}
+};
 
-export const constructPackingStockSur = (packing) => {
-  if (!packing) return null
+export const constructPackingStockSur = (packing: StockSurPacking | undefined): string => {
+  if (!packing) return ''
   
   const parts = []
   
@@ -158,12 +170,12 @@ export const constructPackingStockSur = (packing) => {
   if (packing.quantity) parts.push(`Cantidad por caja: ${packing.quantity}`)
   if (packing.weight) parts.push(`Peso: ${packing.weight} kg`)
   
-  return parts.length > 0 ? parts.join(' | ') : null
+  return parts.length > 0 ? parts.join(' | ') : ''
 }
 
-export const constructPrintingStockSur = (suggestions) => {
+export const constructPrintingStockSur = (suggestions: StockSurIcono[] | undefined) => {
   if (!suggestions || !Array.isArray(suggestions) || suggestions.length === 0) {
-    return null
+    return ''
   }
   
   const filteredSuggestions = suggestions
@@ -171,7 +183,7 @@ export const constructPrintingStockSur = (suggestions) => {
     .map(suggestion => suggestion.label.trim())
   
   if (filteredSuggestions.length === 0) {
-    return null
+    return ''
   }
   
   const formattedSuggestions = filteredSuggestions.length > 1
@@ -181,12 +193,7 @@ export const constructPrintingStockSur = (suggestions) => {
   return `Se sugiere: ${formattedSuggestions}.`
 }
 
-
-export const constructTableQuantityStockSur = (variants) => {
-  if (!variants || !Array.isArray(variants) || variants.length === 0) {
-    return []
-  }
-  
+export const constructTableQuantityStockSur = (variants: StockSurVariant[]): TableEntry[] => {  
   return variants.map(variant => ({
     color: variant.color?.name,
     colorName: variant.color?.name,
@@ -195,16 +202,16 @@ export const constructTableQuantityStockSur = (variants) => {
   }))
 }
 
-export const constructTotalProductsStockSur = (variants) => {
+export const constructTotalProductsStockSur = (variants: StockSurVariant[] | undefined): number => {
   if (!variants || !Array.isArray(variants) || variants.length === 0) {
     return 0
   }
   
   return variants.reduce((total, variant) => total + (variant.stock_available || 0), 0)
-}
+};
 
-export const combineProducts = (docs) => {
-  const combinedProducts = []
+export const combineProducts = (docs: any[]): any[] => {
+  const combinedProducts: ProductsRedGlobal[] = []
   
   docs.forEach(doc => {
     const products = doc.data().products
@@ -216,4 +223,4 @@ export const combineProducts = (docs) => {
   })
   
   return combinedProducts
-}
+};

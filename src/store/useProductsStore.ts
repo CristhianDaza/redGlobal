@@ -1,6 +1,9 @@
+import type { StateGlobal } from '../types/config'
+import type { ProductsRedGlobal } from '../types/common'
+
 import { defineStore } from 'pinia'
 import { addDoc, collection, deleteDoc, doc, getDocs } from 'firebase/firestore'
-import { db } from '../../firebase.js'
+import { db } from '../config/firebase'
 import { combineProducts } from '../utils'
 import {
   useProductsCataProm,
@@ -10,7 +13,7 @@ import {
 } from '../composable'
 
 export const useProductsStore = defineStore('products', {
-  state: () => ({
+  state: (): StateGlobal => ({
     products: null,
     isLoadingApiPromos: false,
     isLoadingApiMarpico: false,
@@ -21,7 +24,8 @@ export const useProductsStore = defineStore('products', {
     productsToView: [],
   }),
   actions: {
-    async getAllProducts(isAdminUser = false) {
+    async getAllProducts(isAdminUser = false): Promise<void> {
+      console.log('getAllProducts')
       try {
         if (isAdminUser) {
           await this._callServices()
@@ -33,47 +37,49 @@ export const useProductsStore = defineStore('products', {
       }
     },
     
-    async _callServices() {
+    async _callServices(): Promise<void> {
       const { getProductsPromos, isLoadingProductsPromosComposable } = useProductsPromos()
       const { getProductsMarpico, isLoadingProductsMarpicoComposable } = useProductsMarpico()
       const { getProductsStockSur, isLoadingProductsStockSurComposable } = useProductStockSur()
       const { getProductsCataProm, isLoadingProductsCataPromComposable } = useProductsCataProm()
       
       const isMustBeUpdated = await this._isMustBeUpdated()
+      
       if (isMustBeUpdated) {
         await this._callProductsDb()
         return
       }
 
-      this.isLoadingApiPromos = isLoadingProductsPromosComposable
-      this.isLoadingApiMarpico = isLoadingProductsMarpicoComposable
-      this.isLoadingApiStockSur = isLoadingProductsStockSurComposable
-      this.isLoadingApiCataProm = isLoadingProductsCataPromComposable
-      
+      this.isLoadingApiPromos = isLoadingProductsPromosComposable.value
+      this.isLoadingApiMarpico = isLoadingProductsMarpicoComposable.value
+      this.isLoadingApiStockSur = isLoadingProductsStockSurComposable.value
+      this.isLoadingApiCataProm = isLoadingProductsCataPromComposable.value
+
       const [
         productsPromos,
         productsMarpico,
         productsStockSur,
-        productsCataProm
+        // productsCataProm,
       ] = await Promise.all([
         getProductsPromos(),
         getProductsMarpico(),
         getProductsStockSur(),
-        getProductsCataProm(),
+        // getProductsCataProm(),
       ])
+
       const allProducts = [
         ...productsPromos,
         ...productsMarpico,
         ...productsStockSur,
-        ...productsCataProm
+        // ...productsCataProm
       ]
+
       const products = allProducts.sort((a, b) => a.name.localeCompare(b.name))
-      
       this.isLoadingSaveProducts = false
       await this._saveProductsInDb(products)
     },
-    
-    async _saveProductsInDb(allProducts) {
+
+    async _saveProductsInDb(allProducts: ProductsRedGlobal[]): Promise<void> {
       this.isLoadingSaveProducts = true
       await this._deleteProductsInDb()
       const batchSizes = 500
@@ -89,8 +95,8 @@ export const useProductsStore = defineStore('products', {
       await this._updateDateInDb()
       await this._callProductsDb()
     },
-    
-    async _callProductsDb() {
+
+    async _callProductsDb(): Promise<void> {
       const docRef = await getDocs(collection(db, 'productsRedGlobal'))
       
       const docRefLastUpdated = await getDocs(collection(db, 'lastedUpdatedProducts'))
@@ -100,17 +106,18 @@ export const useProductsStore = defineStore('products', {
       console.log('allNormalizedProducts:', allNormalizedProducts)
       this.products = allNormalizedProducts.sort((a, b) => a.name.localeCompare(b.name))
       this.isLoadingSaveProducts = false
+      console.log('this.products', this.products)
     },
-    
-    async _updateDateInDb() {
+
+    async _updateDateInDb(): Promise<void> {
       try {
         await addDoc(collection(db, 'lastedUpdatedProducts'), { lastUpdate: new Date().toISOString() })
       } catch (error) {
         console.log('Error in _updateDateInDb:', error)
       }
     },
-    
-    async _deleteProductsInDb() {
+
+    async _deleteProductsInDb(): Promise<void> {
       try {
         const productsRef = await getDocs(collection(db, 'productsRedGlobal'))
         const lastUpdateRef = await getDocs(collection(db, 'lastedUpdatedProducts'))
@@ -127,10 +134,10 @@ export const useProductsStore = defineStore('products', {
         console.log('Error in _deleteProductsInDb:', error)
       }
     },
-    
-    async _isMustBeUpdated() {
+
+    async _isMustBeUpdated(): Promise<boolean> {
       const docRef = await getDocs(collection(db, 'lastedUpdatedProducts'))
-      if (!docRef.docs || docRef.docs.length === 0) {
+      if (!Array.isArray(docRef.docs) || docRef.docs.length === 0) {
         return false
       }
       const { lastUpdate } = docRef.docs[0].data()
@@ -139,16 +146,17 @@ export const useProductsStore = defineStore('products', {
       const lastUpdateDay = lastUpdateDate.getDate()
       const nowDay = now.getDate()
       this.lastUpdateProducts = lastUpdateDate
+      
       return lastUpdateDay === nowDay
     },
-    
-    setProductsToView(products) {
+
+    setProductsToView(products: ProductsRedGlobal[]): void {
       this.productsToView = products
     }
   },
   getters: {
-    getProductsToView() {
+    getProductsToView(): ProductsRedGlobal[] {
       return this.productsToView
-    },
+    }
   },
 })
