@@ -52,7 +52,7 @@ export function useProductsPromos() {
       printing: formatText(product?.impresion?.tecnicaImpresion),
       size: product?.medidas,
       tableQuantity: constructTableQuantityPromos(product?.hijos, stock),
-      totalProducts: constructTotalProductsPromos(stock)
+      totalProducts: constructTotalProductsPromos(product?.hijos, stock)
     };
   };
   

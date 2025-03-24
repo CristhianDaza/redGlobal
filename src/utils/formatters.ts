@@ -50,8 +50,27 @@ export const constructTableQuantityPromos = (
   return table
 };
 
-export const constructTotalProductsPromos = (stock: Stock[]): number => {
-  return stock.reduce((acc, item) => acc + item.Stock, 0)
+export const constructTotalProductsPromos = (
+  product: PromosProductChild[],
+  stockData: Stock[]
+): number => {
+  const table: TableEntry[] = []
+  if (product) {
+    product.forEach(child => {
+      const stockEntry = stockData.find(item => item.Material === child.skuHijo)
+      if (stockEntry) {
+        table.push({
+          color: _processString(child.color),
+          colorName: _processString(child.color),
+          quantity: stockEntry.Stock,
+          price: child.precio,
+          type: child.tipo,
+          sku: child.skuHijo
+        })
+      }
+    })
+  }
+  return table.reduce((acc, item) => acc + item.quantity, 0)
 };
 
 export const constructCategoryMarpico = (product: MarpicoProduct): string[] => {
