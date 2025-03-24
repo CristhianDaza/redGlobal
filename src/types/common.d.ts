@@ -13,6 +13,7 @@ export interface ProductsRedGlobal {
   packaging: string;
   printing: string;
   size?: string;
+  stock?: number;
   tableQuantity: TableEntry[];
   totalProducts: number;
 }
