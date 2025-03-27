@@ -1,6 +1,7 @@
-import { addDoc, collection, deleteDoc, doc, getDocs } from 'firebase/firestore'
+import type { ProductsRedGlobal, MenuItem } from '../types/common'
+
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '../config/firebase'
-import type { ProductsRedGlobal } from '../types/common'
 
 export const firebaseService = {
   async saveProducts(allProducts: ProductsRedGlobal[]): Promise<void> {
@@ -73,5 +74,21 @@ export const firebaseService = {
     
     const now = new Date()
     return lastUpdate.getDate() !== now.getDate()
+  },
+
+  async getMenu(): Promise<MenuItem[]> {
+    const docRef = await getDocs(collection(db, 'menu'))
+    const menu = docRef.docs.map(doc => doc.data()) as MenuItem[]
+    return menu.sort((a, b) => a.order - b.order)
+  },
+
+  async createMenuItem(menuItem: MenuItem): Promise<void> {
+    await addDoc(collection(db, 'menu'), menuItem)
+  },
+
+  async updateMenuItem(menuItem: MenuItem): Promise<void> {
+    const { id, ...menuData } = menuItem
+    const menuRef = doc(db, 'menu', id)
+    await updateDoc(menuRef, menuData)
   }
 }

@@ -37,3 +37,19 @@ export interface TableEntry {
   sku?: string;
   type?: string;
 }
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  path: string;
+  icon?: string;
+  children?: MenuItem[];
+  order: number;
+  title: string;
+}
+
+export interface MenuState {
+  menu: MenuItem[] | null;
+  isLoadingMenu: boolean;
+  lastUpdateMenu: string | null;
+}
