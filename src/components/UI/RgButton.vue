@@ -21,7 +21,6 @@ const defaultStyle = {
       :custom-style="customStyle || defaultStyle"
       rounded
     >
-      <span v-if="icon" class="material-icons">{{ icon }}</span>
       {{ text }}
     </TvButton>
   </div>
@@ -31,9 +30,5 @@ const defaultStyle = {
 .button-container {
   display: flex;
   align-items: flex-start;
-}
-
-.material-icons {
-  font-size: 1.2rem;
 }
 </style>
