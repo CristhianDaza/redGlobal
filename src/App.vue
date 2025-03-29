@@ -5,21 +5,16 @@ import { useProductsStore } from './store';
 
 const RgNavbar = defineAsyncComponent(() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(() => import('./components/UI/RgFooter.vue'));
+const RgScrollToTop = defineAsyncComponent(() => import('./components/UI/RgScrollToTop.vue'));
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
 
-const callAdmin = async (): Promise<void> => {
-  await storeProducts.getAllProducts(true);
-};
-
-const callMenu = async (): Promise<void> => {
-  await menuStore.getMenu();
-};
-
-onMounted(() => {
-  callAdmin();
-  callMenu();
+onMounted(async () => {
+  await Promise.all([
+    storeProducts.getAllProducts(),
+    menuStore.getMenu()
+  ]);
 });
 </script>
 
@@ -28,6 +23,7 @@ onMounted(() => {
     <RgNavbar />
     <RouterView />
     <RgFooter />
+    <RgScrollToTop />
   </div>
 </template>
 
