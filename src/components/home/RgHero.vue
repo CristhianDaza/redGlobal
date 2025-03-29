@@ -1,20 +1,32 @@
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue';
+
+const RgButton = defineAsyncComponent(() => import('../UI/RgButton.vue'));
 defineProps<{
   title: string;
   subtitle: string;
   buttonText: string;
+  subtitle2: string;
+  description: string;
+  onClick?: (event: MouseEvent) => void;
+  backgroundImage: string;
 }>();
 </script>
 
 <template>
-  <section class="hero">
+  <section class="hero" :style="{ backgroundImage: `url('${backgroundImage}')` }">
     <div class="hero-content">
-      <p class="hero-subtitle">{{ subtitle }}</p>
+      <p class="hero-subtitle">
+        <span class="highlight">{{ subtitle }}</span>
+        <span>{{ subtitle2 }}</span>
+      </p>
+      <hr class="hero-hr" />
       <h1 class="hero-title">{{ title }}</h1>
-      <button class="hero-button">{{ buttonText }}</button>
-    </div>
-    <div class="hero-image">
-      <img src="../../assets/images/hero-products.png" alt="Productos corporativos" />
+      <p class="hero-description">{{ description }}</p>
+      <RgButton
+        @click="$emit('click', $event)"
+        :text="buttonText"
+      />
     </div>
   </section>
 </template>
@@ -22,26 +34,36 @@ defineProps<{
 <style scoped>
 .hero {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 2rem;
-  padding: 4rem 2rem;
   background-color: #f8f8f8;
+  background-size: contain;
+  background-position: right 2rem center;
+  background-repeat: no-repeat;
   border-radius: 1rem;
-  margin: 2rem 0;
+  margin: 0 auto 2rem;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  padding: 0 2rem;
 }
 
 .hero-content {
+  padding: 8rem 4rem 8rem 5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 1.5rem;
+  background: linear-gradient(to right, #f8f8f8 60%, transparent);
+  z-index: 1;
 }
 
 .hero-subtitle {
-  color: #ff4444;
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0;
+  margin-bottom: -1.5rem;
 }
 
 .hero-title {
@@ -79,6 +101,18 @@ defineProps<{
   max-width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+.hero-hr {
+  width: 98px;
+  height: 2.8px;
+  background-color: #ff4444;
+  margin-bottom: -1.5rem;
+  border: 0;
+}
+
+.highlight {
+  color: #ff4444;
 }
 
 @media (max-width: 768px) {

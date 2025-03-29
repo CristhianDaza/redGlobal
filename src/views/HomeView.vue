@@ -1,12 +1,15 @@
 <script setup lang="ts">
+import { onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+
 import { useProductsStore } from '../store/useProductsStore';
 import RgHero from '../components/home/RgHero.vue';
 import RgCategories from '../components/home/RgCategories.vue';
 import RgVarietyBanner from '../components/home/RgVarietyBanner.vue';
 import RgCard from '../components/UI/RgCard.vue';
-import { onMounted, computed } from 'vue';
 
 const store = useProductsStore();
+const router = useRouter();
 
 onMounted(async () => {
   await store.getAllProducts();
@@ -16,14 +19,22 @@ const popularProducts = computed(() => {
   if (!store.products) return [];
   return store.products.slice(0, 10); // Mostrar los primeros 10 productos
 });
+
+const handleClickButton = () => {
+  router.push({ name: 'products' });
+}
 </script>
 
 <template>
   <main class="home">
     <RgHero
       title="Hacemos de tus regalos corporativos la mejor experiencia."
-      subtitle="Para empresas"
-      buttonText="Descubre más"
+      subtitle="Personaliza"
+      subtitle2=" tus productos."
+      buttonText="Productos"
+      @click="handleClickButton"
+      background-image="https://firebasestorage.googleapis.com/v0/b/mega2024-6a453.appspot.com/o/cat-07.png?alt=media&token=67742bed-a013-46d9-b5ec-7abc9c617068"
+      description="Lore ipsum dolor sit amet consectetur adipisicing elit. Dolorum, quod."
     />
 
     <RgCategories />
@@ -48,10 +59,14 @@ const popularProducts = computed(() => {
 </template>
 
 <style scoped>
+* {
+  margin: 0;
+  padding: 0;
+}
+
 .home {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  margin: 0;
+  padding: 0;
 }
 
 .section-title {
