@@ -1,9 +1,9 @@
 <script setup lang="ts">
-const categories = [
-  { name: 'Inicio', link: '/' },
-  { name: 'Nosotros', link: '/nosotros' },
-  { name: 'Productos', link: '/productos' }
-];
+import { useMenuStore } from '@/store';
+import { storeToRefs } from 'pinia';
+
+const menuStore = useMenuStore();
+const { menu } = storeToRefs(menuStore);
 
 const contactInfo = {
   address: 'Somos una compañía que cuenta con más de 25 años de experiencia en el mercado Publicitario',
@@ -46,8 +46,8 @@ const services = [
         <nav class="category">
           <h4>Menú</h4>
           <ul>
-            <li v-for="category in categories" :key="category.name">
-              <router-link :to="category.link">{{ category.name }}</router-link>
+            <li v-for="menuItem in menu" :key="menuItem.id">
+              <router-link :to="menuItem.path">{{ menuItem.title }}</router-link>
             </li>
           </ul>
         </nav>

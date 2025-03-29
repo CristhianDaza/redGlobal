@@ -60,7 +60,7 @@ const handleSearch = () => {
 
 <style scoped>
 .navbar {
-  position: sticky;
+  /* position: sticky; */
   top: 0;
   z-index: 1000;
   background: white;
