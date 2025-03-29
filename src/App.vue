@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, defineAsyncComponent } from 'vue';
 import { useMenuStore } from './store';
 import { useProductsStore } from './store';
-import RgNavbar from './components/UI/RgNavbar.vue';
+
+const RgNavbar = defineAsyncComponent(() => import('./components/UI/RgNavbar.vue'));
+const RgFooter = defineAsyncComponent(() => import('./components/UI/RgFooter.vue'));
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
@@ -25,6 +27,7 @@ onMounted(() => {
   <div class="app">
     <RgNavbar />
     <RouterView />
+    <RgFooter />
   </div>
 </template>
 

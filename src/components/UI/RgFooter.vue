@@ -1,0 +1,219 @@
+<script setup lang="ts">
+const categories = [
+  { name: 'Inicio', link: '/' },
+  { name: 'Nosotros', link: '/nosotros' },
+  { name: 'Productos', link: '/productos' }
+];
+
+const contactInfo = {
+  address: 'Somos una compañía que cuenta con más de 25 años de experiencia en el mercado Publicitario',
+  email: 'servicioalcliente@gmail.com',
+  phone1: '+57 312 345 6789',
+  phone2: '+57 312 345 6789'
+};
+
+const services = [
+  'Desarrollo de productos',
+  'Venta de material',
+  'Impresión litográfica',
+  'Decoración institucional'
+];
+</script>
+
+<template>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="company-info">
+          <h3>Red Global Promocional</h3>
+          <p>{{ contactInfo.address }}</p>
+          <div class="contact-details">
+            <p><span class="material-icons">email</span>{{ contactInfo.email }}</p>
+            <p><span class="material-icons">phone</span>{{ contactInfo.phone1 }}</p>
+            <p><span class="material-icons">phone</span>{{ contactInfo.phone2 }}</p>
+          </div>
+        </div>
+
+        <div class="services">
+          <h4>¿Qué hacemos?</h4>
+          <ul>
+            <li v-for="service in services" :key="service">
+              {{ service }}
+            </li>
+          </ul>
+        </div>
+
+        <nav class="category">
+          <h4>Menú</h4>
+          <ul>
+            <li v-for="category in categories" :key="category.name">
+              <router-link :to="category.link">{{ category.name }}</router-link>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="logo">
+          <img src="https://www.redglobalpromo.com.co/wp-content/uploads/2019/07/Logoheader-1.png" alt="Logo" />
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>Design by <a href="https://co.linkedin.com/in/cristhiandaza" target="_blank" rel="noopener noreferrer">Cristhian Daza</a> With <span class="heart">💙</span></p>
+      </div>
+    </div>
+  </footer>
+</template>
+
+<style scoped>
+.footer {
+  background-color: #f8f8f8;
+  padding: 4rem 0 1rem;
+  margin-top: 4rem;
+}
+
+.container {
+  width: 90%;
+  margin: 0 auto;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 2rem;
+}
+
+.company-info {
+  h3 {
+    color: #333;
+    font-size: 1.5rem;
+    margin: 0 0 1rem;
+  }
+
+  p {
+    color: #666;
+    line-height: 1.6;
+    margin: 0 0 1.5rem;
+  }
+
+  .contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    p {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+      font-size: 0.9rem;
+
+      .material-icons {
+        color: #ff4444;
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+.services, .category {
+  h4 {
+    color: #333;
+    font-size: 1.2rem;
+    margin: 0 0 1rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-bottom: 0.5rem;
+      color: #666;
+      font-size: 0.9rem;
+
+      a {
+        color: #666;
+        text-decoration: none;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: #ff4444;
+        }
+      }
+    }
+  }
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  img {
+    height: 40px;
+    width: auto;
+  }
+}
+
+.footer-bottom {
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+
+  a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #ff4444;
+    }
+  }
+
+  .heart {
+    display: inline-block;
+    margin: 0 2px;
+    animation: heartBeat 1s infinite;
+  }
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .logo {
+    order: -1;
+    margin-bottom: 1rem;
+  }
+
+  .company-info, .services, .category {
+    text-align: center;
+
+    .contact-details {
+      align-items: center;
+    }
+
+    ul {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+
+      li {
+        margin: 0;
+      }
+    }
+  }
+}
+</style>
