@@ -20,7 +20,13 @@
   <div class="navbar-brand">
     <img src="https://www.redglobalpromo.com.co/wp-content/uploads/2019/07/Logoheader-1.png" alt="Logo" class="logo">
     <div class="search-container">
-      <input type="text" placeholder="Buscar productos...." class="login-input" v-model="searchQuery" @keyup.enter="handleSearch">
+      <RgAutocomplete
+        v-model="searchQuery"
+        placeholder="Buscar productos...."
+        :min-chars="3"
+        @select="handleSelect"
+        @keyup.enter="handleSearch"
+      />
       <TvButton
         @click="handleSearch"
         type="icon"
@@ -32,10 +38,12 @@
 </template>
 
 <script setup lang="ts">
+import type { ProductsRedGlobal } from '../../types/common';
 import { ref } from 'vue';
-import { useMenuStore } from '../../store/useMenuStore';
 import { useRouter } from 'vue-router';
+import { useMenuStore } from '../../store/useMenuStore';
 import TvButton from '@todovue/tvbutton';
+import RgAutocomplete from './RgAutocomplete.vue';
 
 const router = useRouter();
 const menuStore = useMenuStore();
@@ -54,11 +62,17 @@ const handleSearch = () => {
     searchQuery.value = '';
   }
 };
+
+const handleSelect = (product: ProductsRedGlobal) => {
+  router.push({
+    name: 'product',
+    params: { id: product.id },
+  });
+};
 </script>
 
 <style scoped>
 .navbar {
-  /* position: sticky; */
   top: 0;
   z-index: 1000;
   background: white;
@@ -164,42 +178,35 @@ const handleSearch = () => {
   max-width: 600px;
   position: relative;
   padding: 0 2rem;
+  display: flex;
+  align-items: center;
 }
 
-.search-container input {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.5rem;
-  border: none;
-  border-bottom: 2px solid #333;
-  background: transparent;
-  outline: none;
+.search-container :deep(.autocomplete) {
+  flex: 1;
 }
 
-.close-search {
-  position: absolute;
-  right: 2rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  padding: 0.5rem;
-  cursor: pointer;
-  color: #333;
+.search-container :deep(.autocomplete input) {
+  border-radius: 16px 0 0 16px !important;
+  padding-right: 0;
 }
 
-@media (max-width: 768px) {
-  .navbar-menu {
-    display: none;
-  }
+.search-container :deep(.tv-btn-icon) {
+  border-radius: 0 16px 16px 0;
+  height: 32px;
+  width: 32px;
+  z-index: 1;
+  background-color: #ff4444;
+  color: white;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .navbar-container {
-    padding: 0.5rem 1rem;
-  }
-
-  .logo {
-    height: 32px;
-  }
+.search-container :deep(.tv-btn-icon svg) {
+  width: 16px;
+  height: 16px;
 }
 
 .navbar-brand {
@@ -217,29 +224,6 @@ const handleSearch = () => {
     flex: 1;
     min-width: 280px;
     max-width: 500px;
-  }
-
-  .login-input {
-    padding: 8px 12px;
-    border: 1px solid #e0e0e0;
-    border-right: none;
-    border-radius: 4px 0 0 4px;
-    width: 100%;
-    font-size: 14px;
-    color: #666;
-    background-color: #f8f8f8;
-    outline: none;
-    transition: border-color 0.2s ease;
-    margin-right: -30px;
-    border-radius: 50px;
-
-    &:focus {
-      border-color: #ff4444;
-    }
-
-    &::placeholder {
-      color: #999;
-    }
   }
 
   p {
