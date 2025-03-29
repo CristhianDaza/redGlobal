@@ -67,7 +67,6 @@ const services = [
 .footer {
   background-color: #f8f8f8;
   padding: 4rem 0 1rem;
-  margin-top: 4rem;
 }
 
 .container {

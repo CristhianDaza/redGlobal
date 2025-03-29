@@ -1,45 +1,118 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '../types/common'
 
-import { computed, defineAsyncComponent, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter, LocationQuery } from 'vue-router';
 import { useProductsStore } from '../store/';
+import RgLoader from '../components/UI/RgLoader.vue';
 
 const route = useRoute();
 const router = useRouter();
 const storeProducts = useProductsStore();
 
+// Estado de carga
+const isLoading = ref(true);
+
+// Inicializar con valores de la URL
 const searchQuery = ref(route.query.search?.toString() || '');
-const currentPage = ref<number>(Number(route.query.page) || 1);
-const pageSize = ref<number>(Number(route.query.size) || 16);
+const currentPage = ref(Number(route.query.page) || 1);
+const pageSize = ref(Number(route.query.size) || 16);
+
+// Cargar y filtrar productos al montar
+onMounted(async () => {
+  isLoading.value = true;
+  await storeProducts.getAllProducts();
+  if (searchQuery.value) {
+    storeProducts.filterProducts(searchQuery.value);
+  }
+  isLoading.value = false;
+});
 
 // Observar cambios en la búsqueda
-watch(() => route.query.search, (newSearch) => {
+watch(() => route.query.search, async (newSearch) => {
   searchQuery.value = newSearch?.toString() || '';
+  isLoading.value = true;
+  if (!storeProducts.products) {
+    await storeProducts.getAllProducts();
+  }
   storeProducts.filterProducts(searchQuery.value);
+  currentPage.value = 1;
+  isLoading.value = false;
 }, { immediate: true });
 
 const productsLength = computed(() => storeProducts.getProductsToView?.length || 0);
 const totalPages = computed(() => Math.ceil(productsLength.value / pageSize.value));
 
+const getPageNumbers = computed(() => {
+  const totalNumbers = 10;
+  const numbers: number[] = [];
+  
+  if (totalPages.value <= totalNumbers) {
+    // Si hay 10 páginas o menos, mostrar todas
+    for (let i = 1; i <= totalPages.value; i++) {
+      numbers.push(i);
+    }
+  } else {
+    // Si estamos cerca del inicio
+    if (currentPage.value <= 6) {
+      for (let i = 1; i <= 10; i++) {
+        numbers.push(i);
+      }
+    }
+    // Si estamos cerca del final
+    else if (currentPage.value > totalPages.value - 6) {
+      for (let i = totalPages.value - 9; i <= totalPages.value; i++) {
+        numbers.push(i);
+      }
+    }
+    // Si estamos en el medio
+    else {
+      for (let i = currentPage.value - 4; i <= currentPage.value + 5; i++) {
+        numbers.push(i);
+      }
+    }
+  }
+  
+  return numbers;
+});
+
+const handlePageSizeChange = (event: Event) => {
+  const select = event.target as HTMLSelectElement;
+  pageSize.value = Number(select.value);
+  currentPage.value = 1; // Reset a página 1
+  router.push({ 
+    query: { 
+      ...route.query, 
+      page: currentPage.value.toString(), 
+      size: pageSize.value.toString() 
+    } 
+  });
+};
+
+const pageSizeOptions = computed(() => {
+  const options: number[] = [];
+  let size = 16;
+  
+  while (size <= 64) { // Hasta 64 (4 * 16)
+    options.push(size);
+    size += 16;
+  }
+  
+  return options;
+});
+
 const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('../components/UI/RgCard.vue'));
 const RgEmptyState = defineAsyncComponent(/* webpackChunkName: "rgEmptyState" */() => import('../components/UI/RgEmptyState.vue'));
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('../components/UI/RgButton.vue'));
 
-const nextPage = (): void => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
+const handlePageChange = (newPage: number): void => {
+  if (newPage > 0 && newPage <= totalPages.value) {
+    currentPage.value = newPage;
     router.push({ query: { ...route.query, page: currentPage.value.toString() } });
   }
 };
 
-const prevPage = (): void => {
-  if (currentPage.value > 1) {
-    currentPage.value--;
-    router.push({ query: { ...route.query, page: currentPage.value.toString() } });
-  }
-};
-
-const paginatedProducts = computed<ProductsRedGlobal[]>(() => {
+const productsToShow = computed<ProductsRedGlobal[]>(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
   const products = storeProducts.getProductsToView?.slice(start, end) || [];
@@ -47,39 +120,6 @@ const paginatedProducts = computed<ProductsRedGlobal[]>(() => {
     ...product,
   }));
 });
-
-const changePageSize = (newSize: number): void => {
-  pageSize.value = newSize;
-  currentPage.value = 1;
-  router.push({ 
-    query: { 
-      ...route.query, 
-      page: currentPage.value.toString(), 
-      size: newSize.toString() 
-    } 
-  });
-};
-
-const handlePageSizeChange = (event: Event): void => {
-  const select = event.target as HTMLSelectElement;
-  changePageSize(Number(select.value));
-};
-
-const generatePageSizeOptions = (totalProducts: number): number[] => {
-  const options: number[] = [];
-  let step = 16;
-
-  while (step < totalProducts) {
-    options.push(step);
-    step += 16;
-  }
-
-  if (!options.includes(totalProducts)) {
-    options.push(totalProducts);
-  }
-
-  return options;
-};
 
 watch(
   () => route.query,
@@ -93,45 +133,71 @@ watch(
 
 <template>
   <div class="search">
-    <template v-if="productsLength > 0">
+    <template v-if="isLoading">
+      <RgLoader>Buscando productos...</RgLoader>
+    </template>
+    <template v-else-if="productsLength > 0">
       <div class="search__container">
-        <div class="search__pagination">
-          <button 
-            :disabled="currentPage === 1"
-            @click="prevPage"
-          >
-            Anterior
-          </button>
-          <span>Página {{ currentPage }} de {{ totalPages }}</span>
-          <button 
-            :disabled="currentPage === totalPages"
-            @click="nextPage"
-          >
-            Siguiente
-          </button>
-        </div>
-        <div class="search__size">
-          <label for="pageSize">Productos por página:</label>
-          <select 
-            id="pageSize"
-            :value="pageSize"
-            @change="handlePageSizeChange"
-          >
-            <option 
-              v-for="size in generatePageSizeOptions(productsLength)"
-              :key="size"
-              :value="size"
-            >
-              {{ size }}
-            </option>
-          </select>
-        </div>
         <div class="search__products">
           <RgCard
-            v-for="product in paginatedProducts"
+            v-for="product in productsToShow"
             :key="product.id"
             :products-view="product"
           />
+        </div>
+        <div class="search__pagination-container">
+          <div class="search__pagination">
+            <RgButton
+              :disabled="currentPage === 1"
+              @click="handlePageChange(currentPage - 1)"
+              icon="arrow-left"
+              type="icon"
+            />
+            <div class="page-numbers">
+              <RgButton
+                v-for="page in getPageNumbers"
+                :key="page"
+                :class="{ active: page === currentPage }"
+                @click="handlePageChange(page)"
+                :custom-style="{
+                  backgroundColor: page === currentPage ? '#ff4444' : '#f5f5f5',
+                  color: page === currentPage ? '#fff' : '#333',
+                  minWidth: '40px',
+                  height: '40px',
+                  padding: '0'
+                }"
+              >
+                {{ page }}
+              </RgButton>
+            </div>
+            <RgButton
+              :disabled="currentPage === totalPages"
+              @click="handlePageChange(currentPage + 1)"
+              icon="arrow-right"
+              type="icon"
+            />
+          </div>
+          <div class="page-size">
+            <label for="pageSize">Ver:</label>
+            <select 
+              id="pageSize" 
+              v-model="pageSize"
+              class="page-size-select"
+              @change="handlePageSizeChange"
+            >
+              <option 
+                v-for="size in pageSizeOptions" 
+                :key="size" 
+                :value="size"
+              >
+                {{ size }}
+              </option>
+            </select>
+            <span>por página</span>
+            <span class="pagination-info">
+              • Página {{ currentPage }} de {{ totalPages }}
+            </span>
+          </div>
         </div>
       </div>
     </template>
@@ -147,27 +213,73 @@ watch(
 
 <style scoped>
 .search {
-  padding: 2rem;
+  padding: 0 2rem;
+  min-height: calc(100vh - 300px);
 }
 
 .search__container {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.search__pagination-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem 0;
 }
 
 .search__pagination {
   display: flex;
+  align-items: center;
   justify-content: center;
   gap: 1rem;
-  align-items: center;
 }
 
-.search__size {
+.page-numbers {
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
+  gap: 0.5rem;
+}
+
+.pagination-info {
+  margin-left: 0.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.page-size {
+  display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.page-size-select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.page-size-select:hover {
+  border-color: #ff4444;
+}
+
+.page-size-select:focus {
+  border-color: #ff4444;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.1);
 }
 
 .search__products {
@@ -175,6 +287,47 @@ watch(
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
   padding: 1rem;
+}
+
+:deep(.page-numbers .tv-btn) {
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px;
+  background: #f5f5f5;
+  color: #333;
+}
+
+:deep(.search__pagination .tv-btn[type="icon"]) {
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px;
+  background: #f5f5f5;
+  color: #333;
+}
+
+:deep(.search__pagination .tv-btn[type="icon"]:hover:not(:disabled)) {
+  background: #ff4444;
+  color: white;
+  opacity: 0.8;
+}
+
+:deep(.page-numbers .tv-btn.active) {
+  background: #ff4444;
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 68, 68, 0.25);
+}
+
+:deep(.page-numbers .tv-btn:hover:not(.active):not(:disabled)) {
+  background: #ff4444;
+  color: white;
+  opacity: 0.8;
+}
+
+:deep(.tv-btn:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

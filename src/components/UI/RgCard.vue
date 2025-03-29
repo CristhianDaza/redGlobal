@@ -24,7 +24,7 @@ const props = defineProps<{
       <p class="product-code">{{ productsView.id }}</p>
       <div class="product-stock">
         <p class="stock-label">Unidades disponibles:</p>
-        <p class="stock-amount">{{ formatNumber(productsView.totalProducts)}} und.</p>
+        <p class="stock-amount">{{ formatNumber(productsView.totalProducts)}} und</p>
       </div>
     </div>
   </div>

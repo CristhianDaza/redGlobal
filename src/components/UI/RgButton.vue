@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import TvButton from '@todovue/tvbutton';
 
-defineProps<{
-  text: string;
+interface ButtonProps {
+  text?: string;
   icon?: string;
+  type?: 'default' | 'icon';
   onClick?: (event: MouseEvent) => void;
   customStyle?: Record<string, string>;
-}>();
+  disabled?: boolean;
+}
+
+const props = withDefaults(defineProps<ButtonProps>(), {
+  type: 'default',
+  disabled: false
+});
 
 const defaultStyle = {
   backgroundColor: '#ff4444',
@@ -18,17 +25,20 @@ const defaultStyle = {
   <div class="button-container">
     <TvButton
       @click="$emit('click', $event)"
-      :custom-style="customStyle || defaultStyle"
+      :custom-style="props.customStyle || defaultStyle"
+      :type="props.type"
+      :icon="props.icon"
+      :disabled="props.disabled"
       rounded
     >
-      {{ text }}
+      <slot>{{ props.text }}</slot>
     </TvButton>
   </div>
 </template>
 
 <style scoped>
 .button-container {
-  display: flex;
-  align-items: flex-start;
+  display: inline-flex;
+  align-items: center;
 }
 </style>
