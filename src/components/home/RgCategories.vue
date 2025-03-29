@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Category } from '@/types/config';
 import { defineAsyncComponent } from 'vue';
-const RgButton = defineAsyncComponent(() => import('../UI/RgButton.vue'));
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('../UI/RgButton.vue'));
 
 const categories: Category[] = [
   {

@@ -16,7 +16,7 @@ const productsLength = computed(() => storeProducts.getProductsToView?.length ||
 const totalPages = computed(() => Math.ceil(productsLength.value / pageSize.value));
 
 const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('../components/UI/RgCard.vue'));
-const RgEmptyState = defineAsyncComponent(() => import('../components/UI/RgEmptyState.vue'));
+const RgEmptyState = defineAsyncComponent(/* webpackChunkName: "rgEmptyState" */() => import('../components/UI/RgEmptyState.vue'));
 
 const nextPage = (): void => {
   if (currentPage.value < totalPages.value) {

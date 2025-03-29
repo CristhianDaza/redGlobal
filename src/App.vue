@@ -3,9 +3,9 @@ import { onMounted, defineAsyncComponent } from 'vue';
 import { useMenuStore } from './store';
 import { useProductsStore } from './store';
 
-const RgNavbar = defineAsyncComponent(() => import('./components/UI/RgNavbar.vue'));
-const RgFooter = defineAsyncComponent(() => import('./components/UI/RgFooter.vue'));
-const RgScrollToTop = defineAsyncComponent(() => import('./components/UI/RgScrollToTop.vue'));
+const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
+const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
+const RgScrollToTop = defineAsyncComponent(/* webpackChunkName: "rgScrollToTop" */() => import('./components/UI/RgScrollToTop.vue'));
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
