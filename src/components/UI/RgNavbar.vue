@@ -46,8 +46,13 @@ const handleMenuClick = async (menuName: string) => {
 };
 
 const handleSearch = () => {
-  console.log('Buscando:', searchQuery.value);
-  router.push({ name: 'search', query: { search: searchQuery.value } });
+  if (searchQuery.value.trim()) {
+    router.push({
+      name: 'search',
+      query: { search: searchQuery.value }
+    });
+    searchQuery.value = '';
+  }
 };
 </script>
 

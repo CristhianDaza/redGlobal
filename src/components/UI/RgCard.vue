@@ -35,100 +35,93 @@ const props = defineProps<{
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  width: 280px;
-  min-height: 360px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+  cursor: pointer;
+  position: relative;
 }
 
 .product:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: #ff4444;
+}
+
+.product:hover .product-name {
+  color: #ff4444;
+}
+
+.product:hover .product-image-container img {
+  transform: scale(1.1);
 }
 
 .product-image-container {
-  position: relative;
   width: 100%;
-  height: 200px;
-  min-height: 200px;
+  height: 280px;
+  overflow: hidden;
+  background: #f8f8f8;
+  border-bottom: 1px solid #eee;
+  padding: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
 }
 
-.product-image-container :deep(img) {
-  max-width: 100%;
-  max-height: 200px;
+.product-image-container img {
   width: auto;
   height: auto;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
+  transition: transform 0.5s ease;
 }
 
 .product-content {
-  padding: 1rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 160;
+  padding: 1.5rem;
 }
 
 .product-category {
+  font-size: 0.85rem;
   color: #666;
-  font-size: 0.75rem;
-  margin: 0;
+  margin-bottom: 0.5rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .product-name {
   font-size: 1.1rem;
   font-weight: 600;
   color: #333;
-  margin: 0.5rem 0;
-  line-height: 1.3;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
   display: -webkit-box;
-  -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 2.6em;
 }
 
 .product-code {
+  font-size: 0.9rem;
   color: #999;
-  font-size: 0.75rem;
-  margin: 0;
-  line-height: 1;
+  margin-bottom: 1rem;
 }
 
 .product-stock {
-  margin-top: auto;
-  padding-top: 0.75rem;
-  border-top: 1px solid #eee;
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
 }
 
 .stock-label {
+  font-size: 0.85rem;
   color: #666;
-  font-size: 0.75rem;
-  margin: 0;
-  font-weight: 600;
 }
 
 .stock-amount {
-  color: #333;
-  font-weight: 800;
-  font-size: 1rem;
-  margin: 0;
-  line-height: 1.2;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4CAF50;
 }
 </style>

@@ -9,8 +9,15 @@ const route = useRoute();
 const router = useRouter();
 const storeProducts = useProductsStore();
 
+const searchQuery = ref(route.query.search?.toString() || '');
 const currentPage = ref<number>(Number(route.query.page) || 1);
-const pageSize = ref<number>(Number(route.query.size) || 15);
+const pageSize = ref<number>(Number(route.query.size) || 16);
+
+// Observar cambios en la búsqueda
+watch(() => route.query.search, (newSearch) => {
+  searchQuery.value = newSearch?.toString() || '';
+  storeProducts.filterProducts(searchQuery.value);
+}, { immediate: true });
 
 const productsLength = computed(() => storeProducts.getProductsToView?.length || 0);
 const totalPages = computed(() => Math.ceil(productsLength.value / pageSize.value));
@@ -60,11 +67,11 @@ const handlePageSizeChange = (event: Event): void => {
 
 const generatePageSizeOptions = (totalProducts: number): number[] => {
   const options: number[] = [];
-  let step = 15;
+  let step = 16;
 
   while (step < totalProducts) {
     options.push(step);
-    step += 15;
+    step += 16;
   }
 
   if (!options.includes(totalProducts)) {
@@ -78,7 +85,7 @@ watch(
   () => route.query,
   (newQuery: LocationQuery) => {
     currentPage.value = Number(newQuery.page) || 1;
-    pageSize.value = Number(newQuery.size) || 15;
+    pageSize.value = Number(newQuery.size) || 16;
   },
   { immediate: true }
 );
@@ -86,7 +93,6 @@ watch(
 
 <template>
   <div class="search">
-    <h1>Productos</h1>
     <template v-if="productsLength > 0">
       <div class="search__container">
         <div class="search__pagination">
@@ -141,51 +147,44 @@ watch(
 
 <style scoped>
 .search {
-  padding: 20px;
+  padding: 2rem;
 }
 
 .search__container {
-  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .search__pagination {
   display: flex;
   justify-content: center;
+  gap: 1rem;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.search__pagination button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  background-color: #4CAF50;
-  color: white;
-  cursor: pointer;
-}
-
-.search__pagination button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
 }
 
 .search__size {
   display: flex;
   justify-content: flex-end;
+  gap: 1rem;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.search__size select {
-  padding: 4px 8px;
-  border-radius: 4px;
 }
 
 .search__products {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .search {
+    padding: 1rem;
+  }
+
+  .search__products {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
 }
 </style>

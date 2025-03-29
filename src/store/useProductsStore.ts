@@ -69,6 +69,23 @@ export const useProductsStore = defineStore('products', {
     setProductsToView(products: ProductsRedGlobal[]): void {
       this.productsToView = products
     },
+    filterProducts(query: string) {
+      if (!query) {
+        this.productsToView = this.products || [];
+        return;
+      }
+      
+      const searchTerm = query.toLowerCase().trim();
+      this.productsToView = (this.products || []).filter(product => {
+        const categoryText = Array.isArray(product.category) 
+          ? product.category.join(' ') 
+          : product.category || '';
+
+        return product.name.toLowerCase().includes(searchTerm) ||
+               product.description.toLowerCase().includes(searchTerm) ||
+               categoryText.toLowerCase().includes(searchTerm);
+      });
+    }
   },
   getters: {
     getProductsToView(): ProductsRedGlobal[] {
