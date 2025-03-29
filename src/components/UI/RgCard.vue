@@ -59,7 +59,7 @@ const props = defineProps<{
   width: 100%;
   height: 280px;
   overflow: hidden;
-  background: #f8f8f8;
+  background: #fff;
   border-bottom: 1px solid #eee;
   padding: 1.5rem;
   display: flex;
