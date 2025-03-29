@@ -74,21 +74,10 @@ defineProps<{
   color: #333;
 }
 
-.hero-button {
-  width: fit-content;
-  padding: 1rem 2rem;
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.hero-button:hover {
-  background-color: #ff2222;
+.hero-description {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0;
 }
 
 .hero-image {

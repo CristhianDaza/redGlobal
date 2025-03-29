@@ -10,10 +10,6 @@ defineProps<{
 const customStyle = {
   backgroundColor: '#ff4444',
   color: '#fff',
-  width: 'fit-content',
-  padding: '1rem 2rem',
-  fontSize: '1.1rem',
-  fontWeight: '600',
 };
 </script>
 

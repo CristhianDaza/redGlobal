@@ -21,9 +21,13 @@
     <img src="https://www.redglobalpromo.com.co/wp-content/uploads/2019/07/Logoheader-1.png" alt="Logo" class="logo">
     <div class="search-container">
       <input type="text" placeholder="Buscar productos...." class="login-input" v-model="searchQuery" @keyup.enter="handleSearch">
-      <button class="search-btn" @click="handleSearch">
-        <span class="material-icons">search</span>
-      </button>
+      <TvButton
+        @click="handleSearch"
+        :text="searchQuery"
+        :custom-style="customStyle"
+        icon="search"
+        type="icon"
+      />
     </div>
     <p><span class="material-icons">person</span> Iniciar Sesion</p>
   </div>
@@ -33,10 +37,16 @@
 import { ref } from 'vue';
 import { useMenuStore } from '../../store/useMenuStore';
 import { useRouter } from 'vue-router';
+import TvButton from '@todovue/tvbutton';
 
 const router = useRouter();
 const menuStore = useMenuStore();
 const searchQuery = ref('');
+
+const customStyle = {
+  backgroundColor: '#ff4444',
+  color: '#fff',
+};
 
 const handleMenuClick = async (menuName: string) => {
   router.push({ name: menuName });
@@ -201,10 +211,14 @@ const handleSearch = () => {
   justify-content: space-between;
   margin: 0.5rem 1rem;
   padding: 1rem 2rem 0;
+  flex-wrap: wrap;
 
   .search-container {
     display: flex;
     align-items: stretch;
+    flex: 1;
+    min-width: 280px;
+    max-width: 500px;
   }
 
   .login-input {
@@ -212,12 +226,14 @@ const handleSearch = () => {
     border: 1px solid #e0e0e0;
     border-right: none;
     border-radius: 4px 0 0 4px;
-    width: 500px;
+    width: 100%;
     font-size: 14px;
     color: #666;
     background-color: #f8f8f8;
     outline: none;
     transition: border-color 0.2s ease;
+    margin-right: -30px;
+    border-radius: 50px;
 
     &:focus {
       border-color: #ff4444;
@@ -225,25 +241,6 @@ const handleSearch = () => {
 
     &::placeholder {
       color: #999;
-    }
-  }
-
-  .search-btn {
-    background-color: #ff4444;
-    border: 1px solid #ff4444;
-    border-radius: 0 4px 4px 0;
-    cursor: pointer;
-    padding: 0 12px;
-    color: white;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: #ff2222;
-    }
-
-    .material-icons {
-      font-size: 20px;
-      vertical-align: middle;
     }
   }
 
@@ -255,6 +252,7 @@ const handleSearch = () => {
     font-size: 14px;
     cursor: pointer;
     transition: color 0.2s ease;
+    white-space: nowrap;
 
     .material-icons {
       font-size: 18px;
@@ -269,6 +267,28 @@ const handleSearch = () => {
   .logo {
     height: 40px;
     width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-brand {
+    gap: 0.5rem;
+    padding: 1rem;
+    justify-content: center;
+
+    .search-container {
+      order: 3;
+      min-width: 100%;
+      margin-top: 1rem;
+    }
+
+    .logo {
+      height: 32px;
+    }
+
+    p {
+      font-size: 12px;
+    }
   }
 }
 </style>
