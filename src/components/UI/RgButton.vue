@@ -3,11 +3,12 @@ import TvButton from '@todovue/tvbutton';
 
 defineProps<{
   text: string;
+  icon?: string;
   onClick?: (event: MouseEvent) => void;
   customStyle?: Record<string, string>;
 }>();
 
-const customStyle = {
+const defaultStyle = {
   backgroundColor: '#ff4444',
   color: '#fff',
 };
@@ -17,9 +18,10 @@ const customStyle = {
   <div class="button-container">
     <TvButton
       @click="$emit('click', $event)"
-      :custom-style="customStyle"
+      :custom-style="customStyle || defaultStyle"
       rounded
     >
+      <span v-if="icon" class="material-icons">{{ icon }}</span>
       {{ text }}
     </TvButton>
   </div>
@@ -29,5 +31,9 @@ const customStyle = {
 .button-container {
   display: flex;
   align-items: flex-start;
+}
+
+.material-icons {
+  font-size: 1.2rem;
 }
 </style>

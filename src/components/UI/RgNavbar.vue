@@ -23,10 +23,8 @@
       <input type="text" placeholder="Buscar productos...." class="login-input" v-model="searchQuery" @keyup.enter="handleSearch">
       <TvButton
         @click="handleSearch"
-        :text="searchQuery"
-        :custom-style="customStyle"
-        icon="search"
         type="icon"
+        icon="search"
       />
     </div>
     <p><span class="material-icons">person</span> Iniciar Sesion</p>
@@ -42,11 +40,6 @@ import TvButton from '@todovue/tvbutton';
 const router = useRouter();
 const menuStore = useMenuStore();
 const searchQuery = ref('');
-
-const customStyle = {
-  backgroundColor: '#ff4444',
-  color: '#fff',
-};
 
 const handleMenuClick = async (menuName: string) => {
   router.push({ name: menuName });

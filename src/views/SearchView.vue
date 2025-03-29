@@ -16,6 +16,7 @@ const productsLength = computed(() => storeProducts.getProductsToView?.length ||
 const totalPages = computed(() => Math.ceil(productsLength.value / pageSize.value));
 
 const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('../components/UI/RgCard.vue'));
+const RgEmptyState = defineAsyncComponent(() => import('../components/UI/RgEmptyState.vue'));
 
 const nextPage = (): void => {
   if (currentPage.value < totalPages.value) {
@@ -86,49 +87,55 @@ watch(
 <template>
   <div class="search">
     <h1>Productos</h1>
-    <div v-if="productsLength > 0" class="search__container">
-      <div class="search__pagination">
-        <button 
-          :disabled="currentPage === 1"
-          @click="prevPage"
-        >
-          Anterior
-        </button>
-        <span>Página {{ currentPage }} de {{ totalPages }}</span>
-        <button 
-          :disabled="currentPage === totalPages"
-          @click="nextPage"
-        >
-          Siguiente
-        </button>
-      </div>
-      <div class="search__size">
-        <label for="pageSize">Productos por página:</label>
-        <select 
-          id="pageSize"
-          :value="pageSize"
-          @change="handlePageSizeChange"
-        >
-          <option 
-            v-for="size in generatePageSizeOptions(productsLength)"
-            :key="size"
-            :value="size"
+    <template v-if="productsLength > 0">
+      <div class="search__container">
+        <div class="search__pagination">
+          <button 
+            :disabled="currentPage === 1"
+            @click="prevPage"
           >
-            {{ size }}
-          </option>
-        </select>
+            Anterior
+          </button>
+          <span>Página {{ currentPage }} de {{ totalPages }}</span>
+          <button 
+            :disabled="currentPage === totalPages"
+            @click="nextPage"
+          >
+            Siguiente
+          </button>
+        </div>
+        <div class="search__size">
+          <label for="pageSize">Productos por página:</label>
+          <select 
+            id="pageSize"
+            :value="pageSize"
+            @change="handlePageSizeChange"
+          >
+            <option 
+              v-for="size in generatePageSizeOptions(productsLength)"
+              :key="size"
+              :value="size"
+            >
+              {{ size }}
+            </option>
+          </select>
+        </div>
+        <div class="search__products">
+          <RgCard
+            v-for="product in paginatedProducts"
+            :key="product.id"
+            :products-view="product"
+          />
+        </div>
       </div>
-      <div class="search__products">
-        <RgCard
-          v-for="product in paginatedProducts"
-          :key="product.id"
-          :products-view="product"
-        />
-      </div>
-    </div>
-    <div v-else>
-      <p>No hay productos disponibles</p>
-    </div>
+    </template>
+    <template v-else>
+      <RgEmptyState 
+        :title="'No encontramos productos'"
+        :message="'Lo sentimos, no encontramos productos que coincidan con tu búsqueda. Prueba con otras palabras clave o explora nuestro catálogo.'"
+        :show-actions="true"
+      />
+    </template>
   </div>
 </template>
 
