@@ -1,8 +1,8 @@
 <script setup lang="ts">
 defineProps<{
-  title: string;
   highlightWord: string;
-  description: string;
+  titleInit: string;
+  titleEnd: string;
 }>();
 </script>
 
@@ -10,12 +10,11 @@ defineProps<{
   <section class="variety-banner">
     <div class="banner-content">
       <h2 class="banner-title">
-        Tenemos <span class="highlight">{{ highlightWord }}</span> {{ title }}
+        {{ titleInit }} <span class="highlight">{{ highlightWord }}</span> {{ titleEnd }}
       </h2>
-      <p class="banner-description">{{ description }}</p>
     </div>
     <div class="banner-image">
-      <img src="../../assets/images/variety-products.png" alt="Variedad de productos" />
+      <img src="https://firebasestorage.googleapis.com/v0/b/mega2024-6a453.appspot.com/o/revistas.png?alt=media&token=dfa11190-530a-4d5d-adf8-788ab89890b5" alt="Variedad de productos" />
     </div>
   </section>
 </template>
@@ -25,10 +24,10 @@ defineProps<{
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  padding: 3rem 2rem;
+  padding: 4rem 5rem;
   background-color: #e8f5f0;
   border-radius: 1rem;
-  margin: 4rem 0;
+  margin: 1rem 0;
   align-items: center;
 }
 
@@ -47,14 +46,7 @@ defineProps<{
 }
 
 .highlight {
-  color: #ff4444;
-}
-
-.banner-description {
-  font-size: 1.2rem;
-  color: #666;
-  margin: 0;
-  line-height: 1.6;
+  color: #1be799;
 }
 
 .banner-image {

@@ -50,13 +50,12 @@ const handleClickButton = () => {
           />
         </div>
       </section>
-
-      <RgVarietyBanner
-        title="de productos,"
-        highlightWord="variedad"
-        description="para que encuentres el que más se adapte a tu necesidad."
-      />
     </div>
+    <RgVarietyBanner
+      titleInit="Tenemos"
+      titleEnd="de productos, para que encuentres el que más se adapte a tu necesidad."
+      highlightWord="variedad"
+    />
   </main>
 </template>
 
@@ -76,7 +75,6 @@ const handleClickButton = () => {
   font-weight: 700;
   color: #333;
   margin: 3rem 0 2rem;
-  text-align: center;
 }
 
 .products-grid {
