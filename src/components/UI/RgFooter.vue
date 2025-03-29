@@ -56,11 +56,11 @@ const services = [
           <img src="https://www.redglobalpromo.com.co/wp-content/uploads/2019/07/Logoheader-1.png" alt="Logo" />
         </div>
       </div>
-      <div class="footer-bottom">
-        <p>Design by <a href="https://co.linkedin.com/in/cristhiandaza" target="_blank" rel="noopener noreferrer">Cristhian Daza</a> With <span class="heart">💙</span></p>
-      </div>
     </div>
   </footer>
+  <div class="footer-bottom">
+    <p>Design by <a href="https://co.linkedin.com/in/cristhiandaza" target="_blank" rel="noopener noreferrer">Cristhian Daza</a> With <span class="heart">💙</span></p>
+  </div>
 </template>
 
 <style scoped>
