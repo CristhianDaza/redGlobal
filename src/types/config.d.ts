@@ -31,3 +31,12 @@ export interface StateGlobal {
   lastUpdateProducts: Date | null;
   productsToView: ProductsRedGlobal[];
 }
+
+export interface Category {
+  title: string;
+  image: string;
+  link: string;
+  id: number;
+  background: string;
+  textButton: string;
+}

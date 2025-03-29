@@ -37,24 +37,26 @@ const handleClickButton = () => {
       description="Lore ipsum dolor sit amet consectetur adipisicing elit. Dolorum, quod."
     />
 
-    <RgCategories />
+    <div class="container">
+      <RgCategories />
 
-    <section class="popular-products">
-      <h2 class="section-title">Productos Populares</h2>
-      <div class="products-grid">
-        <RgCard
-          v-for="product in popularProducts"
-          :key="product.id"
-          :products-view="product"
-        />
-      </div>
-    </section>
+      <section class="popular-products">
+        <h2 class="section-title">Productos Populares</h2>
+        <div class="products-grid">
+          <RgCard
+            v-for="product in popularProducts"
+            :key="product.id"
+            :products-view="product"
+          />
+        </div>
+      </section>
 
-    <RgVarietyBanner
-      title="de productos,"
-      highlightWord="variedad"
-      description="para que encuentres el que más se adapte a tu necesidad."
-    />
+      <RgVarietyBanner
+        title="de productos,"
+        highlightWord="variedad"
+        description="para que encuentres el que más se adapte a tu necesidad."
+      />
+    </div>
   </main>
 </template>
 
@@ -83,6 +85,11 @@ const handleClickButton = () => {
   gap: 2rem;
   padding: 1rem 0;
   justify-content: center;
+}
+
+.container {
+  width: 90%;
+  margin: 0 auto;
 }
 
 @media (max-width: 768px) {
