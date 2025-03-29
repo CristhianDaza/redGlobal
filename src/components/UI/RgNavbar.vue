@@ -59,7 +59,7 @@ const handleSearch = () => {
       name: 'search',
       query: { search: searchQuery.value }
     });
-    searchQuery.value = '';
+    resetSearch();
   }
 };
 
@@ -68,6 +68,11 @@ const handleSelect = (product: ProductsRedGlobal) => {
     name: 'product',
     params: { id: product.id },
   });
+  resetSearch();
+};
+
+const resetSearch = () => {
+  searchQuery.value = '';
 };
 </script>
 
