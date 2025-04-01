@@ -2,14 +2,13 @@
   <nav class="navbar">
     <div class="navbar-container">
       <div class="navbar-menu">
-        <button 
-          class="menu-item"
-          v-for="({id, title, name}) in menuStore.getMenuItems" 
-          :key="id"
-          @click="handleMenuClick(name)"
-        >
-          {{ title }}
-        </button>
+        <router-link :to="{ name }" v-for="({id, title, name}) in menuStore.getMenuItems" :key="id">
+          <button 
+            class="menu-item"
+          >
+            {{ title }}
+          </button>
+        </router-link>
       </div>
       <div class="navbar-actions">
         <p><span class="material-icons">phone</span> (+57) 312 345 6789</p>
@@ -48,10 +47,6 @@ import RgAutocomplete from './RgAutocomplete.vue';
 const router = useRouter();
 const menuStore = useMenuStore();
 const searchQuery = ref('');
-
-const handleMenuClick = async (menuName: string) => {
-  router.push({ name: menuName });
-};
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {

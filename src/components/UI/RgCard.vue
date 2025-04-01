@@ -2,23 +2,15 @@
 import type { ProductsRedGlobal } from '../../types/common';
 import { formatNumber } from '../../utils/helpers';
 import RgImage from './RgImage.vue';
-import { useRouter } from 'vue-router';
 
-const router = useRouter();
 const props = defineProps<{
   productsView: ProductsRedGlobal;
 }>();
 
-const handleClick = () => {
-  router.push({
-    name: 'product',
-    params: { id: props.productsView.id },
-  });
-};
 </script>
 
 <template>
-  <div class="product" @click="handleClick">
+  <div class="product">
     <div class="product-image-container">
       <RgImage
         :src="productsView.mainImage"

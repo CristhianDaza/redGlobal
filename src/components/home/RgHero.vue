@@ -10,6 +10,7 @@ defineProps<{
   description: string;
   onClick?: (event: MouseEvent) => void;
   backgroundImage: string;
+  routeButton: string;
 }>();
 </script>
 
@@ -23,10 +24,13 @@ defineProps<{
       <hr class="hero-hr" />
       <h1 class="hero-title">{{ title }}</h1>
       <p class="hero-description">{{ description }}</p>
-      <RgButton
-        @click="$emit('click', $event)"
-        :text="buttonText"
-      />
+      <router-link
+        :to="{ name: routeButton }"
+      >
+        <RgButton
+          :text="buttonText"
+        />
+      </router-link>
     </div>
   </section>
 </template>

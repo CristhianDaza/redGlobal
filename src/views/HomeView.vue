@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
 
 import { useProductsStore } from '../store/useProductsStore';
 import RgHero from '../components/home/RgHero.vue';
@@ -9,7 +8,6 @@ import RgVarietyBanner from '../components/home/RgVarietyBanner.vue';
 import RgCard from '../components/UI/RgCard.vue';
 
 const store = useProductsStore();
-const router = useRouter();
 
 onMounted(async () => {
   await store.getAllProducts();
@@ -17,12 +15,17 @@ onMounted(async () => {
 
 const popularProducts = computed(() => {
   if (!store.products) return [];
-  return store.products.slice(0, 10); // Mostrar los primeros 10 productos
+  
+  const shuffled = [...store.products];
+  
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  return shuffled.slice(0, 12);
 });
 
-const handleClickButton = () => {
-  router.push({ name: 'products' });
-}
 </script>
 
 <template>
@@ -32,22 +35,22 @@ const handleClickButton = () => {
       subtitle="Personaliza"
       subtitle2=" tus productos."
       buttonText="Productos"
-      @click="handleClickButton"
       background-image="https://firebasestorage.googleapis.com/v0/b/mega2024-6a453.appspot.com/o/cat-07.png?alt=media&token=67742bed-a013-46d9-b5ec-7abc9c617068"
       description="Lore ipsum dolor sit amet consectetur adipisicing elit. Dolorum, quod."
+      routeButton="products"
     />
 
     <div class="container">
       <RgCategories />
 
       <section class="popular-products">
-        <h2 class="section-title">Productos Populares</h2>
+        <h2 class="section-title">Algunos de nuestros productos</h2>
         <div class="products-grid">
-          <RgCard
-            v-for="product in popularProducts"
-            :key="product.id"
-            :products-view="product"
-          />
+          <router-link :to="{name: 'product', params: {id: product.id}}" v-for="product in popularProducts" :key="product.id">
+            <RgCard
+              :products-view="product"
+            />
+          </router-link>
         </div>
       </section>
     </div>
