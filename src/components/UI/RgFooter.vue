@@ -157,7 +157,7 @@ const services = [
 
 .footer-bottom {
   border-top: 1px solid #eee;
-  padding-top: 1rem;
+  padding: 1rem 0;
   text-align: center;
   color: #999;
   font-size: 0.9rem;
