@@ -12,6 +12,7 @@ import {
   formatText,
   constructSizeMarpico,
   getDiscountsMarpico,
+  constructImagesMarpico,
 } from '../utils';
 
 export function useProductsMarpico() {
@@ -39,9 +40,9 @@ export function useProductsMarpico() {
       description: formatText(product?.descripcion_larga),
       discount: getDiscountsMarpico(product?.materiales),
       id: product?.familia || '',
-      images: product?.imagenes || [],
+      images: constructImagesMarpico(product?.materiales) || [],
       labels: constructLabelsMarpico(product),
-      mainImage: product?.imagen === '' ? '../assets/images/no-image.jpg' : product?.imagen,
+      mainImage: product?.imagen === '' ? '@/assets/images/no-image.jpg' : product?.imagen,
       material: formatText(product?.material),
       name: formatText(product?.descripcion_comercial),
       packaging: constructPackagingMarpico(product),

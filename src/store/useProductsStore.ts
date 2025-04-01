@@ -28,6 +28,7 @@ export const useProductsStore = defineStore('products', {
           await this._callServices()
         } else {
           this.products = await firebaseService.getAllProducts()
+          this.lastUpdateProducts = await firebaseService.getLastUpdate()
         }
       } catch (error) {
         console.error('Error in getAllProducts:', error)

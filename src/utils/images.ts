@@ -1,32 +1,56 @@
-import type { PromosProductChild } from '../types/promos';
+import type { MarpicoMaterial } from '@/types/marpico';
+import type { PromosProductChild } from '@/types/promos';
+import type { ImagesRedGlobal } from '@/types/common';
 
 import { StockSurVariant } from '@/types/stocksur';
 
 export const constructImagesPromos = (
   children: PromosProductChild[],
   mainImage: string[]
-): string[] => {
-  const images: string[] = [];
+): ImagesRedGlobal[] => {
+  const images: ImagesRedGlobal[] = [];
   
   if (children) {
     children.forEach(child => {
       if (child?.imagenesHijo) {
-        child?.imagenesHijo.forEach(image => {
-          images.push(image)
-        })
+        images.push({
+          urlImage: child.imagenesHijo,
+          color: child.color.charAt(0).toUpperCase() + child.color.slice(1).toLowerCase(),
+          id: parseInt(child.skuHijo.replace(/\D/g, '')) || 0
+        });
       }
-    })
+    });
   }
   
   if (mainImage.length > 0) {
-    images.push(mainImage[0]);
+    images.push({
+      urlImage: mainImage,
+      color: '',
+      id: 0
+    });
   }
   
   return images;
 };
 
-export const constructImagesStockSur = (variants: StockSurVariant[] | undefined): string[] => {
+export const constructImagesStockSur = (variants: StockSurVariant[] | undefined): ImagesRedGlobal[] => {
   if (!variants || !Array.isArray(variants)) return []
   
-  return variants.map(variant => variant.picture?.original).filter(Boolean)
+  return variants.map(variant => ({
+    urlImage: [variant.picture?.original || '@/assets/images/no-image.jpg'],
+    color: variant.color?.name || '',
+    id: variant.id
+  }));
+};
+
+export const constructImagesMarpico = (materials: MarpicoMaterial[]): ImagesRedGlobal[] => {
+  const images: ImagesRedGlobal[] = []
+  materials.forEach(material => {
+    images.push({
+      urlImage: material.imagenes || ['@/assets/images/no-image.jpg'],
+      color: material.color_nombre,
+      id: material.codigo
+    })
+  })
+  return images
 };

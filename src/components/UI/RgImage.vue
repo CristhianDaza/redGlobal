@@ -73,7 +73,7 @@ onMounted(() => {
 .image-container img {
   display: block;
   width: 100%;
-  height: auto;
+  max-height: 350px;
   transition: opacity 0.3s ease-in-out;
 }
 

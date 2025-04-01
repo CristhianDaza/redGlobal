@@ -93,7 +93,7 @@ watch(() => props.modelValue, (newValue) => {
           <span class="suggestion-name">{{ suggestion.name }}</span>
           <img 
             v-if="suggestion.images && suggestion.images.length > 0" 
-            :src="suggestion.images[0]" 
+            :src="suggestion.images[0]?.urlImage[0] || suggestion.mainImage" 
             :alt="suggestion.name" 
             class="suggestion-image" 
           />

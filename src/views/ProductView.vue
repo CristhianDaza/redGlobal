@@ -2,18 +2,19 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useProductsStore } from '../store/useProductsStore';
-import type { ProductsRedGlobal } from '../types/common';
+import type { ProductsRedGlobal, TableEntry } from '../types/common';
 import RgImage from '../components/UI/RgImage.vue';
 import RgLoader from '../components/UI/RgLoader.vue';
-import { formatNumber, getRelativeTime } from '../utils';
+import { formatNumber, getRelativeTime, formatColor } from '../utils';
 
 const route = useRoute();
 const productsStore = useProductsStore();
 const product = ref<ProductsRedGlobal | null>(null);
 const selectedImage = ref('');
 const currentImageIndex = ref(0);
-const visibleThumbnails = 4;
+const visibleThumbnails = 6;
 const isLoading = ref(true);
+const selectedColor = ref('');
 
 const loadProduct = async () => {
   isLoading.value = true;
@@ -36,7 +37,10 @@ watch(() => route.params.id, loadProduct);
 
 const uniqueImages = computed(() => {
   if (!product.value) return [];
-  return [...new Set([product.value.mainImage, ...(product.value.images || [])])];
+  const allImages = product.value.images.reduce((acc, img) => {
+    return [...acc, ...img.urlImage];
+  }, [] as string[]);
+  return [...new Set([product.value.mainImage, ...allImages])];
 });
 
 const visibleImages = computed(() => {
@@ -50,6 +54,18 @@ const selectImage = (image: string) => {
   });
 };
 
+const selectColor = (item: TableEntry) => {
+  selectedColor.value = item.color;
+  // Buscar la imagen correspondiente al color
+  const colorImages = product.value?.images.find(img => img.color === item.color);
+  if (colorImages?.urlImage.length) {
+    selectImage(colorImages.urlImage[0]);
+  }
+};
+
+const formatLabelName = (name: string) => {
+  return name.replace(/_/g, ' ');
+};
 </script>
 
 <template>
@@ -60,10 +76,10 @@ const selectImage = (image: string) => {
       <div class="product-gallery">
         <div class="main-image-container">
           <RgImage
-            v-show="selectedImage"
-            :key="selectedImage"
-            :src="selectedImage"
-            :alt="product.name"
+            v-show="selectedImage || product?.mainImage"
+            :key="selectedImage || product?.mainImage"
+            :src="selectedImage || (product?.mainImage ?? '')"
+            :alt="product?.name"
             width="300"
             height="300"
             class="main-image"
@@ -87,7 +103,7 @@ const selectImage = (image: string) => {
             >
               <RgImage
                 :src="image"
-                :alt="product.name"
+                :alt="product?.name"
                 width="80"
                 height="80"
                 class="thumbnail"
@@ -102,6 +118,17 @@ const selectImage = (image: string) => {
           >
             ›
           </button>
+        </div>
+        <div class="color-selector" v-if="product?.tableQuantity?.length">
+          <button
+            v-for="item in product.tableQuantity"
+            :key="item.color"
+            class="color-button"
+            :class="{ active: selectedColor === item.color }"
+            :style="{ backgroundColor: formatColor(item.colorName) }"
+            :title="item.colorName"
+            @click="selectColor(item)"
+          />
         </div>
       </div>
 
@@ -156,15 +183,21 @@ const selectImage = (image: string) => {
 
             <div class="labels-section" v-if="product.labels && product.labels.length > 0">
               <div class="labels-grid">
-                <img 
+                <div 
                   v-for="label in product.labels" 
                   :key="label.id"
-                  :src="label.image" 
-                  :alt="label.name" 
-                  width="100" 
-                  height="100"
-                  class="label-image"
-                />
+                  class="label-container"
+                >
+                  <img 
+                    :src="label.image" 
+                    :alt="formatLabelName(label.name)" 
+                    width="100" 
+                    height="100"
+                    class="label-image"
+                    display="block"
+                  />
+                  <div class="label-tooltip">{{ formatLabelName(label.name) }}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -216,16 +249,17 @@ const selectImage = (image: string) => {
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 500px;
+  /* min-width: 500px; */
   margin: 0 auto;
   position: relative;
 }
 
 .main-image {
-  max-width: 100%;
-  max-height: 100%;
+  /* max-width: 100%;
+  max-height: 100%; */
   object-fit: contain;
   display: block;
-  animation: zoomIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* animation: zoomIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
 }
 
 .thumbnails-container {
@@ -255,7 +289,7 @@ const selectImage = (image: string) => {
   cursor: pointer;
   font-size: 20px;
   color: #666;
-  transition: all 0.3s ease;
+  /* transition: all 0.3s ease; */
 }
 
 .nav-button:hover:not(:disabled) {
@@ -275,7 +309,7 @@ const selectImage = (image: string) => {
   cursor: pointer;
   border-radius: 4px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  /* transition: all 0.3s ease; */
   width: 60px;
   height: 60px;
   flex-shrink: 0;
@@ -293,11 +327,11 @@ const selectImage = (image: string) => {
   width: 100%;
   object-fit: contain;
   display: block;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
 }
 
 .thumbnail.zoom-out {
-  animation: zoomOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* animation: zoomOut 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
 }
 
 @keyframes zoomIn {
@@ -362,7 +396,7 @@ const selectImage = (image: string) => {
 .details-grid {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .detail-list {
@@ -420,23 +454,82 @@ const selectImage = (image: string) => {
 }
 
 .labels-section {
-  padding: 1rem 0;
+  padding-bottom: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .labels-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.label-container {
+  position: relative;
+  display: inline-block;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.label-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .label-image {
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  display: block;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
   transition: transform 0.2s ease;
 }
 
 .label-image:hover {
   transform: scale(1.05);
+}
+
+.label-tooltip {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.label-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.label-image:hover + .label-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
 }
 
 .quantity-table {
@@ -480,6 +573,57 @@ const selectImage = (image: string) => {
 
 .quantity-table td:last-child {
   color: #718096;
+}
+
+.color-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.color-button {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.color-button:hover {
+  transform: scale(1.1);
+  border-color: #ff4444;
+}
+
+.color-button.active {
+  border-color: #ff4444;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+}
+
+.color-button::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.color-button:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 @media (max-width: 768px) {

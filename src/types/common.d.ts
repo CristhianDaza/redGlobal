@@ -5,7 +5,7 @@ export interface ProductsRedGlobal {
   description: string;
   discount?: number | null;
   id: string;
-  images: string[];
+  images: ImagesRedGlobal[];
   labels?: Label[];
   mainImage: string;
   material?: string;
@@ -52,4 +52,10 @@ export interface MenuState {
   menu: MenuItem[] | null;
   isLoadingMenu: boolean;
   lastUpdateMenu: string | null;
+}
+
+export interface ImagesRedGlobal {
+  urlImage: string[];
+  color: string;
+  id: number;
 }
