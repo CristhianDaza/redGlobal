@@ -11,8 +11,8 @@ const route = useRoute();
 const productsStore = useProductsStore();
 const product = ref<ProductsRedGlobal | null>(null);
 const selectedImage = ref('');
-const startIndex = ref(0);
-const imagesPerView = 4;
+const currentImageIndex = ref(0);
+const visibleThumbnails = 4;
 const isLoading = ref(true);
 
 const loadProduct = async () => {
@@ -34,13 +34,13 @@ onMounted(loadProduct);
 // Observar cambios en la ruta para cargar nuevo producto
 watch(() => route.params.id, loadProduct);
 
-const allImages = computed(() => {
+const uniqueImages = computed(() => {
   if (!product.value) return [];
-  return [product.value.mainImage, ...(product.value.images || [])];
+  return [...new Set([product.value.mainImage, ...(product.value.images || [])])];
 });
 
 const visibleImages = computed(() => {
-  return allImages.value.slice(startIndex.value, startIndex.value + imagesPerView);
+  return uniqueImages.value.slice(currentImageIndex.value, currentImageIndex.value + visibleThumbnails);
 });
 
 const selectImage = (image: string) => {
@@ -50,17 +50,6 @@ const selectImage = (image: string) => {
   });
 };
 
-const nextImages = () => {
-  if (startIndex.value + imagesPerView < allImages.value.length) {
-    startIndex.value += 1;
-  }
-};
-
-const prevImages = () => {
-  if (startIndex.value > 0) {
-    startIndex.value -= 1;
-  }
-};
 </script>
 
 <template>
@@ -80,17 +69,17 @@ const prevImages = () => {
             class="main-image"
           />
         </div>
-        <div class="thumbnails-container">
-          <button 
+        <div class="thumbnails-container" v-if="product.images?.length">
+          <button
             class="nav-button prev"
-            @click="prevImages"
-            :disabled="startIndex === 0"
+            :disabled="currentImageIndex === 0"
+            @click="currentImageIndex = Math.max(0, currentImageIndex - 1)"
           >
             ‹
           </button>
           <div class="thumbnails">
-            <button 
-              v-for="image in visibleImages" 
+            <button
+              v-for="image in visibleImages"
               :key="image"
               class="thumbnail-button"
               :class="{ active: selectedImage === image }"
@@ -106,10 +95,10 @@ const prevImages = () => {
               />
             </button>
           </div>
-          <button 
+          <button
             class="nav-button next"
-            @click="nextImages"
-            :disabled="startIndex + imagesPerView >= allImages.length"
+            :disabled="currentImageIndex >= uniqueImages.length - visibleThumbnails"
+            @click="currentImageIndex = Math.min(uniqueImages.length - visibleThumbnails, currentImageIndex + 1)"
           >
             ›
           </button>
