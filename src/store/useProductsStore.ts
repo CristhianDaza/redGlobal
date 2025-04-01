@@ -7,6 +7,7 @@ import {
   useProductsMarpico,
   useProductsPromos,
   useProductStockSur,
+  useProductsCataProm,
 } from '../composable'
 
 export const useProductsStore = defineStore('products', {
@@ -37,7 +38,8 @@ export const useProductsStore = defineStore('products', {
       const { getProductsPromos, isLoadingProductsPromosComposable } = useProductsPromos()
       const { getProductsMarpico, isLoadingProductsMarpicoComposable } = useProductsMarpico()
       const { getProductsStockSur, isLoadingProductsStockSurComposable } = useProductStockSur()
-      
+      const { getProductsCataProm, isLoadingProductsCataPromComposable } = useProductsCataProm()
+  
       const shouldUpdate = await firebaseService.shouldUpdate()
       if (!shouldUpdate) {
         this.products = await firebaseService.getAllProducts()
@@ -47,17 +49,20 @@ export const useProductsStore = defineStore('products', {
       this.isLoadingApiPromos = isLoadingProductsPromosComposable.value
       this.isLoadingApiMarpico = isLoadingProductsMarpicoComposable.value
       this.isLoadingApiStockSur = isLoadingProductsStockSurComposable.value
+      this.isLoadingApiCataProm = isLoadingProductsCataPromComposable.value
 
-      const [productsPromos, productsMarpico, productsStockSur] = await Promise.all([
+      const [productsPromos, productsMarpico, productsStockSur, productsCataProm] = await Promise.all([
         getProductsPromos(),
         getProductsMarpico(),
         getProductsStockSur(),
+        getProductsCataProm(),
       ])
 
       const allProducts = [
         ...productsPromos,
         ...productsMarpico,
         ...productsStockSur,
+        ...productsCataProm,
       ].sort((a, b) => a.name.localeCompare(b.name))
 
       this.isLoadingSaveProducts = true
