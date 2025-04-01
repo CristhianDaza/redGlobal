@@ -41,6 +41,7 @@ export const useProductsStore = defineStore('products', {
       const { getProductsCataProm, isLoadingProductsCataPromComposable } = useProductsCataProm()
   
       const shouldUpdate = await firebaseService.shouldUpdate()
+      this.lastUpdateProducts = await firebaseService.getLastUpdate()
       if (!shouldUpdate) {
         this.products = await firebaseService.getAllProducts()
         return

@@ -1,6 +1,6 @@
 import { formatText, cleanText, normalizeString } from './text';
 import { constructImagesPromos, constructImagesStockSur } from './images';
-import { filterProductsHelper } from './helpers';
+import { filterProductsHelper, formatNumber, getRelativeTime } from './helpers';
 import {
   combineProducts,
   constructCategoryMarpico,
@@ -50,4 +50,6 @@ export {
   
   // Helpers
   filterProductsHelper,
+  formatNumber,
+  getRelativeTime,
 };
