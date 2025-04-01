@@ -1,42 +1,3 @@
-<template>
-  <nav class="navbar">
-    <div class="navbar-container">
-      <div class="navbar-menu">
-        <router-link :to="{ name }" v-for="({id, title, name}) in menuStore.getMenuItems" :key="id">
-          <button 
-            class="menu-item"
-          >
-            {{ title }}
-          </button>
-        </router-link>
-      </div>
-      <div class="navbar-actions">
-        <p><span class="material-icons">phone</span> (+57) 312 345 6789</p>
-      </div>
-    </div>
-  </nav>
-
-  <div class="navbar-brand">
-    <img src="https://www.redglobalpromo.com.co/wp-content/uploads/2019/07/Logoheader-1.png" alt="Logo" class="logo">
-    <div class="search-container">
-      <RgAutocomplete
-        v-model="searchQuery"
-        placeholder="Buscar productos...."
-        :min-chars="3"
-        @select="handleSelect"
-        @keyup.enter="handleKeydown"
-        @suggestions-update="suggestions = $event"
-      />
-      <TvButton
-        @click="handleSearch"
-        type="icon"
-        icon="search"
-      />
-    </div>
-    <p><span class="material-icons">person</span> Iniciar Sesion</p>
-  </div>
-</template>
-
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '../../types/common';
 import { ref } from 'vue';
@@ -85,6 +46,45 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 };
 </script>
+
+<template>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-menu">
+        <router-link :to="{ name }" v-for="({id, title, name}) in menuStore.getMenuItems" :key="id">
+          <button 
+            class="menu-item"
+          >
+            {{ title }}
+          </button>
+        </router-link>
+      </div>
+      <div class="navbar-actions">
+        <p><span class="material-icons">phone</span> (+57) 312 345 6789</p>
+      </div>
+    </div>
+  </nav>
+
+  <div class="navbar-brand">
+    <img src="https://www.redglobalpromo.com.co/wp-content/uploads/2019/07/Logoheader-1.png" alt="Logo" class="logo">
+    <div class="search-container">
+      <RgAutocomplete
+        v-model="searchQuery"
+        placeholder="Buscar productos...."
+        :min-chars="3"
+        @select="handleSelect"
+        @keyup.enter="handleKeydown"
+        @suggestions-update="suggestions = $event"
+      />
+      <TvButton
+        @click="handleSearch"
+        type="icon"
+        icon="search"
+      />
+    </div>
+    <p><span class="material-icons">person</span> Iniciar Sesion</p>
+  </div>
+</template>
 
 <style scoped>
 .navbar {

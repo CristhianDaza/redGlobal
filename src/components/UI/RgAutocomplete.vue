@@ -1,34 +1,3 @@
-<template>
-  <div class="autocomplete">
-    <input
-      type="text"
-      :value="modelValue"
-      @input="handleInput"
-      :placeholder="placeholder"
-      @focus="showSuggestions = true"
-      @blur="handleBlur"
-    />
-    <div v-if="showSuggestions && suggestions.length > 0" class="suggestions">
-      <div
-        v-for="suggestion in suggestions"
-        :key="suggestion.id"
-        class="suggestion-item"
-        @mousedown="selectSuggestion(suggestion)"
-      >
-        <div class="suggestion-content">
-          <span class="suggestion-name">{{ suggestion.name }}</span>
-          <img 
-            v-if="suggestion.images && suggestion.images.length > 0" 
-            :src="suggestion.images[0]" 
-            :alt="suggestion.name" 
-            class="suggestion-image" 
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '../../types/common';
 import { ref, watch } from 'vue';
@@ -102,6 +71,37 @@ watch(() => props.modelValue, (newValue) => {
   filterSuggestions(newValue);
 });
 </script>
+
+<template>
+  <div class="autocomplete">
+    <input
+      type="text"
+      :value="modelValue"
+      @input="handleInput"
+      :placeholder="placeholder"
+      @focus="showSuggestions = true"
+      @blur="handleBlur"
+    />
+    <div v-if="showSuggestions && suggestions.length > 0" class="suggestions">
+      <div
+        v-for="suggestion in suggestions"
+        :key="suggestion.id"
+        class="suggestion-item"
+        @mousedown="selectSuggestion(suggestion)"
+      >
+        <div class="suggestion-content">
+          <span class="suggestion-name">{{ suggestion.name }}</span>
+          <img 
+            v-if="suggestion.images && suggestion.images.length > 0" 
+            :src="suggestion.images[0]" 
+            :alt="suggestion.name" 
+            class="suggestion-image" 
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .autocomplete {
