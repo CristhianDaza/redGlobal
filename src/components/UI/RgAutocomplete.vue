@@ -53,12 +53,14 @@ const suggestions = ref<ProductsRedGlobal[]>([]);
 const handleInput = (event: Event) => {
   const value = (event.target as HTMLInputElement).value;
   emit('update:modelValue', value);
+  filterSuggestions(value);
 };
 
 const filterSuggestions = (query: string) => {
   if (!query || query.length < (props.minChars || 3)) {
     suggestions.value = [];
     emit('suggestions-update', []);
+    showSuggestions.value = false;
     return;
   }
 
@@ -77,8 +79,9 @@ const filterSuggestions = (query: string) => {
         categoryText.includes(normalizedSearchTerm) ||
         normalizedId.includes(normalizedSearchTerm);
     })
-    .slice(0, 10); // Limitamos a 10 sugerencias
+    .slice(0, 10);
     
+  showSuggestions.value = suggestions.value.length > 0;
   emit('suggestions-update', suggestions.value);
 };
 
