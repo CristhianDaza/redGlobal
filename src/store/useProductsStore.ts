@@ -81,15 +81,20 @@ export const useProductsStore = defineStore('products', {
         return;
       }
       
-      const searchTerm = query.toLowerCase().trim();
+      const normalizedSearchTerm = query.toLowerCase().trim().replace(/\s+/g, '');
       this.productsToView = (this.products || []).filter(product => {
-        const categoryText = Array.isArray(product.category) 
-          ? product.category.join(' ') 
-          : product.category || '';
+        const productName = product.name.toLowerCase();
+        const productDescription = product.description.toLowerCase();
+        const normalizedId = product.id.toLowerCase().replace(/\s+/g, '');
 
-        return product.name.toLowerCase().includes(searchTerm) ||
-               product.description.toLowerCase().includes(searchTerm) ||
-               categoryText.toLowerCase().includes(searchTerm);
+        const categoryText = Array.isArray(product.category) 
+          ? product.category.join(' ').toLowerCase()
+          : (product.category || '').toLowerCase();
+
+        return productName.includes(normalizedSearchTerm) ||
+          productDescription.includes(normalizedSearchTerm) ||
+          categoryText.includes(normalizedSearchTerm) ||
+          normalizedId.includes(normalizedSearchTerm);
       });
     }
   },

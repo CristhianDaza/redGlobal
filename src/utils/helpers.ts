@@ -3,30 +3,26 @@ import type { ProductsRedGlobal } from '../types/common';
 import { normalizeString } from './';
 
 export const filterProductsHelper = (products: ProductsRedGlobal[], searchTerm: string) => {
-  const keywords = normalizeString(searchTerm)
-    .split(/\s+/)
-    .map(keyword => _singularize(keyword.trim()))
+  // Si no hay término de búsqueda, devolver todos los productos
+  if (!searchTerm.trim()) return products;
+
+  const normalizedSearchTerm = searchTerm.toLowerCase().trim().replace(/\s+/g, '');
   
   return products.filter(product => {
-    const productName = normalizeString(product.name).split(/\s+/).map(_singularize).join(' ')
-    const productDescription = normalizeString(product.description).split(/\s+/).map(_singularize).join(' ')
-    const productMaterial = normalizeString(product.material).split(/\s+/).map(_singularize).join(' ')
-    const productCategory = normalizeString(product.category || '').split(/\s+/).map(_singularize).join(' ')
-    const productId = normalizeString(product.id)
-    
-    return keywords.every(keyword =>
-      productName.includes(keyword) ||
-      productDescription.includes(keyword) ||
-      productMaterial.includes(keyword) ||
-      productCategory.includes(keyword) ||
-      productId.includes(keyword)
-    )
-  })
-}
+    const productName = normalizeString(product.name)
+    const productDescription = normalizeString(product.description)
+    const productMaterial = normalizeString(product.material)
+    const productCategory = normalizeString(product.category || '')
+    const normalizedId = product.id.toString().toLowerCase().replace(/\s+/g, '')
 
-const _singularize = (word: string): string => {
-  return word.replace(/(as|es|os|is|us|s)$/, '');
-};
+    // Buscar coincidencia en cualquier campo
+    return productName.includes(normalizedSearchTerm) ||
+      productDescription.includes(normalizedSearchTerm) ||
+      productMaterial.includes(normalizedSearchTerm) ||
+      productCategory.includes(normalizedSearchTerm) ||
+      normalizedId.includes(normalizedSearchTerm);
+  });
+}
 
 export const formatNumber = (number: number): string => {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');

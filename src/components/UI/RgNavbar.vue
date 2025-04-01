@@ -24,7 +24,8 @@
         placeholder="Buscar productos...."
         :min-chars="3"
         @select="handleSelect"
-        @keyup.enter="handleSearch"
+        @keyup.enter="handleKeydown"
+        @suggestions-update="suggestions = $event"
       />
       <TvButton
         @click="handleSearch"
@@ -47,15 +48,27 @@ import RgAutocomplete from './RgAutocomplete.vue';
 const router = useRouter();
 const menuStore = useMenuStore();
 const searchQuery = ref('');
+const suggestions = ref<ProductsRedGlobal[]>([]);
 
 const handleSearch = () => {
-  if (searchQuery.value.trim()) {
+  if (!searchQuery.value.trim()) return;
+
+  // Si hay sugerencias y solo hay una, ir directamente al producto
+  if (suggestions.value.length === 1) {
     router.push({
-      name: 'search',
-      query: { search: searchQuery.value }
+      name: 'product',
+      params: { id: suggestions.value[0].id },
     });
-    resetSearch();
+    searchQuery.value = '';
+    return;
   }
+
+  // Si no hay sugerencia única, buscar normalmente
+  router.push({
+    name: 'search',
+    query: { search: searchQuery.value },
+  });
+  searchQuery.value = '';
 };
 
 const handleSelect = (product: ProductsRedGlobal) => {
@@ -63,11 +76,13 @@ const handleSelect = (product: ProductsRedGlobal) => {
     name: 'product',
     params: { id: product.id },
   });
-  resetSearch();
+  searchQuery.value = '';
 };
 
-const resetSearch = () => {
-  searchQuery.value = '';
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    handleSearch();
+  }
 };
 </script>
 

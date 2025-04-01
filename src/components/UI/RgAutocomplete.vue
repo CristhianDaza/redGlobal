@@ -43,6 +43,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
   (e: 'select', product: ProductsRedGlobal): void;
+  (e: 'suggestions-update', suggestions: ProductsRedGlobal[]): void;
 }>();
 
 const storeProducts = useProductsStore();
@@ -57,21 +58,28 @@ const handleInput = (event: Event) => {
 const filterSuggestions = (query: string) => {
   if (!query || query.length < (props.minChars || 3)) {
     suggestions.value = [];
+    emit('suggestions-update', []);
     return;
   }
 
-  const searchTerm = query.toLowerCase().trim();
+  const normalizedSearchTerm = query.toLowerCase().trim().replace(/\s+/g, '');
   suggestions.value = (storeProducts.products || [])
     .filter(product => {
+      const productName = product.name.toLowerCase();
+      const productDescription = product.description.toLowerCase();
       const categoryText = Array.isArray(product.category) 
-        ? product.category.join(' ') 
-        : product.category || '';
+        ? product.category.join(' ').toLowerCase()
+        : (product.category || '').toLowerCase();
+      const normalizedId = product.id.toLowerCase().replace(/\s+/g, '');
 
-      return product.name.toLowerCase().includes(searchTerm) ||
-             product.description.toLowerCase().includes(searchTerm) ||
-             categoryText.toLowerCase().includes(searchTerm);
+      return productName.includes(normalizedSearchTerm) ||
+        productDescription.includes(normalizedSearchTerm) ||
+        categoryText.includes(normalizedSearchTerm) ||
+        normalizedId.includes(normalizedSearchTerm);
     })
-    .slice(0, 6); // Limitamos a 6 sugerencias
+    .slice(0, 10); // Limitamos a 10 sugerencias
+    
+  emit('suggestions-update', suggestions.value);
 };
 
 const selectSuggestion = (suggestion: ProductsRedGlobal) => {
