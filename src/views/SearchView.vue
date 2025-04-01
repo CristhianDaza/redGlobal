@@ -139,11 +139,15 @@ watch(
     <template v-else-if="productsLength > 0">
       <div class="search__container">
         <div class="search__products">
-          <RgCard
+          <router-link
             v-for="product in productsToShow"
             :key="product.id"
-            :products-view="product"
-          />
+            :to="{ name: 'product', params: { id: product.id } }"
+          >
+            <RgCard
+              :products-view="product"
+            />
+          </router-link>
         </div>
         <div class="search__pagination-container">
           <div class="search__pagination">
