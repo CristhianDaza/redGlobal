@@ -831,30 +831,49 @@ const formatLabelName = (name: string) => {
   padding: 1rem;
 }
 
-@media (max-width: 768px) {
-  .quantity-table {
-    padding: 1rem;
+@media (max-width: 1024px) {
+  .product-main {
+    grid-template-columns: 1fr;
   }
-  
-  .quantity-table th,
-  .quantity-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.9rem;
+
+  .main-image-container {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
 @media (max-width: 768px) {
   .detail-row {
     flex-direction: column;
-    gap: 0.25rem;
   }
 
   .detail-key {
     width: 100%;
   }
 
-  .detail-list {
-    padding: 1rem;
+  .thumbnails {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-container {
+    padding: 0.5rem;
+  }
+
+  .thumbnail-button {
+    width: 50px;
+    height: 50px;
+  }
+
+  .label-image {
+    width: 60px;
+    height: 60px;
   }
 }
 </style>
