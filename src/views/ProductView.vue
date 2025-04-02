@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useProductsStore } from '../store/useProductsStore';
 import type { ProductsRedGlobal, TableEntry } from '../types/common';
 import RgImage from '../components/UI/RgImage.vue';
 import RgLoader from '../components/UI/RgLoader.vue';
-import { formatNumber, getRelativeTime, formatColor } from '../utils';
+import { formatColor, getRelativeTime, formatNumber } from '../utils';
 
 const route = useRoute();
 const productsStore = useProductsStore();
@@ -13,21 +13,25 @@ const product = ref<ProductsRedGlobal | null>(null);
 const selectedImage = ref('');
 const currentImageIndex = ref(0);
 const visibleThumbnails = 6;
-const isLoading = ref(true);
 const selectedColor = ref('');
+const isLoading = ref(false);
 
 const loadProduct = async () => {
   isLoading.value = true;
-  const productId = route.params.id as string;
-  if (!productsStore.products) {
-    await productsStore.getAllProducts();
+  try {
+    if (!productsStore.products) {
+      await productsStore.getAllProducts();
+    }
+    const found = productsStore.products?.find(p => p.id === route.params.id);
+    if (found) {
+      product.value = found;
+      selectedImage.value = found.mainImage;
+    }
+  } catch (error) {
+    console.error('Error loading product:', error);
+  } finally {
+    isLoading.value = false;
   }
-  const found = productsStore.products?.find(p => p.id === productId);
-  if (found) {
-    product.value = found;
-    selectedImage.value = found.mainImage;
-  }
-  isLoading.value = false;
 };
 
 onMounted(loadProduct);
@@ -37,30 +41,47 @@ watch(() => route.params.id, loadProduct);
 
 const uniqueImages = computed(() => {
   if (!product.value) return [];
-  const allImages = product.value.images.reduce((acc, img) => {
-    return [...acc, ...img.urlImage];
-  }, [] as string[]);
-  return [...new Set([product.value.mainImage, ...allImages])];
+  const allImages = product.value.images.reduce((acc: string[], img) => {
+    if (img.urlImage) {
+      acc.push(...img.urlImage);
+    }
+    return acc;
+  }, [product.value.mainImage]);
+  return [...new Set(allImages)];
 });
 
 const visibleImages = computed(() => {
-  return uniqueImages.value.slice(currentImageIndex.value, currentImageIndex.value + visibleThumbnails);
+  return uniqueImages.value.slice(
+    currentImageIndex.value,
+    currentImageIndex.value + visibleThumbnails
+  );
 });
 
 const selectImage = (image: string) => {
-  selectedImage.value = '';
-  requestAnimationFrame(() => {
-    selectedImage.value = image;
-  });
+  selectedImage.value = image;
 };
 
 const selectColor = (item: TableEntry) => {
   selectedColor.value = item.color;
-  // Buscar la imagen correspondiente al color
   const colorImages = product.value?.images.find(img => img.color === item.color);
-  if (colorImages?.urlImage.length) {
-    selectImage(colorImages.urlImage[0]);
+  if (colorImages?.urlImage?.length) {
+    selectedImage.value = colorImages.urlImage[0];
   }
+};
+
+const hasAnyTracking = computed(() => {
+  return product.value?.tableQuantity?.some(entry => entry.inTracking) ?? false;
+});
+
+const getStatusClass = (status: string | null) => {
+  if (!status) return '';
+  const statusMap: { [key: string]: string } = {
+    'En proceso': 'status-processing',
+    'Enviado': 'status-shipped',
+    'Entregado': 'status-delivered',
+    'Cancelado': 'status-cancelled'
+  };
+  return statusMap[status] || '';
 };
 
 const formatLabelName = (name: string) => {
@@ -73,148 +94,185 @@ const formatLabelName = (name: string) => {
     <RgLoader v-if="isLoading" />
     
     <div v-else-if="product" class="product-container">
-      <div class="product-gallery">
-        <div class="main-image-container">
-          <RgImage
-            v-show="selectedImage || product?.mainImage"
-            :key="selectedImage || product?.mainImage"
-            :src="selectedImage || (product?.mainImage ?? '')"
-            :alt="product?.name"
-            width="300"
-            height="300"
-            class="main-image"
-          />
-        </div>
-        <div class="thumbnails-container" v-if="product.images?.length">
-          <button
-            class="nav-button prev"
-            :disabled="currentImageIndex === 0"
-            @click="currentImageIndex = Math.max(0, currentImageIndex - 1)"
-          >
-            ‹
-          </button>
-          <div class="thumbnails">
+      <div class="product-main">
+        <div class="product-gallery">
+          <div class="main-image-container">
+            <RgImage
+              v-show="selectedImage || product?.mainImage"
+              :key="selectedImage || product?.mainImage"
+              :src="selectedImage || (product?.mainImage ?? '')"
+              :alt="product?.name"
+              width="300"
+              height="300"
+              class="main-image"
+            />
+          </div>
+          <div class="thumbnails-container" v-if="product.images?.length">
             <button
-              v-for="image in visibleImages"
-              :key="image"
-              class="thumbnail-button"
-              :class="{ active: selectedImage === image }"
-              @click="selectImage(image)"
+              class="nav-button prev"
+              :disabled="currentImageIndex === 0"
+              @click="currentImageIndex = Math.max(0, currentImageIndex - 1)"
             >
-              <RgImage
-                :src="image"
-                :alt="product?.name"
-                width="80"
-                height="80"
-                class="thumbnail"
-                :class="{ 'zoom-out': selectedImage === image }"
-              />
+              ‹
+            </button>
+            <div class="thumbnails">
+              <button
+                v-for="image in visibleImages"
+                :key="image"
+                class="thumbnail-button"
+                :class="{ active: selectedImage === image }"
+                @click="selectImage(image)"
+              >
+                <RgImage
+                  :src="image"
+                  :alt="product?.name"
+                  width="80"
+                  height="80"
+                  class="thumbnail"
+                  :class="{ 'zoom-out': selectedImage === image }"
+                />
+              </button>
+            </div>
+            <button
+              class="nav-button next"
+              :disabled="currentImageIndex >= uniqueImages.length - visibleThumbnails"
+              @click="currentImageIndex = Math.min(uniqueImages.length - visibleThumbnails, currentImageIndex + 1)"
+            >
+              ›
             </button>
           </div>
-          <button
-            class="nav-button next"
-            :disabled="currentImageIndex >= uniqueImages.length - visibleThumbnails"
-            @click="currentImageIndex = Math.min(uniqueImages.length - visibleThumbnails, currentImageIndex + 1)"
-          >
-            ›
-          </button>
+          <div class="color-selector" v-if="product?.tableQuantity?.length">
+            <button
+              v-for="item in product.tableQuantity"
+              :key="item.color"
+              class="color-button"
+              :class="{ active: selectedColor === item.color }"
+              :style="{ backgroundColor: formatColor(item.colorName) }"
+              :title="item.colorName"
+              @click="selectColor(item)"
+            />
+          </div>
         </div>
-        <div class="color-selector" v-if="product?.tableQuantity?.length">
-          <button
-            v-for="item in product.tableQuantity"
-            :key="item.color"
-            class="color-button"
-            :class="{ active: selectedColor === item.color }"
-            :style="{ backgroundColor: formatColor(item.colorName) }"
-            :title="item.colorName"
-            @click="selectColor(item)"
-          />
-        </div>
-      </div>
 
-      <div class="product-info">
-        <h1 class="product-name">{{ product.name }}</h1>
-        <p class="product-id">Código: {{ product.id }}</p>
-        
-        <div class="product-details">
-          <div class="details-grid">
-            <div class="detail-item description">
-              <span class="value">{{ product.description }}</span>
-            </div>
-
-            <div class="detail-list">
-              <div class="detail-row" v-if="product.material">
-                <span class="detail-key">Material:</span>
-                <span class="detail-value">{{ product.material }}</span>
+        <div class="product-info">
+          <h1 class="product-name">{{ product.name }}</h1>
+          <p class="product-id">Código: {{ product.id }}</p>
+          
+          <div class="product-details">
+            <div class="details-grid">
+              <div class="detail-item description">
+                <span class="value">{{ product.description }}</span>
               </div>
 
-              <div class="detail-row" v-if="product.size">
-                <span class="detail-key">Medidas:</span>
-                <span class="detail-value">{{ product.size }}</span>
-              </div>
+              <div class="detail-list">
+                <div class="detail-row" v-if="product.material">
+                  <span class="detail-key">Material:</span>
+                  <span class="detail-value">{{ product.material }}</span>
+                </div>
 
-              <div class="detail-row" v-if="product.areaPrinting">
-                <span class="detail-key">Área de<br /> impresión:</span>
-                <span class="detail-value">{{ product.areaPrinting }}</span>
-              </div>
+                <div class="detail-row" v-if="product.size">
+                  <span class="detail-key">Medidas:</span>
+                  <span class="detail-value">{{ product.size }}</span>
+                </div>
 
-              <div class="detail-row">
-                <span class="detail-key">Método de<br /> impresión:</span>
-                <span class="detail-value">{{ product.printing }}</span>
-              </div>
+                <div class="detail-row" v-if="product.areaPrinting">
+                  <span class="detail-key">Área de<br /> impresión:</span>
+                  <span class="detail-value">{{ product.areaPrinting }}</span>
+                </div>
 
-              <div class="detail-row">
-                <span class="detail-key">Empaquetado:</span>
-                <span class="detail-value">{{ product.packaging }}</span>
-              </div>
+                <div class="detail-row">
+                  <span class="detail-key">Método de<br /> impresión:</span>
+                  <span class="detail-value">{{ product.printing }}</span>
+                </div>
 
-              <div class="detail-row" v-if="product.category?.length">
-                <span class="detail-key">{{ product.category.length > 1 ? 'Categorías:' : 'Categoría:' }}</span>
-                <span class="detail-value categories">
-                  <span v-for="category in product.category" 
-                    :key="category" 
-                    class="category-tag"
-                  >
-                    <router-link :to="{name: 'search', query: {search: category}}">{{ category }}</router-link>
+                <div class="detail-row">
+                  <span class="detail-key">Empaquetado:</span>
+                  <span class="detail-value">{{ product.packaging }}</span>
+                </div>
+
+                <div class="detail-row" v-if="product.category?.length">
+                  <span class="detail-key">{{ product.category.length > 1 ? 'Categorías:' : 'Categoría:' }}</span>
+                  <span class="detail-value categories">
+                    <span v-for="category in product.category" 
+                      :key="category" 
+                      class="category-tag"
+                    >
+                      <router-link :to="{name: 'search', query: {search: category}}">{{ category }}</router-link>
+                    </span>
                   </span>
-                </span>
+                </div>
               </div>
-            </div>
 
-            <div class="labels-section" v-if="product.labels && product.labels.length > 0">
-              <div class="labels-grid">
-                <div 
-                  v-for="label in product.labels" 
-                  :key="label.id"
-                  class="label-container"
-                >
-                  <img 
-                    :src="label.image" 
-                    :alt="formatLabelName(label.name)" 
-                    width="100" 
-                    height="100"
-                    class="label-image"
-                    display="block"
-                  />
-                  <div class="label-tooltip">{{ formatLabelName(label.name) }}</div>
+              <div class="labels-section" v-if="product.labels && product.labels.length > 0">
+                <div class="labels-grid">
+                  <div 
+                    v-for="label in product.labels" 
+                    :key="label.id"
+                    class="label-container"
+                  >
+                    <img 
+                      :src="label.image" 
+                      :alt="formatLabelName(label.name)" 
+                      width="100" 
+                      height="100"
+                      class="label-image"
+                      display="block"
+                    />
+                    <div class="label-tooltip">{{ formatLabelName(label.name) }}</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="quantity-table">
-          <table>
+      <div class="table-section">
+        <div class="table-container">
+          <div class="table-header">
+            <div class="total-info">
+              <span class="total-label">Total disponible:</span>
+              <span class="total-value">{{ formatNumber(product.totalProducts) }} unidades.</span>
+            </div>
+            <div class="update-info">
+              <span class="update-label">Última actualización:</span>
+              <span class="update-value">{{ getRelativeTime(productsStore.lastUpdateProducts) }}</span>
+            </div>
+          </div>
+          <table class="product-table">
             <thead>
               <tr>
-                <th>Unidades disponibles</th>
-                <th>Actualizado</th>
+                <th>Color</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th v-if="hasAnyTracking">Estado</th>
+                <th v-if="hasAnyTracking">Última Actualización</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>{{ formatNumber(product.totalProducts) }}</td>
-                <td>{{ getRelativeTime(productsStore.lastUpdateProducts) }}</td>
+              <tr v-for="entry in product.tableQuantity" :key="entry.colorName">
+                <td>
+                  <div class="color-cell">
+                    <span 
+                      class="color-dot"
+                      :style="{ backgroundColor: formatColor(entry.colorName) }"
+                    ></span>
+                    {{ entry.colorName }}
+                  </div>
+                </td>
+                <td>{{ formatNumber(entry.quantity) }}</td>
+                <td>${{ formatNumber(Number(entry.price)) }}</td>
+                <td v-if="hasAnyTracking">
+                  <div v-if="entry.inTracking" class="tracking-info">
+                    <span :class="['status-badge', getStatusClass(entry.statusTracking ?? null)]">
+                      {{ entry.statusTracking || 'N/A' }}
+                    </span>
+                  </div>
+                  <span v-else>-</span>
+                </td>
+                <td v-if="hasAnyTracking">
+                  {{ entry.lastUpdateTracking ? getRelativeTime(entry.lastUpdateTracking) : '-' }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -234,9 +292,15 @@ const formatLabelName = (name: string) => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-main {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
+  margin-bottom: .5rem;
 }
 
 .product-gallery {
@@ -356,7 +420,7 @@ const formatLabelName = (name: string) => {
 }
 
 .product-info {
-  padding: 1rem;
+  padding: 0 1rem 1rem 1rem;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -622,6 +686,125 @@ const formatLabelName = (name: string) => {
 .color-button:hover::after {
   opacity: 1;
   visibility: visible;
+}
+
+.table-section {
+  width: 100%;
+  margin-top: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.table-section h3 {
+  padding: 1rem;
+  margin: 0;
+  border-bottom: 1px solid #eee;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.product-table th,
+.product-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.product-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #444;
+}
+
+.color-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.tracking-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-processing {
+  background-color: #fff8e6;
+  color: #b77f00;
+}
+
+.status-shipped {
+  background-color: #e6f4ff;
+  color: #0958d9;
+}
+
+.status-delivered {
+  background-color: #e6ffe6;
+  color: #039003;
+}
+
+.status-cancelled {
+  background-color: #fff1f0;
+  color: #cf1322;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.total-info,
+.update-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.total-label,
+.update-label {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.total-value {
+  font-weight: 600;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.update-value {
+  color: #666;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 768px) {
