@@ -5,6 +5,7 @@ import { useProductsStore } from '../store/useProductsStore';
 import type { ProductsRedGlobal, TableEntry } from '../types/common';
 import RgImage from '../components/UI/RgImage.vue';
 import RgLoader from '../components/UI/RgLoader.vue';
+import RgButton from '../components/UI/RgButton.vue';
 import { formatColor, getRelativeTime, formatNumber } from '../utils';
 
 const route = useRoute();
@@ -15,6 +16,11 @@ const currentImageIndex = ref(0);
 const visibleThumbnails = 6;
 const selectedColor = ref('');
 const isLoading = ref(false);
+const showPricesWithIva = ref(false);
+
+const calculatePriceWithIva = (price: number) => {
+  return Math.ceil(price * 1.19);
+};
 
 const loadProduct = async () => {
   isLoading.value = true;
@@ -239,14 +245,20 @@ const formatLabelName = (name: string) => {
               <span class="update-value">{{ getRelativeTime(productsStore.lastUpdateProducts) }}</span>
             </div>
           </div>
+          <div class="price-toggle">
+            <RgButton @click="showPricesWithIva = !showPricesWithIva">
+              {{ showPricesWithIva ? 'Mostrar precios sin IVA' : 'Mostrar precios con IVA' }}
+            </RgButton>
+          </div>
           <table class="product-table">
             <thead>
               <tr>
                 <th>Color</th>
-                <th>Cantidad</th>
+                <th>Cantidades<br />disponible</th>
+                <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
                 <th>Precio</th>
                 <th v-if="hasAnyTracking">Estado</th>
-                <th v-if="hasAnyTracking">Última Actualización</th>
+                <th v-if="hasAnyTracking">Última<br />Actualización</th>
               </tr>
             </thead>
             <tbody>
@@ -261,7 +273,13 @@ const formatLabelName = (name: string) => {
                   </div>
                 </td>
                 <td>{{ formatNumber(entry.quantity) }}</td>
-                <td>${{ formatNumber(Number(entry.price)) }}</td>
+                <td v-if="hasAnyTracking">{{ entry.inTracking ? formatNumber(entry.inTracking) : '-' }}</td>
+                <td>
+                  {{ showPricesWithIva 
+                    ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))} con IVA`
+                    : `$${formatNumber(Number(entry.price))} + IVA` 
+                  }}
+                </td>
                 <td v-if="hasAnyTracking">
                   <div v-if="entry.inTracking" class="tracking-info">
                     <span :class="['status-badge', getStatusClass(entry.statusTracking ?? null)]">
@@ -805,6 +823,12 @@ const formatLabelName = (name: string) => {
 .update-value {
   color: #666;
   font-size: 0.9rem;
+}
+
+.price-toggle {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
 }
 
 @media (max-width: 768px) {
