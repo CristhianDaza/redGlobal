@@ -2,6 +2,7 @@
 import type { ProductsRedGlobal } from '../../types/common';
 import { ref, watch } from 'vue';
 import { useProductsStore } from '../../store';
+import { normalizeString } from '../../utils';
 
 const props = defineProps<{
   modelValue: string;
@@ -33,20 +34,22 @@ const filterSuggestions = (query: string) => {
     return;
   }
 
-  const normalizedSearchTerm = query.toLowerCase().trim().replace(/\s+/g, '');
+  const searchTerms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  
   suggestions.value = (storeProducts.products || [])
     .filter(product => {
-      const productName = product.name.toLowerCase();
-      const productDescription = product.description.toLowerCase();
-      const categoryText = Array.isArray(product.category) 
-        ? product.category.join(' ').toLowerCase()
-        : (product.category || '').toLowerCase();
-      const normalizedId = product.id.toLowerCase().replace(/\s+/g, '');
+      const normalizedName = normalizeString(product.name);
+      const normalizedDescription = normalizeString(product.description);
+      const normalizedId = normalizeString(product.id);
+      const normalizedCategory = normalizeString(product.category);
 
-      return productName.includes(normalizedSearchTerm) ||
-        productDescription.includes(normalizedSearchTerm) ||
-        categoryText.includes(normalizedSearchTerm) ||
-        normalizedId.includes(normalizedSearchTerm);
+      return searchTerms.every(term => {
+        const normalizedTerm = normalizeString(term);
+        return normalizedName.includes(normalizedTerm) ||
+          normalizedDescription.includes(normalizedTerm) ||
+          normalizedCategory.includes(normalizedTerm) ||
+          normalizedId.includes(normalizedTerm);
+      });
     })
     .slice(0, 10);
     

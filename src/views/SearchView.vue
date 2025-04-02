@@ -14,7 +14,7 @@ const storeProducts = useProductsStore();
 const isLoading = ref(true);
 
 // Inicializar con valores de la URL
-const searchQuery = ref(route.query.search?.toString() || '');
+const searchQuery = ref(decodeURIComponent(route.query.search?.toString() || '').replace(/\+/g, ' '));
 const currentPage = ref(Number(route.query.page) || 1);
 const pageSize = ref(Number(route.query.size) || 16);
 
@@ -30,7 +30,7 @@ onMounted(async () => {
 
 // Observar cambios en la búsqueda
 watch(() => route.query.search, async (newSearch) => {
-  searchQuery.value = newSearch?.toString() || '';
+  searchQuery.value = decodeURIComponent(newSearch?.toString() || '').replace(/\+/g, ' ');
   isLoading.value = true;
   if (!storeProducts.products) {
     await storeProducts.getAllProducts();

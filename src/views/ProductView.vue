@@ -171,32 +171,32 @@ const formatLabelName = (name: string) => {
               </div>
 
               <div class="detail-list">
-                <div class="detail-row" v-if="product.material">
+                <div class="detail-row" v-if="product.material && product.material !== ''">
                   <span class="detail-key">Material:</span>
                   <span class="detail-value">{{ product.material }}</span>
                 </div>
 
-                <div class="detail-row" v-if="product.size">
+                <div class="detail-row" v-if="product.size && product.size !== ''">
                   <span class="detail-key">Medidas:</span>
                   <span class="detail-value">{{ product.size }}</span>
                 </div>
 
-                <div class="detail-row" v-if="product.areaPrinting">
+                <div class="detail-row" v-if="product.areaPrinting && product.areaPrinting !== ''">
                   <span class="detail-key">Área de<br /> impresión:</span>
                   <span class="detail-value">{{ product.areaPrinting }}</span>
                 </div>
 
-                <div class="detail-row">
+                <div class="detail-row" v-if="product.printing && product.printing !== ''">
                   <span class="detail-key">Método de<br /> impresión:</span>
                   <span class="detail-value">{{ product.printing }}</span>
                 </div>
 
-                <div class="detail-row">
+                <div class="detail-row" v-if="product.packaging && product.packaging !== ''">
                   <span class="detail-key">Empaquetado:</span>
                   <span class="detail-value">{{ product.packaging }}</span>
                 </div>
 
-                <div class="detail-row" v-if="product.category?.length">
+                <div class="detail-row" v-if="product.category?.length && product.category?.length > 0">
                   <span class="detail-key">{{ product.category.length > 1 ? 'Categorías:' : 'Categoría:' }}</span>
                   <span class="detail-value categories">
                     <span v-for="category in product.category" 

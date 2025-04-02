@@ -3,6 +3,7 @@ import type { ProductsRedGlobal } from '../types/common'
 
 import { defineStore } from 'pinia'
 import { firebaseService } from '../services/firebaseService'
+import { normalizeString } from '../utils'
 import {
   useProductsMarpico,
   useProductsPromos,
@@ -82,20 +83,21 @@ export const useProductsStore = defineStore('products', {
         return;
       }
       
-      const normalizedSearchTerm = query.toLowerCase().trim().replace(/\s+/g, '');
+      const searchTerms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      
       this.productsToView = (this.products || []).filter(product => {
-        const productName = product.name.toLowerCase();
-        const productDescription = product.description.toLowerCase();
-        const normalizedId = product.id.toLowerCase().replace(/\s+/g, '');
+        const normalizedName = normalizeString(product.name);
+        const normalizedDescription = normalizeString(product.description);
+        const normalizedId = normalizeString(product.id);
+        const normalizedCategory = normalizeString(product.category);
 
-        const categoryText = Array.isArray(product.category) 
-          ? product.category.join(' ').toLowerCase()
-          : (product.category || '').toLowerCase();
-
-        return productName.includes(normalizedSearchTerm) ||
-          productDescription.includes(normalizedSearchTerm) ||
-          categoryText.includes(normalizedSearchTerm) ||
-          normalizedId.includes(normalizedSearchTerm);
+        return searchTerms.every(term => {
+          const normalizedTerm = normalizeString(term);
+          return normalizedName.includes(normalizedTerm) ||
+            normalizedDescription.includes(normalizedTerm) ||
+            normalizedCategory.includes(normalizedTerm) ||
+            normalizedId.includes(normalizedTerm);
+        });
       });
     }
   },
