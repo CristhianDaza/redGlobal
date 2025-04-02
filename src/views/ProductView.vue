@@ -249,17 +249,15 @@ const formatLabelName = (name: string) => {
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 500px;
-  /* min-width: 500px; */
   margin: 0 auto;
   position: relative;
 }
 
 .main-image {
-  /* max-width: 100%;
-  max-height: 100%; */
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   display: block;
-  /* animation: zoomIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
 }
 
 .thumbnails-container {
@@ -289,7 +287,7 @@ const formatLabelName = (name: string) => {
   cursor: pointer;
   font-size: 20px;
   color: #666;
-  /* transition: all 0.3s ease; */
+  transition: all 0.3s ease;
 }
 
 .nav-button:hover:not(:disabled) {
@@ -309,7 +307,7 @@ const formatLabelName = (name: string) => {
   cursor: pointer;
   border-radius: 4px;
   overflow: hidden;
-  /* transition: all 0.3s ease; */
+  transition: all 0.3s ease;
   width: 60px;
   height: 60px;
   flex-shrink: 0;
@@ -327,11 +325,11 @@ const formatLabelName = (name: string) => {
   width: 100%;
   object-fit: contain;
   display: block;
-  /* transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .thumbnail.zoom-out {
-  /* animation: zoomOut 0.3s cubic-bezier(0.4, 0, 0.2, 1); */
+  animation: zoomOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes zoomIn {

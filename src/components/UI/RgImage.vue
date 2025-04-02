@@ -74,7 +74,9 @@ onMounted(() => {
   display: block;
   width: 100%;
   max-height: 350px;
+  object-fit: contain;
   transition: opacity 0.3s ease-in-out;
+  background-color: #fff;
 }
 
 .image-container.is-loading img {
