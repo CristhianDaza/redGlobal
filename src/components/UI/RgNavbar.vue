@@ -75,6 +75,7 @@ const handleKeydown = (event: KeyboardEvent) => {
         @select="handleSelect"
         @keyup.enter="handleKeydown"
         @suggestions-update="suggestions = $event"
+        @searchAll="handleSearch"
       />
       <TvButton
         @click="handleSearch"

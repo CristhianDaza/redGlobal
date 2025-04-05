@@ -14,6 +14,7 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
   (e: 'select', product: ProductsRedGlobal): void;
   (e: 'suggestions-update', suggestions: ProductsRedGlobal[]): void;
+  (e: 'searchAll'): void;
 }>();
 
 const storeProducts = useProductsStore();
@@ -51,7 +52,6 @@ const filterSuggestions = (query: string) => {
           normalizedId.includes(normalizedTerm);
       });
     })
-    .slice(0, 12);
     
   showSuggestions.value = suggestions.value.length > 0;
   emit('suggestions-update', suggestions.value);
@@ -68,6 +68,11 @@ const handleBlur = () => {
   setTimeout(() => {
     showSuggestions.value = false;
   }, 200);
+};
+
+const handleViewAll = () => {
+  emit('searchAll');
+  showSuggestions.value = false;
 };
 
 watch(() => props.modelValue, (newValue) => {
@@ -87,7 +92,7 @@ watch(() => props.modelValue, (newValue) => {
     />
     <div v-if="showSuggestions && suggestions.length > 0" class="suggestions">
       <div
-        v-for="suggestion in suggestions"
+        v-for="suggestion in suggestions.slice(0, 12)"
         :key="suggestion.id"
         class="suggestion-item"
         @mousedown="selectSuggestion(suggestion)"
@@ -100,6 +105,11 @@ watch(() => props.modelValue, (newValue) => {
             :alt="suggestion.name" 
             class="suggestion-image" 
           />
+        </div>
+      </div>
+      <div v-if="suggestions.length > 12" class="suggestion-item view-all" @mousedown="handleViewAll">
+        <div class="suggestion-content">
+          <span class="suggestion-name">Ver todos ({{ suggestions.length }} resultados)</span>
         </div>
       </div>
     </div>
