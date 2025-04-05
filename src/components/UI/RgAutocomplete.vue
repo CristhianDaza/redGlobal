@@ -51,7 +51,7 @@ const filterSuggestions = (query: string) => {
           normalizedId.includes(normalizedTerm);
       });
     })
-    .slice(0, 10);
+    .slice(0, 12);
     
   showSuggestions.value = suggestions.value.length > 0;
   emit('suggestions-update', suggestions.value);
@@ -95,8 +95,8 @@ watch(() => props.modelValue, (newValue) => {
         <div class="suggestion-content">
           <span class="suggestion-name">{{ suggestion.name }}</span>
           <img 
-            v-if="suggestion.images && suggestion.images.length > 0" 
-            :src="suggestion.images[0]?.urlImage[0] || suggestion.mainImage" 
+            v-if="suggestion.mainImage" 
+            :src="suggestion.mainImage" 
             :alt="suggestion.name" 
             class="suggestion-image" 
           />

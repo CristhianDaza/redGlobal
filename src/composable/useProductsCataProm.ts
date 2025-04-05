@@ -50,7 +50,6 @@ export function useProductsCataProm() {
       category: constructCategoryCataProm(product, categories),
       description: constructDescriptionCataProm(product?.descripcionProducto),
       id: product?.referencia || '',
-      images: [],
       mainImage: product?.imageUrl === '' ? '@/assets/images/no-image.jpg' : `https://catalogospromocionales.com${product?.imageUrl}`,
       name: formatText(product?.nombre),
     };

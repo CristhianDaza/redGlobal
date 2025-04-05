@@ -5,7 +5,7 @@ export interface ProductsRedGlobal {
   description: string;
   discount?: number | null;
   id: string;
-  images: ImagesRedGlobal[];
+  images?: ImagesRedGlobal[];
   labels?: Label[];
   mainImage: string;
   material?: string;
