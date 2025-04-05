@@ -1,17 +1,32 @@
-import type { ProductsRedGlobal } from '../types/common';
-
+import type { CataPromCategory, CataPromProduct } from '../types/cataprom';
 import { apiConfigCatalogProm } from './apiConfig';
 import { apiService } from '../services/apiService';
 
 /**
- * @description Get all products from CataProm API
- * @returns Promise with list of products transformed to common Product format
+ * @description Get all categories from CataProm API
+ * @returns Promise with list of categories
  */
-export const getAllProductsCataProm = async (): Promise<ProductsRedGlobal[]> => {
+export const getCategoriesCataProm = async (): Promise<CataPromCategory[]> => {
   try {
-    return await apiService.get<ProductsRedGlobal>(apiConfigCatalogProm, 'rest');
+    const categories = await apiService.get<CataPromCategory[]>(apiConfigCatalogProm, 'rest/categorias');
+    return categories.resultado;
   } catch (error) {
-    console.error('Error in getAllProductsCataProm:', error);
+    console.error('Error in getCategoriesCataProm:', error);
+    throw error;
+  }
+};
+
+/**
+ * @description Get products by category from CataProm API
+ * @param category - Category name
+ * @returns Promise with list of products
+ */
+export const getProductsByCategory = async (category: string): Promise<CataPromProduct[]> => {
+  try {
+    const products = await apiService.get<CataPromProduct[]>(apiConfigCatalogProm, `rest/categorias/${category}/productos`);
+    return products.resultado;
+  } catch (error) {
+    console.error('Error in getProductsByCategory:', error);
     throw error;
   }
 };

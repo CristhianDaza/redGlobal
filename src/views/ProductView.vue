@@ -167,7 +167,7 @@ const formatLabelName = (name: string) => {
           <div class="product-details">
             <div class="details-grid">
               <div class="detail-item description">
-                <span class="value">{{ product.description }}</span>
+                <span class="value" v-html="product.description"></span>
               </div>
 
               <div class="detail-list">
@@ -233,7 +233,7 @@ const formatLabelName = (name: string) => {
         </div>
       </div>
 
-      <div class="table-section">
+      <div class="table-section" v-if="product.totalProducts">
         <div class="table-container">
           <div class="table-header">
             <div class="total-info">

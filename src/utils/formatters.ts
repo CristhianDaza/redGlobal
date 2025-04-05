@@ -2,6 +2,7 @@ import type { MarpicoProduct, MarpicoMaterial } from '../types/marpico';
 import type { Label, TableEntry, ProductsRedGlobal } from '@/types/common';
 import type { PromosPackaging, PromosProductChild, Stock } from '../types/promos';
 import type { StockSurProduct, StockSurPacking, StockSurIcono, StockSurVariant } from '../types/stocksur';
+import type { CataPromProduct, CataPromCategory } from '../types/cataprom';
 
 const _processString = (input: string | undefined): string => {
   if (typeof input !== 'string') {
@@ -209,7 +210,7 @@ export const constructPrintingStockSur = (suggestions: StockSurIcono[] | undefin
     ? filteredSuggestions.slice(0, -1).join(', ') + ' o ' + filteredSuggestions.slice(-1)
     : filteredSuggestions[0]
   
-  return `Se sugiere: ${formattedSuggestions}.`
+  return `${formattedSuggestions}.`
 }
 
 export const constructTableQuantityStockSur = (variants: StockSurVariant[]): TableEntry[] => {  
@@ -242,4 +243,12 @@ export const combineProducts = (docs: any[]): any[] => {
   })
   
   return combinedProducts
+};
+
+export const constructCategoryCataProm = (
+  product: CataPromProduct, 
+  categories: CataPromCategory[]
+): string[] => {
+  const matchedCategory = categories.find(category => category.id === product.idCategoria);
+  return matchedCategory ? [matchedCategory.nombre] : [];
 };

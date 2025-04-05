@@ -20,10 +20,10 @@ const props = defineProps<{
       />
     </div>
     <div class="product-content">
-      <p class="product-category">{{ productsView.category?.[0] || '' }}</p>
+      <p class="product-category" v-if="productsView.category?.length">{{ productsView.category?.[0]}}</p>
       <h3 class="product-name">{{ productsView.name }}</h3>
       <p class="product-code">{{ productsView.id }}</p>
-      <div class="product-stock">
+      <div class="product-stock" v-if="productsView.totalProducts">
         <p class="stock-label">Unidades disponibles:</p>
         <p class="stock-amount">{{ formatNumber(productsView.totalProducts)}} und</p>
       </div>

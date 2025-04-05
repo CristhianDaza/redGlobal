@@ -45,3 +45,14 @@ export const normalizeString = (str: string | string[] | undefined): string => {
   if (Array.isArray(str)) str = str.join(' ');
   return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
 };
+
+/**
+ * Format a description string for CataProm products.
+ * @param description string The original description from CataProm.
+ * @returns string The formatted description string.
+ */
+export const constructDescriptionCataProm = (description: string): string => {
+  let formatted = formatText(description);
+  formatted = formatted.replace(/<\/?a\b[^>]*>/gi, '');
+  return formatted;
+};

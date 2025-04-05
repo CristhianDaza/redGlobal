@@ -1,4 +1,4 @@
-import { formatText, cleanText, normalizeString } from './text';
+import { formatText, cleanText, normalizeString, constructDescriptionCataProm } from './text';
 import { constructImagesPromos, constructImagesStockSur, constructImagesMarpico } from './images';
 import { filterProductsHelper, formatNumber, getRelativeTime, formatColor } from './helpers';
 import {
@@ -18,6 +18,7 @@ import {
   getDiscountsMarpico,
   constructSizeMarpico,
   constructTotalProductsPromos,
+  constructCategoryCataProm,
 } from './formatters';
 
 export {
@@ -25,6 +26,7 @@ export {
   cleanText,
   formatText,
   normalizeString,
+  constructDescriptionCataProm,
   
   // Formatters
   combineProducts,
@@ -43,7 +45,7 @@ export {
   getDiscountsMarpico,
   constructSizeMarpico,
   constructTotalProductsPromos,
-
+  constructCategoryCataProm,
   // Images
   constructImagesPromos,
   constructImagesStockSur,

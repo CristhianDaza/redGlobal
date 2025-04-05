@@ -10,12 +10,12 @@ export interface ProductsRedGlobal {
   mainImage: string;
   material?: string;
   name: string;
-  packaging: string;
-  printing: string;
+  packaging?: string;
+  printing?: string;
   size?: string;
   stock?: number;
-  tableQuantity: TableEntry[];
-  totalProducts: number;
+  tableQuantity?: TableEntry[];
+  totalProducts?: number;
 }
 
 export interface Label {
