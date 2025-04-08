@@ -47,12 +47,12 @@ watch(() => route.params.id, loadProduct);
 
 const uniqueImages = computed(() => {
   if (!product.value) return [];
-  const allImages = product.value.images.reduce((acc: string[], img) => {
+  const allImages = product.value.images?.reduce((acc: string[], img) => {
     if (img.urlImage) {
       acc.push(...img.urlImage);
     }
     return acc;
-  }, [product.value.mainImage]);
+  }, [product.value.mainImage]) || [];
   return [...new Set(allImages)];
 });
 
@@ -64,12 +64,14 @@ const visibleImages = computed(() => {
 });
 
 const selectImage = (image: string) => {
+  if (!product.value) return;
   selectedImage.value = image;
 };
 
 const selectColor = (item: TableEntry) => {
+  if (!product.value) return;
   selectedColor.value = item.color;
-  const colorImages = product.value?.images.find(img => img.color === item.color);
+  const colorImages = product.value?.images?.find(img => img.color === item.color);
   if (colorImages?.urlImage?.length) {
     selectedImage.value = colorImages.urlImage[0];
   }
@@ -256,9 +258,9 @@ const formatLabelName = (name: string) => {
                 <th>Color</th>
                 <th>Cantidades<br />disponible</th>
                 <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
-                <th>Precio</th>
                 <th v-if="hasAnyTracking">Estado</th>
                 <th v-if="hasAnyTracking">Última<br />Actualización</th>
+                <th>Precio</th>
               </tr>
             </thead>
             <tbody>
@@ -274,12 +276,6 @@ const formatLabelName = (name: string) => {
                 </td>
                 <td>{{ formatNumber(entry.quantity) }}</td>
                 <td v-if="hasAnyTracking">{{ entry.inTracking ? formatNumber(entry.inTracking) : '-' }}</td>
-                <td>
-                  {{ showPricesWithIva 
-                    ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))} con IVA`
-                    : `$${formatNumber(Number(entry.price))} + IVA` 
-                  }}
-                </td>
                 <td v-if="hasAnyTracking">
                   <div v-if="entry.inTracking" class="tracking-info">
                     <span :class="['status-badge', getStatusClass(entry.statusTracking ?? null)]">
@@ -290,6 +286,12 @@ const formatLabelName = (name: string) => {
                 </td>
                 <td v-if="hasAnyTracking">
                   {{ entry.lastUpdateTracking ? getRelativeTime(entry.lastUpdateTracking) : '-' }}
+                </td>
+                <td>
+                  {{ showPricesWithIva 
+                    ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))} con IVA`
+                    : `$${formatNumber(Number(entry.price))} + IVA` 
+                  }}
                 </td>
               </tr>
             </tbody>
