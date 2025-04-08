@@ -84,39 +84,38 @@ export const useProductsStore = defineStore('products', {
       }
 
       this.productsToView = (this.products || []).filter(product => {
-        let matchesCategory = true;
-        
-        // Filtrar por categoría si existe
+        // Filtrar por términos de búsqueda primero
+        if (query) {
+          const normalizedQuery = normalizeString(query);
+          const normalizedName = normalizeString(product.name);
+          const normalizedDescription = normalizeString(product.description);
+          const normalizedId = normalizeString(product.id);
+
+          const matchesSearch = normalizedName.includes(normalizedQuery) || 
+            normalizedDescription.includes(normalizedQuery) ||
+            normalizedId.includes(normalizedQuery);
+
+          if (!matchesSearch) {
+            return false;
+          }
+        }
+
+        // Luego filtrar por categoría si existe
         if (category) {
           const normalizedCategory = normalizeString(category);
           const productCategories = Array.isArray(product.category) ? 
             product.category : 
             [product.category || ''];
           
-          matchesCategory = productCategories.some(cat => 
-            normalizeString(cat || '').includes(normalizedCategory)
-          );
-        }
-
-        // Si no coincide con la categoría o no hay más filtros, retornamos
-        if (!matchesCategory || (!query && category)) {
-          return matchesCategory;
-        }
-
-        // Filtrar por términos de búsqueda
-        if (query) {
-          const normalizedQuery = normalizeString(query);
-          const normalizedName = normalizeString(product.name);
-          const normalizedDescription = normalizeString(product.description);
-
-          return normalizedName.includes(normalizedQuery) || 
-                 normalizedDescription.includes(normalizedQuery);
+          return productCategories.some(cat => {
+            const normalizedCat = normalizeString(cat || '');
+            const matches = normalizedCat.includes(normalizedCategory);
+            return matches;
+          });
         }
 
         return true;
       });
-
-      console.log('Filtered products:', this.productsToView.length);
     }
   },
   getters: {
