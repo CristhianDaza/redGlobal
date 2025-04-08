@@ -77,28 +77,46 @@ export const useProductsStore = defineStore('products', {
     setProductsToView(products: ProductsRedGlobal[]): void {
       this.productsToView = products
     },
-    filterProducts(query: string) {
-      if (!query) {
+    filterProducts(query: string, category?: string) {
+      if (!query && !category) {
         this.productsToView = this.products || [];
         return;
       }
-      
-      const searchTerms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-      
-      this.productsToView = (this.products || []).filter(product => {
-        const normalizedName = normalizeString(product.name);
-        const normalizedDescription = normalizeString(product.description);
-        const normalizedId = normalizeString(product.id);
-        const normalizedCategory = normalizeString(product.category);
 
-        return searchTerms.every(term => {
-          const normalizedTerm = normalizeString(term);
-          return normalizedName.includes(normalizedTerm) ||
-            normalizedDescription.includes(normalizedTerm) ||
-            normalizedCategory.includes(normalizedTerm) ||
-            normalizedId.includes(normalizedTerm);
-        });
+      this.productsToView = (this.products || []).filter(product => {
+        let matchesCategory = true;
+        
+        // Filtrar por categoría si existe
+        if (category) {
+          const normalizedCategory = normalizeString(category);
+          const productCategories = Array.isArray(product.category) ? 
+            product.category : 
+            [product.category || ''];
+          
+          matchesCategory = productCategories.some(cat => 
+            normalizeString(cat || '').includes(normalizedCategory)
+          );
+        }
+
+        // Si no coincide con la categoría o no hay más filtros, retornamos
+        if (!matchesCategory || (!query && category)) {
+          return matchesCategory;
+        }
+
+        // Filtrar por términos de búsqueda
+        if (query) {
+          const normalizedQuery = normalizeString(query);
+          const normalizedName = normalizeString(product.name);
+          const normalizedDescription = normalizeString(product.description);
+
+          return normalizedName.includes(normalizedQuery) || 
+                 normalizedDescription.includes(normalizedQuery);
+        }
+
+        return true;
       });
+
+      console.log('Filtered products:', this.productsToView.length);
     }
   },
   getters: {

@@ -28,14 +28,15 @@ onMounted(async () => {
   isLoading.value = false;
 });
 
-// Observar cambios en la búsqueda
-watch(() => route.query.search, async (newSearch) => {
+// Observar cambios en la búsqueda y categoría
+watch([() => route.query.search, () => route.query.category], async ([newSearch, newCategory]) => {
   searchQuery.value = decodeURIComponent(newSearch?.toString() || '').replace(/\+/g, ' ');
+  const category = decodeURIComponent(newCategory?.toString() || '').replace(/\+/g, ' ');
   isLoading.value = true;
   if (!storeProducts.products) {
     await storeProducts.getAllProducts();
   }
-  storeProducts.filterProducts(searchQuery.value);
+  storeProducts.filterProducts(searchQuery.value, category);
   currentPage.value = 1;
   isLoading.value = false;
 }, { immediate: true });

@@ -14,14 +14,12 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/products',
     component: () => import(/* webpackChunkName: "productsView" */ '../views/ProductsView.vue'),
-    name: 'products',
-    children: [
-      {
-        path: ':id',
-        component: () => import(/* webpackChunkName: "productView" */ '../views/ProductView.vue'),
-        name: 'product'
-      }
-    ]
+    name: 'products'
+  },
+  {
+    path: '/products/:id',
+    component: () => import(/* webpackChunkName: "productView" */ '../views/ProductView.vue'),
+    name: 'product'
   },
   {
     path: '/catalogs',
