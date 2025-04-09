@@ -85,17 +85,26 @@ export const firebaseService = {
 
   async getMenu(): Promise<MenuItem[]> {
     const docRef = await getDocs(collection(db, 'menu'))
-    const menu = docRef.docs.map(doc => doc.data()) as MenuItem[]
+    const menu = docRef.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id
+    })) as MenuItem[]
     return menu.sort((a, b) => a.order - b.order)
   },
 
   async createMenuItem(menuItem: MenuItem): Promise<void> {
-    await addDoc(collection(db, 'menu'), menuItem)
+    const { id, ...menuData } = menuItem
+    await addDoc(collection(db, 'menu'), menuData)
   },
 
   async updateMenuItem(menuItem: MenuItem): Promise<void> {
     const { id, ...menuData } = menuItem
     const menuRef = doc(db, 'menu', id)
     await updateDoc(menuRef, menuData)
+  },
+
+  async deleteMenuItem(id: string): Promise<void> {
+    const menuRef = doc(db, 'menu', id)
+    await deleteDoc(menuRef)
   }
 }

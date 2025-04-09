@@ -1,13 +1,21 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import type { MenuItem } from '../types/common';
 import { useAuthStore } from '../store/useAuthStore';
 import { useRouter } from 'vue-router';
-import RgLoader from '../components/UI/RgLoader.vue';
+import { useMenuStore } from '../store/useMenuStore';
 import RgButton from '../components/UI/RgButton.vue';
+import MenuItemForm from '../components/Admin/MenuItemForm.vue';
+import RgConfirmModal from '../components/UI/RgConfirmModal.vue';
 
 const authStore = useAuthStore();
+const menuStore = useMenuStore();
 const router = useRouter();
 const activeTab = ref('items'); // 'items' | 'users'
+const showMenuItemModal = ref(false);
+const editingMenuItem = ref<MenuItem | undefined>(undefined);
+const showDeleteConfirm = ref(false);
+const itemToDelete = ref<MenuItem | undefined>(undefined);
 
 // Redirigir si no está autenticado
 if (!authStore.isAuthenticated()) {
@@ -22,9 +30,52 @@ const handleTabChange = (tab: string) => {
   activeTab.value = tab;
 };
 
-const handleAddItem = () => {
-  // TODO: Implementar lógica para agregar item
-  console.log('Agregar nuevo item');
+const handleAddMenuItem = () => {
+  editingMenuItem.value = undefined;
+  showMenuItemModal.value = true;
+};
+
+const handleEditMenuItem = (item: MenuItem) => {
+  editingMenuItem.value = item;
+  showMenuItemModal.value = true;
+};
+
+const handleSaveMenuItem = async (menuItem: MenuItem) => {
+  try {
+    if (menuItem.id) {
+      await menuStore.updateMenuItem(menuItem);
+    } else {
+      await menuStore.createMenuItem(menuItem);
+    }
+    showMenuItemModal.value = false;
+    editingMenuItem.value = undefined;
+    await menuStore.getMenu();
+  } catch (error) {
+    console.error('Error saving menu item:', error);
+  }
+};
+
+const handleCloseModal = () => {
+  showMenuItemModal.value = false;
+  editingMenuItem.value = undefined;
+};
+
+const handleDeleteClick = (item: MenuItem) => {
+  itemToDelete.value = item;
+  showDeleteConfirm.value = true;
+};
+
+const handleConfirmDelete = async () => {
+  if (itemToDelete.value) {
+    await menuStore.deleteMenuItem(itemToDelete.value.id);
+    showDeleteConfirm.value = false;
+    itemToDelete.value = undefined;
+  }
+};
+
+const handleCancelDelete = () => {
+  showDeleteConfirm.value = false;
+  itemToDelete.value = undefined;
 };
 
 const handleAddUser = () => {
@@ -49,8 +100,8 @@ const handleAddUser = () => {
           :class="['nav-item', { active: activeTab === 'items' }]"
           @click="handleTabChange('items')"
         >
-          <span class="material-icons">inventory_2</span>
-          <span>Gestión de Items</span>
+          <span class="material-icons">menu</span>
+          <span>Gestión de Menú</span>
         </button>
         <button 
           :class="['nav-item', { active: activeTab === 'users' }]"
@@ -67,9 +118,9 @@ const handleAddUser = () => {
       <header class="main-header">
         <h1>{{ activeTab === 'items' ? 'Gestión de Items' : 'Gestión de Usuarios' }}</h1>
         <RgButton
-          :label="activeTab === 'items' ? 'Agregar Nuevo Item' : 'Crear Usuario'"
+          :text="activeTab === 'items' ? 'Agregar Item al Menú' : 'Crear Usuario'"
           class="add-button"
-          @click="activeTab === 'items' ? handleAddItem() : handleAddUser()"
+          @click="activeTab === 'items' ? handleAddMenuItem() : handleAddUser()"
           type="default"
         />
       </header>
@@ -78,28 +129,40 @@ const handleAddUser = () => {
         <div v-if="activeTab === 'items'" class="items-section">
           <div class="stats-grid">
             <div class="stat-card">
-              <span class="material-icons">inventory_2</span>
+              <span class="material-icons">menu</span>
               <div class="stat-info">
-                <h3>Total Items</h3>
-                <p>0</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <span class="material-icons">low_priority</span>
-              <div class="stat-info">
-                <h3>Bajo Stock</h3>
-                <p>0</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <span class="material-icons">trending_up</span>
-              <div class="stat-info">
-                <h3>Más Vendidos</h3>
-                <p>0</p>
+                <h3>Items en Menú</h3>
+                <p>{{ menuStore.getMenuItems.length }}</p>
               </div>
             </div>
           </div>
-          <!-- Aquí irá la tabla de items -->
+
+          <!-- Tabla de menú -->
+          <div class="menu-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Ruta</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in menuStore.getMenuItems" :key="item.id">
+                  <td>{{ item.title }}</td>
+                  <td>{{ item.path }}</td>
+                  <td class="actions">
+                    <button class="action-btn edit" @click="handleEditMenuItem(item)">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button class="action-btn delete" @click="handleDeleteClick(item)">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div v-if="activeTab === 'users'" class="users-section">
@@ -131,6 +194,22 @@ const handleAddUser = () => {
       </div>
     </main>
   </div>
+  <!-- Modal para agregar/editar items del menú -->
+  <MenuItemForm
+    :is-open="showMenuItemModal"
+    :menu-item="editingMenuItem"
+    @close="handleCloseModal"
+    @save="handleSaveMenuItem"
+  />
+
+  <!-- Modal de confirmación para eliminar -->
+  <RgConfirmModal
+    :is-open="showDeleteConfirm"
+    title="Eliminar Item"
+    message="¿Estás seguro de que deseas eliminar este item del menú?"
+    @close="handleCancelDelete"
+    @confirm="handleConfirmDelete"
+  />
 </template>
 
 <style scoped>
@@ -310,5 +389,68 @@ const handleAddUser = () => {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Estilos de la tabla */
+.menu-table {
+  margin-top: 2rem;
+  overflow-x: auto;
+}
+
+.menu-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.menu-table th,
+.menu-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.menu-table th {
+  font-weight: 600;
+  color: #4a5568;
+  background: #f8fafc;
+}
+
+.menu-table td {
+  color: #2d3748;
+}
+
+.menu-table .actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.action-btn.edit {
+  color: #4299e1;
+}
+
+.action-btn.edit:hover {
+  background: #ebf8ff;
+}
+
+.action-btn.delete {
+  color: #f56565;
+}
+
+.action-btn.delete:hover {
+  background: #fff5f5;
+}
+
+.action-btn .material-icons {
+  font-size: 1.25rem;
 }
 </style>

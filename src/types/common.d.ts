@@ -40,16 +40,15 @@ export interface TableEntry {
 
 export interface MenuItem {
   id: string;
-  name: string;
+  name?: string;
   path: string;
-  icon?: string;
   children?: MenuItem[];
   order: number;
   title: string;
 }
 
 export interface MenuState {
-  menu: MenuItem[] | null;
+  menu: MenuItem[];
   isLoadingMenu: boolean;
   lastUpdateMenu: string | null;
 }

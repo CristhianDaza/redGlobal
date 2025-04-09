@@ -4,19 +4,14 @@ import { firebaseService } from '../services/firebaseService'
 
 export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
-    menu: null,
+    menu: [] as MenuItem[],
     isLoadingMenu: false,
-    lastUpdateMenu: null,
+    lastUpdateMenu: null as string | null,
   }),
 
   actions: {
     async getMenu(): Promise<void> {
       try {
-        const shouldUpdate = await this.shouldUpdateMenu()
-        if (!shouldUpdate) {
-          this.menu = this.getMenuFromLocalStorage()
-          return
-        }
         this.isLoadingMenu = true
         const menu = await firebaseService.getMenu()
         this.saveMenuToLocalStorage(menu)
@@ -31,8 +26,13 @@ export const useMenuStore = defineStore('menu', {
 
     async createMenuItem(menuItem: MenuItem): Promise<void> {
       try {
-        await firebaseService.createMenuItem(menuItem)
-        await this.getMenu() // Refresh menu after creation
+        const { name, ...menuData } = menuItem
+        // Si el path está vacío pero hay un name, usar el name como path
+        if (!menuData.path && name) {
+          menuData.path = name
+        }
+        await firebaseService.createMenuItem(menuData as MenuItem)
+        await this.getMenu() // Refresh menu and localStorage after creation
       } catch (error) {
         console.error('Error creating menu item:', error)
       }
@@ -41,26 +41,28 @@ export const useMenuStore = defineStore('menu', {
     async updateMenuItem(menuItem: MenuItem): Promise<void> {
       try {
         await firebaseService.updateMenuItem(menuItem)
-        await this.getMenu() // Refresh menu after update
+        await this.getMenu() // Refresh menu and localStorage after update
       } catch (error) {
         console.error('Error updating menu item:', error)
       }
     },
 
-    shouldUpdateMenu(): Promise<boolean> {
-      const lastUpdate = localStorage.getItem('lastMenuUpdate')
-      if (!lastUpdate) return Promise.resolve(true)
-
-      const lastUpdateDate = new Date(lastUpdate)
-      const currentDate = new Date()
-      const diffInHours = (currentDate.getTime() - lastUpdateDate.getTime()) / (1000 * 60 * 60)
-
-      return Promise.resolve(diffInHours >= 24)
+    async deleteMenuItem(id: string): Promise<void> {
+      try {
+        await firebaseService.deleteMenuItem(id)
+        await this.getMenu() // Refresh menu and localStorage after deletion
+      } catch (error) {
+        console.error('Error deleting menu item:', error)
+      }
     },
 
-    getMenuFromLocalStorage(): MenuItem[] | null {
+    shouldUpdateMenu(): Promise<boolean> {
+      return Promise.resolve(true) // Siempre actualizar desde Firebase
+    },
+
+    getMenuFromLocalStorage(): MenuItem[] {
       const menuData = localStorage.getItem('menuData')
-      return menuData ? JSON.parse(menuData) : null
+      return menuData ? JSON.parse(menuData) : []
     },
 
     saveMenuToLocalStorage(menu: MenuItem[]): void {
@@ -71,7 +73,7 @@ export const useMenuStore = defineStore('menu', {
 
   getters: {
     getMenuItems(): MenuItem[] {
-      return this.menu || []
+      return this.menu
     },
 
     isLoading(): boolean {

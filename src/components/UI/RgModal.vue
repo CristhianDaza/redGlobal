@@ -1,0 +1,147 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import RgButton from './RgButton.vue'
+
+const props = defineProps<{
+  isOpen: boolean
+  title: string
+  maxWidth?: string
+  confirmText?: string
+  confirmClass?: 'primary' | 'danger' | 'default'
+}>()
+
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'confirm'): void
+}>()
+
+const customStyleCancel = ref({
+  backgroundColor: '#e2e8f0',
+  color: '#4a5568'
+})
+
+const customStyleConfirm = ref({
+  backgroundColor: props.confirmClass === 'danger' ? '#e53e3e' : props.confirmClass === 'default' ? '#718096' : '#ff4444',
+  color: 'white'
+})
+
+const handleClose = () => {
+  emit('close')
+}
+
+const handleConfirm = () => {
+  emit('confirm')
+}
+</script>
+
+<template>
+  <Teleport to="body">
+    <div v-if="isOpen" class="modal-overlay" @click="handleClose">
+      <div 
+        class="modal-content"
+        :style="{ maxWidth: maxWidth || '500px' }"
+        @click.stop
+      >
+        <div class="modal-header">
+          <h2>{{ title }}</h2>
+          <button class="close-button" @click="handleClose">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <slot></slot>
+        </div>
+
+        <div class="modal-footer">
+          <slot name="footer">
+            <RgButton
+              text="Cancelar"
+              type="default"
+              :custom-style="customStyleCancel"
+              @click="handleClose"
+            />
+            <RgButton
+              :text="confirmText || 'Confirmar'"
+              type="default"
+              :custom-style="customStyleConfirm"
+              @click="handleConfirm"
+            />
+          </slot>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2d3748;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  color: #4a5568;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+}
+</style>

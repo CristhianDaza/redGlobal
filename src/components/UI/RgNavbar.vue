@@ -82,13 +82,18 @@ const handleKeydown = (event: KeyboardEvent) => {
   <nav class="navbar">
     <div class="navbar-container">
       <div class="navbar-menu">
-        <router-link :to="{ name }" v-for="({id, title, name}) in menuStore.getMenuItems" :key="id">
-          <button 
-            class="menu-item"
-          >
-            {{ title }}
-          </button>
-        </router-link>
+        <template v-if="!menuStore.isLoading">
+          <router-link :to="path" v-for="({id, title, path}) in menuStore.getMenuItems" :key="id">
+            <button class="menu-item">
+              {{ title }}
+            </button>
+          </router-link>
+        </template>
+        <template v-else>
+          <div v-for="i in 4" :key="i" class="skeleton-item">
+            <div class="skeleton-button"></div>
+          </div>
+        </template>
       </div>
       <div class="navbar-actions">
         <p><span class="material-icons">phone</span> (+57) 312 345 6789</p>
@@ -184,6 +189,31 @@ const handleKeydown = (event: KeyboardEvent) => {
   right: 1rem;
   height: 2px;
   background: currentColor;
+}
+
+.skeleton-item {
+  width: 100px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.skeleton-button {
+  width: 100%;
+  height: 24px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .navbar-actions {
