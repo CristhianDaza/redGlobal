@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { User } from '../../types/common'
+import type { User, UserFormData } from '../../types/common'
 import RgModal from '../UI/RgModal.vue'
 
 const props = defineProps<{
@@ -10,16 +10,17 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'save', user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): void
+  (e: 'save', user: UserFormData): void
 }>()
 
-const formData = ref<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>({ 
+const formData = ref<UserFormData>({ 
   name: '',
   email: '',
   logo: '',
   primaryColor: '#ff4444',
   secondaryColor: '#4a5568',
-  priceIncrease: 0
+  priceIncrease: 0,
+  active: true
 })
 
 const password = ref('')
@@ -35,7 +36,8 @@ watch(() => props.user, (newUser) => {
       logo: newUser.logo || '',
       primaryColor: newUser.primaryColor,
       secondaryColor: newUser.secondaryColor,
-      priceIncrease: newUser.priceIncrease
+      priceIncrease: newUser.priceIncrease,
+      active: newUser.active
     }
     if (newUser.logo) {
       previewUrl.value = newUser.logo
@@ -47,7 +49,8 @@ watch(() => props.user, (newUser) => {
       logo: '',
       primaryColor: '#ff4444',
       secondaryColor: '#4a5568',
-      priceIncrease: 0
+      priceIncrease: 0,
+      active: true
     }
     selectedFile.value = null
     previewUrl.value = null
@@ -57,22 +60,62 @@ watch(() => props.user, (newUser) => {
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
-    selectedFile.value = target.files[0]
-    previewUrl.value = URL.createObjectURL(target.files[0])
+    const file = target.files[0]
+
+    // Validar el tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor selecciona un archivo de imagen válido')
+      target.value = '' // Limpiar el input
+      return
+    }
+
+    // Validar el tamaño del archivo (máximo 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB en bytes
+    if (file.size > maxSize) {
+      alert('El archivo es demasiado grande. El tamaño máximo es 5MB')
+      target.value = '' // Limpiar el input
+      return
+    }
+
+    selectedFile.value = file
+    previewUrl.value = URL.createObjectURL(file)
   }
 }
 
 const handleSubmit = async () => {
-  const userData = { 
-    ...formData.value,
-    password: password.value 
+  try {
+    // Validar campos requeridos
+    if (!formData.value.name || !formData.value.email) {
+      throw new Error('Por favor completa todos los campos requeridos')
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.value.email)) {
+      throw new Error('Por favor ingresa un email válido')
+    }
+
+    // Validar contraseña para nuevos usuarios
+    if (!props.user && (!password.value || password.value.length < 6)) {
+      throw new Error('La contraseña debe tener al menos 6 caracteres')
+    }
+
+    const userData = { 
+      ...formData.value,
+      password: password.value || undefined
+    }
+    
+    // Si hay un archivo seleccionado, lo enviamos para ser procesado
+    if (selectedFile.value) {
+      userData.logo = selectedFile.value
+    }
+    
+    emit('save', userData)
+    password.value = '' // Limpiar contraseña después de enviar
+  } catch (error) {
+    console.error('Error en el formulario:', error)
+    alert(error instanceof Error ? error.message : 'Error al procesar el formulario')
   }
-  if (selectedFile.value) {
-    // TODO: Implementar subida de imagen
-    // userData.logo = await uploadImage(selectedFile.value)
-  }
-  emit('save', userData)
-  password.value = '' // Limpiar contraseña después de enviar
 }
 
 const handleClose = () => {
@@ -167,6 +210,16 @@ const handleClose = () => {
           required
         >
       </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            v-model="formData.active"
+          >
+          Usuario Activo
+        </label>
+      </div>
     </form>
   </RgModal>
 </template>
@@ -218,5 +271,17 @@ const handleClose = () => {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
 }
 </style>

@@ -67,8 +67,15 @@ export interface User {
   primaryColor: string;
   secondaryColor: string;
   priceIncrease: number;
+  active: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface UserFormData extends Omit<User, 'id' | 'createdAt' | 'updatedAt'> {
+  password?: string;
+  logo?: File | string;
+  active?: boolean;
 }
 
 export interface UserState {

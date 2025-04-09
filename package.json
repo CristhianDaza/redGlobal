@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cloudinary/url-gen": "^1.21.0",
     "@todovue/tvbutton": "^1.1.2",
     "axios": "^1.8.1",
     "firebase": "^11.4.0",

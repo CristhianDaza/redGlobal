@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { User } from '../types/common'
+import type { User, UserFormData } from '../types/common'
 import { firebaseService } from '../services/firebaseService'
 
 export const useUserStore = defineStore('user', () => {
@@ -21,7 +21,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const createUser = async (user: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password: string }) => {
+  const createUser = async (user: Omit<UserFormData, 'logo'> & { id: string, logo?: string }) => {
     try {
       await firebaseService.createUser(user)
       await getUsers()

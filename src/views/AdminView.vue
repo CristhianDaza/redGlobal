@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import type { MenuItem, User } from '../types/common';
+import type { MenuItem, User, UserFormData } from '../types/common';
 import { useAuthStore } from '../store/useAuthStore';
-
 import { useMenuStore } from '../store/useMenuStore';
 import { useUserStore } from '../store/useUserStore';
 import RgButton from '../components/UI/RgButton.vue';
 import MenuItemForm from '../components/Admin/MenuItemForm.vue';
 import UserForm from '../components/Admin/UserForm.vue';
 import RgConfirmModal from '../components/UI/RgConfirmModal.vue';
+import { uploadImage } from '../config/cloudinary';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 
 const authStore = useAuthStore();
 const menuStore = useMenuStore();
@@ -58,25 +59,54 @@ const handleSaveMenuItem = async (menuItem: MenuItem) => {
   }
 };
 
-const handleSaveUser = async (user: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password?: string }) => {
+const handleSaveUser = async (formData: UserFormData) => {
   try {
-    if (editingUser.value) {
-      // Al editar, no enviamos la contraseña
-      const { password, ...userData } = user;
-      await userStore.updateUser(editingUser.value.id, userData);
-    } else {
-      // Al crear, la contraseña es requerida
-      if (!user.password) {
-        throw new Error('La contraseña es requerida para crear un usuario');
+    let logoUrl = '';
+
+    // Si hay un logo nuevo como File, primero lo subimos a Cloudinary
+    if (formData.logo instanceof File) {
+      try {
+        const uploadResult = await uploadImage(formData.logo);
+        logoUrl = uploadResult.secure_url;
+      } catch (error) {
+        console.error('Error al subir logo a Cloudinary:', error);
+        throw new Error('Error al subir el logo: ' + (error instanceof Error ? error.message : 'Error desconocido'));
       }
-      await userStore.createUser(user as Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password: string });
     }
+
+    if (editingUser.value) {
+      const { password, logo, ...userData } = formData;
+      try {
+        await userStore.updateUser(editingUser.value.id, {
+          ...userData,
+          logo: logoUrl || (typeof logo === 'string' ? logo : undefined)
+        });
+      } catch (error) {
+        throw new Error('Error al actualizar usuario: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+      }
+    } else {
+      try {
+        await userStore.createUser({
+          ...formData,
+          id: '',
+          logo: logoUrl || undefined
+        });
+      } catch (error) {
+        throw new Error('Error al crear usuario: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+      }
+    }
+
     showUserModal.value = false;
     editingUser.value = null;
     await userStore.getUsers();
   } catch (error) {
-    console.error('Error saving user:', error);
-    alert(error instanceof Error ? error.message : 'Error al guardar el usuario');
+    console.error('Error al guardar usuario:', {
+      error,
+      message: error instanceof Error ? error.message : 'Error desconocido',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
+    alert(error instanceof Error ? error.message : 'Error desconocido al guardar el usuario');
   }
 };
 

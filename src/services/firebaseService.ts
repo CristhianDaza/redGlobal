@@ -1,7 +1,7 @@
-import type { ProductsRedGlobal, MenuItem, User } from '../types/common'
+import type { ProductsRedGlobal, MenuItem, User, UserFormData } from '../types/common'
 
-import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore'
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where } from 'firebase/firestore'
+import { getAuth, createUserWithEmailAndPassword, deleteUser } from 'firebase/auth'
 import { db } from '../config/firebase'
 
 export const firebaseService = {
@@ -20,19 +20,34 @@ export const firebaseService = {
         const auth = getAuth()
         const currentUser = auth.currentUser
         if (currentUser) {
-          // Generar una contraseña temporal única
-          const tempPassword = `Admin${Date.now().toString(36)}`
-          
-          const newUser = {
-            name: currentUser.displayName || 'Admin',
-            email: currentUser.email || '',
-            primaryColor: '#ff4444',
-            secondaryColor: '#ff4444',
-            priceIncrease: 0,
-            password: tempPassword
+          try {
+            // Primero verificar si ya existe un documento para este usuario
+            const userQuery = await getDocs(
+              query(collection(db, 'users'), 
+                where('email', '==', currentUser.email))
+            )
+            
+            if (userQuery.empty) {
+              // El usuario no existe en Firestore, crearlo
+              const now = new Date().toISOString()
+              await addDoc(collection(db, 'users'), {
+                id: currentUser.uid,
+                name: currentUser.displayName || 'Admin',
+                email: currentUser.email,
+                primaryColor: '#ff4444',
+                secondaryColor: '#ff4444',
+                priceIncrease: 0,
+                active: true,
+                createdAt: now,
+                updatedAt: now
+              })
+              
+              // Obtener la lista actualizada
+              return await this.getUsers()
+            }
+          } catch (error) {
+            console.error('Error creating initial user:', error)
           }
-          await this.createUser(newUser)
-          return await this.getUsers()
         }
       }
       
@@ -43,22 +58,55 @@ export const firebaseService = {
     }
   },
 
-  async createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password: string }): Promise<void> {
+  async createUser(user: UserFormData): Promise<void> {
     try {
+      // Validar datos requeridos
+      if (!user.email || !user.password) {
+        throw new Error('El email y la contraseña son requeridos')
+      }
+
+      // Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(user.email)) {
+        throw new Error('El formato del email no es válido')
+      }
+
+      // Validar longitud de contraseña
+      if (user.password.length < 6) {
+        throw new Error('La contraseña debe tener al menos 6 caracteres')
+      }
+
       // Crear usuario en Authentication
       const auth = getAuth()
-      const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password)
+      let userCredential
+      try {
+        userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password)
+      } catch (error: any) {
+        if (error.code === 'auth/email-already-in-use') {
+          throw new Error('El email ya está registrado. Por favor, usa otro email.')
+        }
+        throw error
+      }
 
       // Crear usuario en Firestore
       const usersRef = collection(db, 'users')
       const now = new Date().toISOString()
-      const { password, ...userData } = user // Excluir la contraseña de los datos a guardar
-      await addDoc(usersRef, {
-        ...userData,
-        createdAt: now,
-        updatedAt: now,
-        uid: userCredential.user.uid // Guardar el UID del usuario autenticado
-      })
+      const { password, logo, ...userData } = user // Excluir la contraseña y el logo (File) de los datos a guardar
+      
+      try {
+        await addDoc(usersRef, {
+          ...userData,
+          id: userCredential.user.uid,
+          logo: user.logo, // Asegurar que se guarde la URL del logo
+          createdAt: now,
+          updatedAt: now,
+          active: true // Asegurar que el usuario se crea activo
+        })
+      } catch (error) {
+        // Si falla la creación en Firestore, eliminar el usuario de Auth
+        await userCredential.user.delete()
+        throw new Error('Error al guardar los datos del usuario')
+      }
     } catch (error) {
       console.error('Error creating user:', error)
       throw error
@@ -80,8 +128,41 @@ export const firebaseService = {
 
   async deleteUser(id: string): Promise<void> {
     try {
-      const userRef = doc(db, 'users', id)
-      await deleteDoc(userRef)
+      // 1. Obtener todos los usuarios que coincidan con el ID
+      const usersQuery = await getDocs(
+        query(collection(db, 'users'))
+      )
+      
+      const userDoc = usersQuery.docs.find(doc => doc.id === id)
+      
+      if (!userDoc) {
+        throw new Error('Usuario no encontrado')
+      }
+      
+      const userData = userDoc.data()
+      
+      // 2. Eliminar el usuario de Authentication si es posible
+      try {
+        const auth = getAuth()
+        const currentUser = auth.currentUser
+        
+        // Solo intentar eliminar si no es el usuario actual
+        if (currentUser && currentUser.uid !== userData.id) {
+          try {
+            // Intentar eliminar el usuario de Auth
+            await deleteUser(currentUser)
+          } catch (authError) {
+            throw new Error('Error al eliminar el usuario de Auth')
+          }
+        } else {
+          throw new Error('No se puede eliminar el usuario actual')
+        }
+      } catch (authError) {
+        throw new Error('Error al acceder a Auth')
+      }
+      
+      // 3. Eliminar el documento de Firestore
+      await deleteDoc(doc(db, 'users', id))
     } catch (error) {
       console.error('Error deleting user:', error)
       throw error

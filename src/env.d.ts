@@ -15,6 +15,10 @@ interface ImportMetaEnv {
   readonly VITE_API_PROMOS_BASE_URL: string
   readonly VITE_API_STOCKSUR_BASE_URL: string
   readonly VITE_API_CATAPROM_BASE_URL: string
+  readonly VITE_CLOUDINARY_CLOUD_NAME: string
+  readonly VITE_CLOUDINARY_API_KEY: string
+  readonly VITE_CLOUDINARY_API_SECRET: string
+  readonly VITE_CLOUDINARY_API_ENVIRONMENT: string
 }
 
 interface ImportMeta {
