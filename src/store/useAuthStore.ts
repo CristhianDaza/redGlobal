@@ -1,15 +1,18 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { auth } from '../config/firebase'
 import { 
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  type User
+  type User as FirebaseUser
 } from 'firebase/auth'
+import { useUserStore } from './useUserStore'
+import { UserRole } from '../types/common.d'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(null)
+  const user = ref<FirebaseUser | null>(null)
+  const userStore = useUserStore()
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -57,9 +60,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const isAuthenticated = () => {
+    const isAuthenticated = () => {
     return !!user.value
   }
+
+  const userRole = computed(() => {
+    if (!user.value) return null;
+    const currentUser = userStore.users.find(u => u.email === user.value?.email);
+    return currentUser?.role || null;
+  })
+
+  const isAdmin = computed(() => {
+    return userRole.value === UserRole.ADMIN;
+  })
 
   return {
     user,
@@ -67,6 +80,8 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     login,
     logout,
-    isAuthenticated
+    isAuthenticated,
+    userRole,
+    isAdmin
   }
 })

@@ -9,7 +9,6 @@ import MenuItemForm from '../components/Admin/MenuItemForm.vue';
 import UserForm from '../components/Admin/UserForm.vue';
 import RgConfirmModal from '../components/UI/RgConfirmModal.vue';
 import { uploadImage } from '../config/cloudinary';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 
 const authStore = useAuthStore();
 const menuStore = useMenuStore();
@@ -24,6 +23,7 @@ const showDeleteConfirm = ref(false);
 const itemToDelete = ref<{ id: string; type: 'menu' | 'user' } | undefined>(undefined);
 
 const isAuthenticated = computed(() => authStore.isAuthenticated())
+const isAdmin = computed(() => authStore.isAdmin)
 
 const userEmail = computed(() => {
   return authStore.user?.email || 'No disponible';
@@ -185,9 +185,12 @@ watch(activeTab, async (newTab: string) => {
 
 <template>
   <div v-if="!isAuthenticated" class="error-container">
-    <p>No tienes acceso a esta página</p>
+    <p>Debes iniciar sesión para acceder a esta página</p>
   </div>
-  <div v-else class="admin-layout">
+  <div v-else-if="!isAdmin" class="error-container">
+    <p>No tienes permisos para acceder a esta página. Solo los administradores pueden acceder al panel de administración.</p>
+  </div>
+  <div v-else-if="isAdmin" class="admin-layout">
     <!-- Sidebar de navegación -->
     <aside class="admin-sidebar">
       <div class="sidebar-header">

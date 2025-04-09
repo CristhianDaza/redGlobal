@@ -1,4 +1,5 @@
-import type { ProductsRedGlobal, MenuItem, User, UserFormData } from '../types/common'
+import type { ProductsRedGlobal, MenuItem, User, UserFormData } from '../types/common.d'
+import { UserRole } from '../types/common.d'
 
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where } from 'firebase/firestore'
 import { getAuth, createUserWithEmailAndPassword, deleteUser } from 'firebase/auth'
@@ -38,6 +39,7 @@ export const firebaseService = {
                 secondaryColor: '#ff4444',
                 priceIncrease: 0,
                 active: true,
+                role: UserRole.ADMIN,
                 createdAt: now,
                 updatedAt: now
               })
@@ -100,6 +102,7 @@ export const firebaseService = {
           logo: user.logo, // Asegurar que se guarde la URL del logo
           createdAt: now,
           updatedAt: now,
+          role: userData.role || UserRole.CLIENT, // Si no se especifica rol, será cliente
           active: true // Asegurar que el usuario se crea activo
         })
       } catch (error) {

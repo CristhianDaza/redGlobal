@@ -59,6 +59,11 @@ export interface ImagesRedGlobal {
   id: number;
 }
 
+export enum UserRole {
+  ADMIN = 'admin',
+  CLIENT = 'client'
+}
+
 export interface User {
   id: string;
   name: string;
@@ -68,6 +73,7 @@ export interface User {
   secondaryColor: string;
   priceIncrease: number;
   active: boolean;
+  role: UserRole;
   createdAt: string;
   updatedAt: string;
 }

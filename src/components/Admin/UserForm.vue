@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { User, UserFormData } from '../../types/common'
+import type { User, UserFormData } from '../../types/common.d'
+import { UserRole } from '../../types/common.d'
 import RgModal from '../UI/RgModal.vue'
 
 const props = defineProps<{
@@ -20,7 +21,8 @@ const formData = ref<UserFormData>({
   primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim(),
   secondaryColor: '#4a5568',
   priceIncrease: 0,
-  active: true
+  active: true,
+  role: UserRole.CLIENT
 })
 
 const password = ref('')
@@ -37,7 +39,8 @@ watch(() => props.user, (newUser) => {
       primaryColor: newUser.primaryColor,
       secondaryColor: newUser.secondaryColor,
       priceIncrease: newUser.priceIncrease,
-      active: newUser.active
+      active: newUser.active,
+      role: newUser.role
     }
     if (newUser.logo) {
       previewUrl.value = newUser.logo
@@ -50,7 +53,8 @@ watch(() => props.user, (newUser) => {
       primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
       secondaryColor: '#4a5568',
       priceIncrease: 0,
-      active: true
+      active: true,
+      role: UserRole.CLIENT
     }
     selectedFile.value = null
     previewUrl.value = null
@@ -220,6 +224,18 @@ const handleClose = () => {
           Usuario Activo
         </label>
       </div>
+
+      <div class="form-group">
+        <label for="role">Rol del Usuario</label>
+        <select
+          id="role"
+          v-model="formData.role"
+          required
+        >
+          <option :value="UserRole.CLIENT">Cliente</option>
+          <option :value="UserRole.ADMIN">Administrador</option>
+        </select>
+      </div>
     </form>
   </RgModal>
 </template>
@@ -283,5 +299,20 @@ const handleClose = () => {
 .checkbox-label input[type="checkbox"] {
   width: 1rem;
   height: 1rem;
+}
+
+select {
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  background-color: white;
+  color: #4a5568;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.1);
 }
 </style>
