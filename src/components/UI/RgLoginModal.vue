@@ -1,12 +1,53 @@
 <script setup lang="ts">
-defineProps<{
+import { ref, watch } from 'vue';
+import { useAuthStore } from '../../store/useAuthStore';
+
+const props = defineProps<{
   isOpen: boolean
 }>();
 
 const emit = defineEmits(['close']);
+const authStore = useAuthStore();
+
+const email = ref('');
+const password = ref('');
+const errorMessage = ref('');
+
+// Limpiar el formulario cuando se cierra el modal
+watch(() => props.isOpen, (newValue) => {
+  if (!newValue) {
+    email.value = '';
+    password.value = '';
+    errorMessage.value = '';
+  }
+});
+
+// Observar cambios en la autenticación
+watch(() => authStore.isAuthenticated(), (isAuthenticated) => {
+  if (isAuthenticated) {
+    emit('close');
+  }
+});
 
 const closeModal = () => {
   emit('close');
+};
+
+const handleSubmit = async () => {
+  if (!email.value || !password.value) {
+    errorMessage.value = 'Por favor, completa todos los campos';
+    return;
+  }
+
+  try {
+    const success = await authStore.login(email.value, password.value);
+    
+    if (!success) {
+      errorMessage.value = authStore.error || 'Error al iniciar sesión';
+    }
+  } catch (error: any) {
+    errorMessage.value = error.message || 'Error al iniciar sesión';
+  }
 };
 </script>
 
@@ -22,16 +63,37 @@ const closeModal = () => {
         </button>
       </div>
       <div class="modal-body">
-        <form @submit.prevent>
+        <form @submit.prevent="handleSubmit">
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" placeholder="Ingresa tu email" />
+            <input 
+              type="email" 
+              id="email" 
+              v-model="email"
+              placeholder="Ingresa tu email"
+              :disabled="authStore.loading"
+            />
           </div>
           <div class="form-group">
             <label for="password">Contraseña</label>
-            <input type="password" id="password" placeholder="Ingresa tu contraseña" />
+            <input 
+              type="password" 
+              id="password" 
+              v-model="password"
+              placeholder="Ingresa tu contraseña"
+              :disabled="authStore.loading"
+            />
           </div>
-          <button type="submit" class="login-button">Ingresar</button>
+          <button 
+            type="submit" 
+            class="login-button"
+            :disabled="authStore.loading"
+          >
+            {{ authStore.loading ? 'Iniciando sesión...' : 'Ingresar' }}
+          </button>
         </form>
       </div>
       </div>
@@ -149,10 +211,27 @@ const closeModal = () => {
   transition: width 0.3s ease-out, height 0.3s ease-out;
 }
 
-.login-button:hover {
+.login-button:hover:not(:disabled) {
   background-color: #0056b3;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 86, 179, 0.2);
+}
+
+.login-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.error-message {
+  background-color: #fff5f5;
+  color: #e53e3e;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  border: 1px solid #fed7d7;
 }
 
 .login-button:active {

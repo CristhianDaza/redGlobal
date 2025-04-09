@@ -1,21 +1,46 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '../../types/common';
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMenuStore } from '../../store/useMenuStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import TvButton from '@todovue/tvbutton';
 import RgAutocomplete from './RgAutocomplete.vue';
 import RgLoginModal from './RgLoginModal.vue';
 
 const router = useRouter();
 const menuStore = useMenuStore();
+const authStore = useAuthStore();
 const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
 
+// Observar cambios en la autenticación
+watch(() => authStore.user, (newUser: any) => {
+  console.log('[Navbar] Usuario cambiado:', newUser?.email);
+});
+
+const handleLogout = async () => {
+  try {
+    await authStore.logout();
+  } catch (error) {
+    console.error('[Navbar] Error en logout:', error);
+  }
+};
+
 const toggleLoginModal = () => {
   showLoginModal.value = !showLoginModal.value;
 };
+
+const userButtonText = computed(() => {
+  const text = authStore.loading ? 'Cargando...' : 
+               authStore.isAuthenticated() ? 'Cerrar Sesión' : 'Iniciar Sesión';
+  return text;
+});
+
+const userIcon = computed(() => {
+  return authStore.isAuthenticated() ? 'logout' : 'person';
+});
 
 const handleSearch = () => {
   if (!searchQuery.value.trim()) return;
@@ -89,7 +114,10 @@ const handleKeydown = (event: KeyboardEvent) => {
         icon="search"
       />
     </div>
-    <p @click="toggleLoginModal" style="cursor: pointer;"><span class="material-icons">person</span> Iniciar Sesion</p>
+    <p @click="authStore.isAuthenticated() ? handleLogout() : toggleLoginModal()" style="cursor: pointer;">
+      <span class="material-icons">{{ userIcon }}</span>
+      {{ userButtonText }}
+    </p>
     <RgLoginModal v-if="showLoginModal" :is-open="showLoginModal" @close="toggleLoginModal" />
   </div>
 </template>
