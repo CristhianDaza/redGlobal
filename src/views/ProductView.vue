@@ -441,7 +441,7 @@ const formatLabelName = (name: string) => {
 }
 
 .thumbnail-button.active {
-  border-color: #ff4444;
+  border-color: var(--primary-color);
 }
 
 .thumbnail {
@@ -717,11 +717,11 @@ const formatLabelName = (name: string) => {
 
 .color-button:hover {
   transform: scale(1.1);
-  border-color: #ff4444;
+  border-color: var(--primary-color);
 }
 
 .color-button.active {
-  border-color: #ff4444;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
 }
 

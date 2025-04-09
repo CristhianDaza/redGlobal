@@ -17,7 +17,7 @@ const formData = ref<UserFormData>({
   name: '',
   email: '',
   logo: '',
-  primaryColor: '#ff4444',
+  primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim(),
   secondaryColor: '#4a5568',
   priceIncrease: 0,
   active: true
@@ -47,7 +47,7 @@ watch(() => props.user, (newUser) => {
       name: '',
       email: '',
       logo: '',
-      primaryColor: '#ff4444',
+      primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
       secondaryColor: '#4a5568',
       priceIncrease: 0,
       active: true

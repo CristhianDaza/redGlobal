@@ -117,8 +117,8 @@ const handleClose = () => {
 
 .form-group input:focus {
   outline: none;
-  border-color: #ff4444;
-  box-shadow: 0 0 0 1px #ff4444;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
 }
 
 .form-group input::placeholder {

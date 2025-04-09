@@ -14,6 +14,21 @@ const menuStore = useMenuStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 
+// Función para actualizar los colores CSS
+const updateCustomColors = () => {
+  if (authStore.isAuthenticated()) {
+    const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
+    if (currentUser) {
+      document.documentElement.style.setProperty('--primary-color', currentUser.primaryColor || '#ff4444');
+      document.documentElement.style.setProperty('--secondary-color', currentUser.secondaryColor || '#666');
+    }
+  } else {
+    // Restaurar colores por defecto
+    document.documentElement.style.setProperty('--primary-color', '#ff4444');
+    document.documentElement.style.setProperty('--secondary-color', '#666');
+  }
+};
+
 onMounted(async () => {
   await Promise.all([
     storeProducts.getAllProducts(),
@@ -23,13 +38,23 @@ onMounted(async () => {
   // Si hay un usuario autenticado, cargar los usuarios
   if (authStore.isAuthenticated()) {
     await userStore.getUsers();
+    updateCustomColors();
   }
 
   // Observar cambios en la autenticación
   authStore.$subscribe(async (_, state) => {
     if (state.user) {
       await userStore.getUsers();
+      updateCustomColors();
+    } else {
+      // Si cierra sesión, restaurar colores por defecto
+      updateCustomColors();
     }
+  });
+
+  // Observar cambios en los usuarios
+  userStore.$subscribe(() => {
+    updateCustomColors();
   });
 });
 </script>
@@ -47,7 +72,8 @@ onMounted(async () => {
 @import url('https://fonts.googleapis.com/css2?family=Material+Icons');
 
 :root {
-  --primary-color: #333;
+  --primary-color: #ff4444;
+  --secondary-color: #666;
   --text-color: #333;
   --background-color: #fff;
   --border-color: #eee;

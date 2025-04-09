@@ -40,7 +40,7 @@
 }
 
 .path {
-  stroke: #ff4444;
+  stroke: var(--primary-color);
   stroke-dasharray: 89, 200;
   stroke-dashoffset: 0;
   animation: dash 1.5s ease-in-out infinite;

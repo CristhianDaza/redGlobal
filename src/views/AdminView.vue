@@ -395,7 +395,7 @@ watch(activeTab, async (newTab: string) => {
 }
 
 .sidebar-header .material-icons {
-  color: #ff4444;
+  color: var(--primary-color);
   font-size: 1.5rem;
 }
 
@@ -432,7 +432,7 @@ watch(activeTab, async (newTab: string) => {
 }
 
 .nav-item.active {
-  background: #ff4444;
+  background: var(--primary-color);
   color: white;
 }
 
@@ -460,7 +460,7 @@ watch(activeTab, async (newTab: string) => {
 }
 
 .add-button {
-  background: #ff4444;
+  background: var(--primary-color);
   color: white;
 }
 
@@ -495,7 +495,7 @@ watch(activeTab, async (newTab: string) => {
 
 .stat-card .material-icons {
   font-size: 2rem;
-  color: #ff4444;
+  color: var(--primary-color);
 }
 
 .stat-info h3 {
@@ -620,7 +620,7 @@ watch(activeTab, async (newTab: string) => {
   height: 48px;
   border: 5px solid #f3f3f3;
   border-radius: 50%;
-  border-top: 5px solid #ff4444;
+  border-top: 5px solid var(--primary-color);
   animation: spin 1s linear infinite;
 }
 

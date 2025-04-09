@@ -99,13 +99,13 @@ defineProps<{
 .hero-hr {
   width: 98px;
   height: 2.8px;
-  background-color: #ff4444;
+  background-color: var(--primary-color);
   margin-bottom: -1.5rem;
   border: 0;
 }
 
 .highlight {
-  color: #ff4444;
+  color: var(--primary-color);
 }
 
 @media (max-width: 768px) {

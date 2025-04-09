@@ -31,7 +31,7 @@ const categories: Category[] = [
 ];
 
 const customStyle = {
-  backgroundColor: '#ff4444',
+  backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
   color: '#fff',
 };
 </script>

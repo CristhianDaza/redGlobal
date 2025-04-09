@@ -143,7 +143,7 @@ const services = [
       font-size: 0.9rem;
 
       .material-icons {
-        color: #ff4444;
+        color: var(--primary-color);
         font-size: 1.2rem;
       }
     }
@@ -173,7 +173,7 @@ const services = [
         transition: color 0.2s ease;
 
         &:hover {
-          color: #ff4444;
+          color: var(--primary-color);
         }
       }
     }

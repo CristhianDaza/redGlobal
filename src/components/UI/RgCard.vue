@@ -45,11 +45,11 @@ const props = defineProps<{
 .product:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  border-color: #ff4444;
+  border-color: var(--primary-color);
 }
 
 .product:hover .product-name {
-  color: #ff4444;
+  color: var(--primary-color);
 }
 
 .product:hover .product-image-container img {

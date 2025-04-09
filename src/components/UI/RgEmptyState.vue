@@ -19,7 +19,7 @@ const actions = [
     text: 'Ver catálogo digital',
     link: '/catalogo',
     customStyle: {
-      backgroundColor: '#ff4444',
+      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
       color: '#fff'
     }
   },
@@ -81,7 +81,7 @@ const actions = [
 }
 
 .primary-icon {
-  color: #ff4444;
+  color: var(--primary-color);
   position: relative;
   z-index: 2;
   animation: float 3s ease-in-out infinite;

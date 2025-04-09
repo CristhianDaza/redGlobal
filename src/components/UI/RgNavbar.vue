@@ -143,6 +143,11 @@ const handleKeydown = (event: KeyboardEvent) => {
         @click="handleSearch"
         type="icon"
         icon="search"
+        :custom-style="{
+          backgroundColor: 'var(--primary-color)',
+          boxShadow: '0 2px 8px var(--primary-color)',
+          color: '#fff'
+        }"
       />
     </div>
     <div class="auth-buttons">
@@ -265,7 +270,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 
     .material-icons {
       font-size: 18px;
-      color: #ff4444;
+      color: var(--primary-color);
     }
   }
 }
@@ -323,7 +328,6 @@ const handleKeydown = (event: KeyboardEvent) => {
   height: 32px;
   width: 32px;
   z-index: 1;
-  background-color: #ff4444;
   color: white;
   padding: 0;
   display: flex;
@@ -365,11 +369,11 @@ const handleKeydown = (event: KeyboardEvent) => {
 
     .material-icons {
       font-size: 18px;
-      color: #ff4444;
+      color: var(--primary-color);
     }
 
     &:hover {
-      color: #ff4444;
+      color: var(--primary-color);
     }
   }
 
@@ -397,12 +401,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 
     .material-icons {
       font-size: 18px;
-      color: #ff4444;
+      color: var(--primary-color);
     }
 
     &:hover {
       background-color: rgba(0, 0, 0, 0.05);
-      color: #ff4444;
+      color: var(--primary-color);
     }
   }
 }

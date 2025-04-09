@@ -106,6 +106,15 @@ const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import
 const RgEmptyState = defineAsyncComponent(/* webpackChunkName: "rgEmptyState" */() => import('../components/UI/RgEmptyState.vue'));
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('../components/UI/RgButton.vue'));
 
+const getButtonStyle = (page: number) => ({
+  backgroundColor: page === currentPage.value ? 'var(--primary-color)' : '#f5f5f5',
+  color: page === currentPage.value ? '#fff' : '#333',
+  minWidth: '40px',
+  height: '40px',
+  padding: '0',
+  margin: '0 4px'
+});
+
 const handlePageChange = (newPage: number): void => {
   if (newPage > 0 && newPage <= totalPages.value) {
     currentPage.value = newPage;
@@ -164,13 +173,7 @@ watch(
                 :key="page"
                 :class="{ active: page === currentPage }"
                 @click="handlePageChange(page)"
-                :custom-style="{
-                  backgroundColor: page === currentPage ? '#ff4444' : '#f5f5f5',
-                  color: page === currentPage ? '#fff' : '#333',
-                  minWidth: '40px',
-                  height: '40px',
-                  padding: '0'
-                }"
+                :custom-style="getButtonStyle(page)"
               >
                 {{ page }}
               </RgButton>
@@ -279,11 +282,11 @@ watch(
 }
 
 .page-size-select:hover {
-  border-color: #ff4444;
+  border-color: var(--primary-color);
 }
 
 .page-size-select:focus {
-  border-color: #ff4444;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.1);
 }
 
@@ -313,19 +316,19 @@ watch(
 }
 
 :deep(.search__pagination .tv-btn[type="icon"]:hover:not(:disabled)) {
-  background: #ff4444;
+  background: var(--primary-color);
   color: white;
   opacity: 0.8;
 }
 
 :deep(.page-numbers .tv-btn.active) {
-  background: #ff4444;
+  background: var(--primary-color);
   color: white;
   box-shadow: 0 2px 8px rgba(255, 68, 68, 0.25);
 }
 
 :deep(.page-numbers .tv-btn:hover:not(.active):not(:disabled)) {
-  background: #ff4444;
+  background: var(--primary-color);
   color: white;
   opacity: 0.8;
 }
