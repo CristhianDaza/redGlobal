@@ -15,11 +15,6 @@ const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
 
-// Observar cambios en la autenticación
-watch(() => authStore.user, (newUser: any) => {
-  console.log('[Navbar] Usuario cambiado:', newUser?.email);
-});
-
 const handleLogout = async () => {
   try {
     await authStore.logout();

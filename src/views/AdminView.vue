@@ -1,32 +1,35 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import type { MenuItem } from '../types/common';
+import { ref, computed, onMounted, watch } from 'vue';
+import type { MenuItem, User } from '../types/common';
 import { useAuthStore } from '../store/useAuthStore';
-import { useRouter } from 'vue-router';
+
 import { useMenuStore } from '../store/useMenuStore';
+import { useUserStore } from '../store/useUserStore';
 import RgButton from '../components/UI/RgButton.vue';
 import MenuItemForm from '../components/Admin/MenuItemForm.vue';
+import UserForm from '../components/Admin/UserForm.vue';
 import RgConfirmModal from '../components/UI/RgConfirmModal.vue';
 
 const authStore = useAuthStore();
 const menuStore = useMenuStore();
-const router = useRouter();
+const userStore = useUserStore();
+
 const activeTab = ref('items'); // 'items' | 'users'
 const showMenuItemModal = ref(false);
+const showUserModal = ref(false);
 const editingMenuItem = ref<MenuItem | undefined>(undefined);
+const editingUser = ref<User | null>(null);
 const showDeleteConfirm = ref(false);
-const itemToDelete = ref<MenuItem | undefined>(undefined);
+const itemToDelete = ref<{ id: string; type: 'menu' | 'user' } | undefined>(undefined);
 
-// Redirigir si no está autenticado
-if (!authStore.isAuthenticated()) {
-  router.push('/');
-}
+const isAuthenticated = computed(() => authStore.isAuthenticated())
 
 const userEmail = computed(() => {
   return authStore.user?.email || 'No disponible';
 });
 
-const handleTabChange = (tab: string) => {
+const handleTabChange = (tab: string, event: Event) => {
+  event.preventDefault();
   activeTab.value = tab;
 };
 
@@ -55,19 +58,47 @@ const handleSaveMenuItem = async (menuItem: MenuItem) => {
   }
 };
 
-const handleCloseModal = () => {
-  showMenuItemModal.value = false;
-  editingMenuItem.value = undefined;
+const handleSaveUser = async (user: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password?: string }) => {
+  try {
+    if (editingUser.value) {
+      // Al editar, no enviamos la contraseña
+      const { password, ...userData } = user;
+      await userStore.updateUser(editingUser.value.id, userData);
+    } else {
+      // Al crear, la contraseña es requerida
+      if (!user.password) {
+        throw new Error('La contraseña es requerida para crear un usuario');
+      }
+      await userStore.createUser(user as Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password: string });
+    }
+    showUserModal.value = false;
+    editingUser.value = null;
+    await userStore.getUsers();
+  } catch (error) {
+    console.error('Error saving user:', error);
+    alert(error instanceof Error ? error.message : 'Error al guardar el usuario');
+  }
 };
 
-const handleDeleteClick = (item: MenuItem) => {
-  itemToDelete.value = item;
+const handleCloseModal = () => {
+  showMenuItemModal.value = false;
+  showUserModal.value = false;
+  editingMenuItem.value = undefined;
+  editingUser.value = null;
+};
+
+const handleDeleteClick = (id: string, type: 'menu' | 'user') => {
+  itemToDelete.value = { id, type };
   showDeleteConfirm.value = true;
 };
 
 const handleConfirmDelete = async () => {
   if (itemToDelete.value) {
-    await menuStore.deleteMenuItem(itemToDelete.value.id);
+    if (itemToDelete.value.type === 'menu') {
+      await menuStore.deleteMenuItem(itemToDelete.value.id);
+    } else {
+      await userStore.deleteUser(itemToDelete.value.id);
+    }
     showDeleteConfirm.value = false;
     itemToDelete.value = undefined;
   }
@@ -78,14 +109,55 @@ const handleCancelDelete = () => {
   itemToDelete.value = undefined;
 };
 
-const handleAddUser = () => {
-  // TODO: Implementar lógica para crear usuario
-  console.log('Crear nuevo usuario');
+const handleEditUser = (user: User) => {
+  editingUser.value = { ...user };
+  showUserModal.value = true;
 };
+
+const handleAddUser = () => {
+  editingUser.value = null;
+  showUserModal.value = true;
+};
+
+// Computed properties para los datos
+const menuItems = computed(() => menuStore.menu);
+const users = computed(() => userStore.users);
+
+// Stats computados
+const totalMenuItems = computed(() => menuItems.value.length);
+const totalUsers = computed(() => users.value.length);
+
+// Estado de carga
+const isLoadingData = computed(() => {
+  if (activeTab.value === 'items') {
+    return menuStore.isLoadingMenu;
+  }
+  return userStore.isLoadingUsers;
+});
+
+// Inicializar datos
+onMounted(async () => {
+  await Promise.all([
+    menuStore.getMenu(),
+    userStore.getUsers()
+  ]);
+});
+
+// Observar cambios en la pestaña activa
+watch(activeTab, async (newTab: string) => {
+  if (newTab === 'items') {
+    await menuStore.getMenu();
+  } else {
+    await userStore.getUsers();
+  }
+});
 </script>
 
 <template>
-  <div class="admin-layout">
+  <div v-if="!isAuthenticated" class="error-container">
+    <p>No tienes acceso a esta página</p>
+  </div>
+  <div v-else class="admin-layout">
     <!-- Sidebar de navegación -->
     <aside class="admin-sidebar">
       <div class="sidebar-header">
@@ -98,14 +170,14 @@ const handleAddUser = () => {
       <nav class="sidebar-nav">
         <button 
           :class="['nav-item', { active: activeTab === 'items' }]"
-          @click="handleTabChange('items')"
+          @click="(e) => handleTabChange('items', e)"
         >
           <span class="material-icons">menu</span>
           <span>Gestión de Menú</span>
         </button>
         <button 
           :class="['nav-item', { active: activeTab === 'users' }]"
-          @click="handleTabChange('users')"
+          @click="(e) => handleTabChange('users', e)"
         >
           <span class="material-icons">group</span>
           <span>Gestión de Usuarios</span>
@@ -126,13 +198,17 @@ const handleAddUser = () => {
       </header>
 
       <div class="main-content">
-        <div v-if="activeTab === 'items'" class="items-section">
+        <div v-if="isLoadingData" class="loading-section">
+          <div class="loader"></div>
+          <p>Cargando datos...</p>
+        </div>
+        <div v-else-if="activeTab === 'items'" class="items-section">
           <div class="stats-grid">
             <div class="stat-card">
               <span class="material-icons">menu</span>
               <div class="stat-info">
                 <h3>Items en Menú</h3>
-                <p>{{ menuStore.getMenuItems.length }}</p>
+                <p>{{ totalMenuItems }}</p>
               </div>
             </div>
           </div>
@@ -148,14 +224,14 @@ const handleAddUser = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in menuStore.getMenuItems" :key="item.id">
+                <tr v-for="item in menuItems" :key="item.id">
                   <td>{{ item.title }}</td>
                   <td>{{ item.path }}</td>
                   <td class="actions">
                     <button class="action-btn edit" @click="handleEditMenuItem(item)">
                       <span class="material-icons">edit</span>
                     </button>
-                    <button class="action-btn delete" @click="handleDeleteClick(item)">
+                    <button class="action-btn delete" @click="handleDeleteClick(item.id, 'menu')">
                       <span class="material-icons">delete</span>
                     </button>
                   </td>
@@ -165,13 +241,13 @@ const handleAddUser = () => {
           </div>
         </div>
 
-        <div v-if="activeTab === 'users'" class="users-section">
+        <div v-else-if="activeTab === 'users'" class="users-section">
           <div class="stats-grid">
             <div class="stat-card">
               <span class="material-icons">group</span>
               <div class="stat-info">
                 <h3>Total Usuarios</h3>
-                <p>0</p>
+                <p>{{ totalUsers }}</p>
               </div>
             </div>
             <div class="stat-card">
@@ -189,7 +265,37 @@ const handleAddUser = () => {
               </div>
             </div>
           </div>
-          <!-- Aquí irá la tabla de usuarios -->
+          <!-- Tabla de usuarios -->
+            <div class="menu-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>% Incremento</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="user in users" :key="user.id">
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.priceIncrease }}%</td>
+                    <td class="actions">
+                      <button 
+                        class="action-btn edit" 
+                        @click="() => handleEditUser(user)"
+                      >
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button class="action-btn delete" @click="handleDeleteClick(user.id, 'user')">
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
         </div>
       </div>
     </main>
@@ -202,11 +308,19 @@ const handleAddUser = () => {
     @save="handleSaveMenuItem"
   />
 
+  <!-- Modal para agregar/editar usuarios -->
+  <UserForm
+    :is-open="showUserModal"
+    :user="editingUser"
+    @close="handleCloseModal"
+    @save="handleSaveUser"
+  />
+
   <!-- Modal de confirmación para eliminar -->
   <RgConfirmModal
     :is-open="showDeleteConfirm"
-    title="Eliminar Item"
-    message="¿Estás seguro de que deseas eliminar este item del menú?"
+    :title="`Eliminar ${itemToDelete?.type === 'menu' ? 'Item' : 'Usuario'}`"
+    :message="`¿Estás seguro de que deseas eliminar este ${itemToDelete?.type === 'menu' ? 'item del menú' : 'usuario'}?`"
     @close="handleCancelDelete"
     @confirm="handleConfirmDelete"
   />
@@ -452,5 +566,36 @@ const handleAddUser = () => {
 
 .action-btn .material-icons {
   font-size: 1.25rem;
+}
+.loading-container,
+.error-container,
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px);
+  background: #f7fafc;
+  font-size: 1.25rem;
+  color: #4a5568;
+  gap: 1rem;
+}
+
+.loading-section {
+  min-height: 400px;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 5px solid #ff4444;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>

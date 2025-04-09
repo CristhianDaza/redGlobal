@@ -58,3 +58,21 @@ export interface ImagesRedGlobal {
   color: string;
   id: number;
 }
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  logo?: string;
+  primaryColor: string;
+  secondaryColor: string;
+  priceIncrease: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserState {
+  users: User[];
+  isLoadingUsers: boolean;
+  lastUpdateUsers: string | null;
+}

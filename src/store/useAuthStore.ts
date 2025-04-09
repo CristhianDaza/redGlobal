@@ -13,14 +13,21 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
+  // Establecer loading inicial
+  loading.value = true
+
   // Inicializar el listener de estado de autenticación
   onAuthStateChanged(auth, (currentUser) => {
     user.value = currentUser
+    loading.value = false
   })
 
   // Verificar el estado inicial de autenticación
   const currentUser = auth.currentUser
-  user.value = currentUser
+  if (currentUser) {
+    user.value = currentUser
+    loading.value = false
+  }
 
   const login = async (email: string, password: string) => {
     try {

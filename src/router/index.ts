@@ -31,14 +31,7 @@ const routes: RouteRecordRaw[] = [
     path: '/admin',
     component: () => import(/* webpackChunkName: "adminView" */ '../views/AdminView.vue'),
     name: 'admin',
-    beforeEnter: (_to, _from, next) => {
-      const authStore = useAuthStore();
-      if (!authStore.isAuthenticated()) {
-        next('/');
-      } else {
-        next();
-      }
-    }
+    meta: { requiresAuth: true }
   }
 ];
 
@@ -51,6 +44,19 @@ const router = createRouter({
     } else {
       return { left: 0, top: 0 };
     }
+  }
+});
+
+// Navigation guard global
+router.beforeEach((to, _from, next) => {
+  const authStore = useAuthStore();
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const isAuthenticated = authStore.isAuthenticated();
+
+  if (requiresAuth && !isAuthenticated) {
+    next('/');
+  } else {
+    next();
   }
 });
 

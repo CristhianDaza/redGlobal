@@ -1,9 +1,92 @@
-import type { ProductsRedGlobal, MenuItem } from '../types/common'
+import type { ProductsRedGlobal, MenuItem, User } from '../types/common'
 
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore'
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import { db } from '../config/firebase'
 
 export const firebaseService = {
+  // Métodos para usuarios
+  async getUsers(): Promise<User[]> {
+    try {
+      const usersRef = collection(db, 'users')
+      const snapshot = await getDocs(usersRef)
+      const users = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as User[]
+      
+      if (users.length === 0) {
+        // Si no hay usuarios y hay un usuario autenticado, crearlo
+        const auth = getAuth()
+        const currentUser = auth.currentUser
+        if (currentUser) {
+          // Generar una contraseña temporal única
+          const tempPassword = `Admin${Date.now().toString(36)}`
+          
+          const newUser = {
+            name: currentUser.displayName || 'Admin',
+            email: currentUser.email || '',
+            primaryColor: '#ff4444',
+            secondaryColor: '#ff4444',
+            priceIncrease: 0,
+            password: tempPassword
+          }
+          await this.createUser(newUser)
+          return await this.getUsers()
+        }
+      }
+      
+      return users
+    } catch (error) {
+      console.error('Error getting users:', error)
+      return []
+    }
+  },
+
+  async createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password: string }): Promise<void> {
+    try {
+      // Crear usuario en Authentication
+      const auth = getAuth()
+      const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password)
+
+      // Crear usuario en Firestore
+      const usersRef = collection(db, 'users')
+      const now = new Date().toISOString()
+      const { password, ...userData } = user // Excluir la contraseña de los datos a guardar
+      await addDoc(usersRef, {
+        ...userData,
+        createdAt: now,
+        updatedAt: now,
+        uid: userCredential.user.uid // Guardar el UID del usuario autenticado
+      })
+    } catch (error) {
+      console.error('Error creating user:', error)
+      throw error
+    }
+  },
+
+  async updateUser(id: string, user: Partial<User>): Promise<void> {
+    try {
+      const userRef = doc(db, 'users', id)
+      await updateDoc(userRef, {
+        ...user,
+        updatedAt: new Date().toISOString()
+      })
+    } catch (error) {
+      console.error('Error updating user:', error)
+      throw error
+    }
+  },
+
+  async deleteUser(id: string): Promise<void> {
+    try {
+      const userRef = doc(db, 'users', id)
+      await deleteDoc(userRef)
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      throw error
+    }
+  },
   async saveProducts(allProducts: ProductsRedGlobal[]): Promise<void> {
     const batchSize = 500
     await this.deleteAllProducts()
