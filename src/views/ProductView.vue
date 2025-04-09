@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useProductsStore } from '../store/useProductsStore';
+import { useAuthStore } from '../store/useAuthStore';
 import type { ProductsRedGlobal, TableEntry } from '../types/common';
 import RgImage from '../components/UI/RgImage.vue';
 import RgLoader from '../components/UI/RgLoader.vue';
@@ -10,6 +11,7 @@ import { formatColor, getRelativeTime, formatNumber } from '../utils';
 
 const route = useRoute();
 const productsStore = useProductsStore();
+const authStore = useAuthStore();
 const product = ref<ProductsRedGlobal | null>(null);
 const selectedImage = ref('');
 const currentImageIndex = ref(0);
@@ -247,7 +249,7 @@ const formatLabelName = (name: string) => {
               <span class="update-value">{{ getRelativeTime(productsStore.lastUpdateProducts) }}</span>
             </div>
           </div>
-          <div class="price-toggle">
+          <div class="price-toggle" v-if="authStore.isAuthenticated()">
             <RgButton @click="showPricesWithIva = !showPricesWithIva">
               {{ showPricesWithIva ? 'Mostrar precios sin IVA' : 'Mostrar precios con IVA' }}
             </RgButton>
@@ -260,7 +262,7 @@ const formatLabelName = (name: string) => {
                 <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
                 <th v-if="hasAnyTracking">Estado</th>
                 <th v-if="hasAnyTracking">Última<br />Actualización</th>
-                <th>Precio</th>
+                <th v-if="authStore.isAuthenticated()">Precio</th>
               </tr>
             </thead>
             <tbody>
@@ -287,7 +289,7 @@ const formatLabelName = (name: string) => {
                 <td v-if="hasAnyTracking">
                   {{ entry.lastUpdateTracking ? getRelativeTime(entry.lastUpdateTracking) : '-' }}
                 </td>
-                <td>
+                <td v-if="authStore.isAuthenticated()">
                   {{ showPricesWithIva 
                     ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))} con IVA`
                     : `$${formatNumber(Number(entry.price))} + IVA` 
