@@ -1,9 +1,42 @@
 <script setup lang="ts">
 import { useMenuStore } from '@/store';
 import { storeToRefs } from 'pinia';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useUserStore } from '@/store/useUserStore';
+import { computed } from 'vue';
 
 const menuStore = useMenuStore();
 const { menu } = storeToRefs(menuStore);
+
+const authStore = useAuthStore();
+const userStore = useUserStore();
+
+const isLoadingLogo = computed(() => {
+  return authStore.isAuthenticated() && userStore.isLoadingUsers;
+});
+
+const currentUserLogo = computed((): string | undefined => {
+  // Si no está autenticado, mostrar logo por defecto
+  if (!authStore.isAuthenticated()) {
+    return '/src/assets/images/main-logo.png';
+  }
+
+  // Si está cargando, retornar undefined para mostrar el loader
+  if (isLoadingLogo.value) {
+    return undefined;
+  }
+
+  // Buscar el usuario y su logo
+  const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
+  if (currentUser?.logo) {
+    return currentUser.logo;
+  }
+
+  // Si no se encontró logo, mostrar el por defecto
+  return '/src/assets/images/main-logo.png';
+});
+
+
 
 const contactInfo = {
   address: 'Somos una compañía que cuenta con más de 25 años de experiencia en el mercado Publicitario',
@@ -53,7 +86,10 @@ const services = [
         </nav>
 
         <div class="logo">
-          <img src="../../assets/images/main-logo.png" alt="Logo" />
+          <template v-if="isLoadingLogo">
+            <div class="logo-skeleton"></div>
+          </template>
+          <img v-else :src="currentUserLogo" alt="Logo" />
         </div>
       </div>
     </div>
@@ -152,6 +188,15 @@ const services = [
   img {
     height: 40px;
     width: auto;
+  }
+
+  .logo-skeleton {
+    height: 40px;
+    width: 100px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
   }
 }
 

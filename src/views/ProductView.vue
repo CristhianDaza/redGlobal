@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useProductsStore } from '../store/useProductsStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { useUserStore } from '../store/useUserStore';
 import type { ProductsRedGlobal, TableEntry } from '../types/common';
 import RgImage from '../components/UI/RgImage.vue';
 import RgLoader from '../components/UI/RgLoader.vue';
@@ -12,6 +13,7 @@ import { formatColor, getRelativeTime, formatNumber } from '../utils';
 const route = useRoute();
 const productsStore = useProductsStore();
 const authStore = useAuthStore();
+const userStore = useUserStore();
 const product = ref<ProductsRedGlobal | null>(null);
 const selectedImage = ref('');
 const currentImageIndex = ref(0);
@@ -19,14 +21,46 @@ const visibleThumbnails = 6;
 const selectedColor = ref('');
 const isLoading = ref(false);
 const showPricesWithIva = ref(false);
+const isPriceLoading = computed(() => {
+  return authStore.isAuthenticated() && userStore.isLoadingUsers;
+});
+
+const calculatePriceWithIncrease = (price: number) => {
+  // Si no hay usuario autenticado, retornar el precio base
+  if (!authStore.isAuthenticated()) {
+    return price;
+  }
+
+  // Buscar el usuario y su incremento
+  const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
+
+  if (currentUser?.priceIncrease) {
+    // Aplicar el incremento de precio
+    const finalPrice = price * (1 + currentUser.priceIncrease / 100);
+    return Math.ceil(finalPrice);
+  }
+
+  return price;
+};
 
 const calculatePriceWithIva = (price: number) => {
-  return Math.ceil(price * 1.19);
+  // Primero aplicar el incremento del usuario
+  const priceWithIncrease = calculatePriceWithIncrease(price);
+  
+  // Luego aplicar IVA
+  const priceWithIva = Math.ceil(priceWithIncrease * 1.19);
+  return priceWithIva;
 };
 
 const loadProduct = async () => {
   isLoading.value = true;
   try {
+    // Cargar usuarios si es necesario
+    if (authStore.isAuthenticated() && !userStore.users.length) {
+      await userStore.getUsers();
+    }
+
+    // Cargar productos
     if (!productsStore.products) {
       await productsStore.getAllProducts();
     }
@@ -290,10 +324,13 @@ const formatLabelName = (name: string) => {
                   {{ entry.lastUpdateTracking ? getRelativeTime(entry.lastUpdateTracking) : '-' }}
                 </td>
                 <td v-if="authStore.isAuthenticated()">
-                  {{ showPricesWithIva 
-                    ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))} con IVA`
-                    : `$${formatNumber(Number(entry.price))} + IVA` 
-                  }}
+                  <div v-if="isPriceLoading" class="price-skeleton"></div>
+                  <template v-else>
+                    {{ showPricesWithIva 
+                      ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))} con IVA`
+                      : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))} + IVA` 
+                    }}
+                  </template>
                 </td>
               </tr>
             </tbody>
@@ -863,6 +900,20 @@ const formatLabelName = (name: string) => {
   .thumbnails {
     overflow-x: auto;
   }
+}
+
+.price-skeleton {
+  height: 20px;
+  width: 100px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 @media (max-width: 480px) {

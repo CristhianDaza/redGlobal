@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '../../types/common';
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMenuStore } from '../../store/useMenuStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useUserStore } from '../../store/useUserStore';
 import TvButton from '@todovue/tvbutton';
 import RgAutocomplete from './RgAutocomplete.vue';
 import RgLoginModal from './RgLoginModal.vue';
 
 const router = useRouter();
 const menuStore = useMenuStore();
-const authStore = useAuthStore();
+const authStore = useAuthStore()
+const userStore = useUserStore();
 const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
@@ -35,6 +37,32 @@ const userButtonText = computed(() => {
 
 const userIcon = computed(() => {
   return authStore.isAuthenticated() ? 'logout' : 'person';
+});
+
+const isLoadingLogo = computed(() => {
+  return authStore.isAuthenticated() && userStore.isLoadingUsers;
+});
+
+const currentUserLogo = computed((): string | undefined => {
+  // Si no está autenticado, mostrar logo por defecto
+  if (!authStore.isAuthenticated()) {
+    return '/src/assets/images/main-logo.png';
+  }
+
+  // Si está cargando, retornar undefined para mostrar el loader
+  if (isLoadingLogo.value) {
+    return undefined;
+  }
+
+  // Buscar el usuario y su logo
+  const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
+
+  if (currentUser?.logo) {
+    return currentUser.logo;
+  }
+
+  // Si no se encontró logo, mostrar el por defecto
+  return '/src/assets/images/main-logo.png';
 });
 
 const handleSearch = () => {
@@ -97,7 +125,10 @@ const handleKeydown = (event: KeyboardEvent) => {
   </nav>
 
   <div class="navbar-brand">
-    <img src="../../assets/images/main-logo.png" alt="Logo" class="logo">
+    <template v-if="isLoadingLogo">
+      <div class="logo-skeleton"></div>
+    </template>
+    <img v-else :src="currentUserLogo" alt="Logo" class="logo">
     <div class="search-container">
       <RgAutocomplete
         v-model="searchQuery"
@@ -152,6 +183,15 @@ const handleKeydown = (event: KeyboardEvent) => {
 .logo {
   height: 50px;
   width: auto;
+}
+
+.logo-skeleton {
+  height: 50px;
+  width: 120px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
 }
 
 .navbar-menu {

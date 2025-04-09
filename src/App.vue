@@ -2,6 +2,8 @@
 import { onMounted, defineAsyncComponent } from 'vue';
 import { useMenuStore } from './store';
 import { useProductsStore } from './store';
+import { useAuthStore } from './store/useAuthStore';
+import { useUserStore } from './store/useUserStore';
 
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
@@ -9,12 +11,26 @@ const RgScrollToTop = defineAsyncComponent(/* webpackChunkName: "rgScrollToTop" 
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
+const authStore = useAuthStore();
+const userStore = useUserStore();
 
 onMounted(async () => {
   await Promise.all([
     storeProducts.getAllProducts(),
     menuStore.getMenu()
   ]);
+
+  // Si hay un usuario autenticado, cargar los usuarios
+  if (authStore.isAuthenticated()) {
+    await userStore.getUsers();
+  }
+
+  // Observar cambios en la autenticación
+  authStore.$subscribe(async (_, state) => {
+    if (state.user) {
+      await userStore.getUsers();
+    }
+  });
 });
 </script>
 
