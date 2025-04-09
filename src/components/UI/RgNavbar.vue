@@ -114,10 +114,21 @@ const handleKeydown = (event: KeyboardEvent) => {
         icon="search"
       />
     </div>
-    <p @click="authStore.isAuthenticated() ? handleLogout() : toggleLoginModal()" style="cursor: pointer;">
-      <span class="material-icons">{{ userIcon }}</span>
-      {{ userButtonText }}
-    </p>
+    <div class="auth-buttons">
+      <router-link
+        v-if="authStore.isAuthenticated()"
+        to="/admin"
+        class="admin-link"
+      >
+        <span class="material-icons">admin_panel_settings</span>
+        Admin
+      </router-link>
+
+      <p @click="authStore.isAuthenticated() ? handleLogout() : toggleLoginModal()" style="cursor: pointer;">
+        <span class="material-icons">{{ userIcon }}</span>
+        {{ userButtonText }}
+      </p>
+    </div>
     <RgLoginModal v-if="showLoginModal" :is-open="showLoginModal" @close="toggleLoginModal" />
   </div>
 </template>
@@ -300,6 +311,34 @@ const handleKeydown = (event: KeyboardEvent) => {
   .logo {
     height: 50px;
     width: auto;
+  }
+
+  .auth-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .admin-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #666;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    font-size: 14px;
+
+    .material-icons {
+      font-size: 18px;
+      color: #ff4444;
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: #ff4444;
+    }
   }
 }
 
