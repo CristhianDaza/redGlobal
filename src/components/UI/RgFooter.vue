@@ -53,7 +53,7 @@ const services = [
         </nav>
 
         <div class="logo">
-          <img src="https://www.redglobalpromo.com.co/wp-content/uploads/2019/07/Logoheader-1.png" alt="Logo" />
+          <img src="../../assets/images/main-logo.png" alt="Logo" />
         </div>
       </div>
     </div>

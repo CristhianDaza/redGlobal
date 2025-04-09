@@ -66,7 +66,7 @@ const handleKeydown = (event: KeyboardEvent) => {
   </nav>
 
   <div class="navbar-brand">
-    <img src="https://www.redglobalpromo.com.co/wp-content/uploads/2019/07/Logoheader-1.png" alt="Logo" class="logo">
+    <img src="../../assets/images/main-logo.png" alt="Logo" class="logo">
     <div class="search-container">
       <RgAutocomplete
         v-model="searchQuery"
@@ -104,7 +104,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 .logo {
-  height: 40px;
+  height: 50px;
   width: auto;
 }
 
@@ -263,7 +263,7 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 
   .logo {
-    height: 40px;
+    height: 50px;
     width: auto;
   }
 }
