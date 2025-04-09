@@ -14,7 +14,7 @@ const authStore = useAuthStore();
 const menuStore = useMenuStore();
 const userStore = useUserStore();
 
-const activeTab = ref('items'); // 'items' | 'users'
+const activeTab = ref('quotes'); // 'items' | 'users' | 'quotes'
 const showMenuItemModal = ref(false);
 const showUserModal = ref(false);
 const editingMenuItem = ref<MenuItem | undefined>(undefined);
@@ -24,6 +24,13 @@ const itemToDelete = ref<{ id: string; type: 'menu' | 'user' } | undefined>(unde
 
 const isAuthenticated = computed(() => authStore.isAuthenticated())
 const isAdmin = computed(() => authStore.isAdmin)
+
+// Establecer la pestaña inicial según el rol
+watch(isAdmin, (newIsAdmin) => {
+  if (newIsAdmin && activeTab.value === 'quotes') {
+    activeTab.value = 'items'
+  }
+}, { immediate: true })
 
 const userEmail = computed(() => {
   return authStore.user?.email || 'No disponible';
@@ -187,10 +194,7 @@ watch(activeTab, async (newTab: string) => {
   <div v-if="!isAuthenticated" class="error-container">
     <p>Debes iniciar sesión para acceder a esta página</p>
   </div>
-  <div v-else-if="!isAdmin" class="error-container">
-    <p>No tienes permisos para acceder a esta página. Solo los administradores pueden acceder al panel de administración.</p>
-  </div>
-  <div v-else-if="isAdmin" class="admin-layout">
+  <div v-else class="admin-layout">
     <!-- Sidebar de navegación -->
     <aside class="admin-sidebar">
       <div class="sidebar-header">
@@ -202,6 +206,7 @@ watch(activeTab, async (newTab: string) => {
       </div>
       <nav class="sidebar-nav">
         <button 
+          v-if="isAdmin"
           :class="['nav-item', { active: activeTab === 'items' }]"
           @click="(e) => handleTabChange('items', e)"
         >
@@ -209,11 +214,19 @@ watch(activeTab, async (newTab: string) => {
           <span>Gestión de Menú</span>
         </button>
         <button 
+          v-if="isAdmin"
           :class="['nav-item', { active: activeTab === 'users' }]"
           @click="(e) => handleTabChange('users', e)"
         >
           <span class="material-icons">group</span>
           <span>Gestión de Usuarios</span>
+        </button>
+        <button 
+          :class="['nav-item', { active: activeTab === 'quotes' }]"
+          @click="(e) => handleTabChange('quotes', e)"
+        >
+          <span class="material-icons">request_quote</span>
+          <span>Cotizaciones</span>
         </button>
       </nav>
     </aside>
@@ -221,8 +234,17 @@ watch(activeTab, async (newTab: string) => {
     <!-- Contenido principal -->
     <main class="admin-main">
       <header class="main-header">
-        <h1>{{ activeTab === 'items' ? 'Gestión de Items' : 'Gestión de Usuarios' }}</h1>
+        <h1>
+          {{
+            activeTab === 'items'
+              ? 'Gestión de Items'
+              : activeTab === 'users'
+                ? 'Gestión de Usuarios'
+                : 'Cotizaciones'
+          }}
+        </h1>
         <RgButton
+          v-if="activeTab !== 'quotes'"
           :text="activeTab === 'items' ? 'Agregar Item al Menú' : 'Crear Usuario'"
           class="add-button"
           @click="activeTab === 'items' ? handleAddMenuItem() : handleAddUser()"
@@ -329,6 +351,55 @@ watch(activeTab, async (newTab: string) => {
                 </tbody>
               </table>
             </div>
+        </div>
+
+        <!-- Sección de Cotizaciones -->
+        <div v-else-if="activeTab === 'quotes'" class="quotes-section">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="material-icons">request_quote</span>
+              <div class="stat-info">
+                <h3>Total Cotizaciones</h3>
+                <p>0</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="material-icons">pending</span>
+              <div class="stat-info">
+                <h3>Pendientes</h3>
+                <p>0</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="material-icons">done</span>
+              <div class="stat-info">
+                <h3>Completadas</h3>
+                <p>0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla de cotizaciones -->
+          <div class="menu-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Cliente</th>
+                  <th>Estado</th>
+                  <th>Total</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="5" class="text-center">
+                    <p>No hay cotizaciones disponibles</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </main>
@@ -599,6 +670,31 @@ watch(activeTab, async (newTab: string) => {
 
 .action-btn .material-icons {
   font-size: 1.25rem;
+}
+
+/* Estilos para la sección de cotizaciones */
+.quotes-section {
+  margin-top: 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.quotes-section .stat-card .material-icons {
+  font-size: 2rem;
+}
+
+.quotes-section .stat-card:nth-child(1) .material-icons {
+  color: var(--primary-color);
+}
+
+.quotes-section .stat-card:nth-child(2) .material-icons {
+  color: #f59e0b;
+}
+
+.quotes-section .stat-card:nth-child(3) .material-icons {
+  color: #10b981;
 }
 .loading-container,
 .error-container,
