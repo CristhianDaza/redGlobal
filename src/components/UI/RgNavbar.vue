@@ -5,11 +5,17 @@ import { useRouter } from 'vue-router';
 import { useMenuStore } from '../../store/useMenuStore';
 import TvButton from '@todovue/tvbutton';
 import RgAutocomplete from './RgAutocomplete.vue';
+import RgLoginModal from './RgLoginModal.vue';
 
 const router = useRouter();
 const menuStore = useMenuStore();
 const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
+const showLoginModal = ref(false);
+
+const toggleLoginModal = () => {
+  showLoginModal.value = !showLoginModal.value;
+};
 
 const handleSearch = () => {
   if (!searchQuery.value.trim()) return;
@@ -83,7 +89,8 @@ const handleKeydown = (event: KeyboardEvent) => {
         icon="search"
       />
     </div>
-    <p><span class="material-icons">person</span> Iniciar Sesion</p>
+    <p @click="toggleLoginModal" style="cursor: pointer;"><span class="material-icons">person</span> Iniciar Sesion</p>
+    <RgLoginModal v-if="showLoginModal" :is-open="showLoginModal" @close="toggleLoginModal" />
   </div>
 </template>
 
