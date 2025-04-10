@@ -4,6 +4,7 @@ import TvButton from '@todovue/tvbutton';
 interface ButtonProps {
   text?: string;
   icon?: string;
+  iconPosition?: 'left' | 'right';
   type?: 'default' | 'icon';
   onClick?: (event: MouseEvent) => void;
   customStyle?: Record<string, string>;
@@ -12,6 +13,7 @@ interface ButtonProps {
 
 const props = withDefaults(defineProps<ButtonProps>(), {
   type: 'default',
+  iconPosition: 'right',
   disabled: false
 });
 
@@ -29,6 +31,7 @@ const defaultStyle = {
       :type="props.type"
       :icon="props.icon"
       :disabled="props.disabled"
+      :icon-position="props.iconPosition"
       rounded
     >
       <slot>{{ props.text }}</slot>

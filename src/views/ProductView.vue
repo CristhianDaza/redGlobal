@@ -240,11 +240,11 @@ const formatLabelName = (name: string) => {
                 <!-- Botón de cotización -->
                 <div class="quote-section" v-if="authStore.isAuthenticated()">
                   <RgButton
-                    variant="primary"
                     @click="showQuoteModal = true"
+                    icon="plus"
+                    icon-position="left"
                   >
-                    <span class="material-icons">request_quote</span>
-                    <span>Crear cotización</span>
+                    <span>Cotizar</span>
                   </RgButton>
                 </div>
 

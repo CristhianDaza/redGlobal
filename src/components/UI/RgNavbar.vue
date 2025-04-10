@@ -161,7 +161,7 @@ const handleKeydown = (event: KeyboardEvent) => {
         @click="showQuoteCart = true"
       >
         <span class="material-icons">request_quote</span>
-        <span>Mi Cotización</span>
+        <span>Cotizaciones</span>
         <span v-if="quoteStore.totalItems > 0" class="quote-badge">{{ quoteStore.totalItems }}</span>
       </button>
 

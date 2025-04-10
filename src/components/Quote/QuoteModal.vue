@@ -6,6 +6,7 @@ import RgButton from '../UI/RgButton.vue'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useUserStore } from '../../store/useUserStore'
 import { useQuoteStore } from '../../store/useQuoteStore'
+import { formatColor } from '../../utils'
 
 const props = defineProps<{
   isOpen: boolean
@@ -117,8 +118,8 @@ const handleClose = () => {
         <img :src="product.mainImage" :alt="product.name">
         <div class="product-details">
           <h3>{{ product.name }}</h3>
-          <p v-if="product.material">Material: {{ product.material }}</p>
-          <p v-if="product.size">Tamaño: {{ product.size }}</p>
+          <p v-if="product.description">{{ product.description }}</p>
+          <p v-if="product.size">Medidas: {{ product.size }}</p>
         </div>
       </div>
 
@@ -135,7 +136,7 @@ const handleClose = () => {
           >
             <span 
               class="color-preview"
-              :style="{ backgroundColor: color.color }"
+              :style="{ backgroundColor: formatColor(color.colorName)}"
             ></span>
             <span class="color-name">{{ color.colorName }}</span>
             <span class="color-stock">({{ color.quantity }} disponibles)</span>

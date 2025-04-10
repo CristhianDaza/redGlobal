@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/useAuthStore'
 import RgButton from '../UI/RgButton.vue'
 import RgModal from '../UI/RgModal.vue'
 import RgEmptyState from '../UI/RgEmptyState.vue'
+import { formatColor } from '../../utils'
 
 defineProps<{
   isOpen: boolean
@@ -94,7 +95,7 @@ const handleSubmitQuote = async () => {
             <div class="color-info">
               <span 
                 class="color-preview"
-                :style="{ backgroundColor: item.color }"
+                :style="{ backgroundColor: formatColor(item.colorName) }"
               ></span>
               <span>{{ item.colorName }}</span>
             </div>
@@ -170,10 +171,10 @@ const handleSubmitQuote = async () => {
       <!-- Acciones -->
       <div class="cart-actions">
         <RgButton
-          variant="text"
           @click="handleClearCart"
+          icon="remove"
+          icon-position="left"
         >
-          <span class="material-icons">delete</span>
           Limpiar todo
         </RgButton>
       </div>
