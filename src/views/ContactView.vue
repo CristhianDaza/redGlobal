@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import RgButton from '../components/UI/RgButton.vue';
+import InfoCard from '../components/Contact/InfoCard.vue';
 import { emailService } from '../services/emailService';
 import type { EmailData } from '../services/emailService';
+import { contactCards } from '../config/contact';
 
 interface ContactForm {
   name: string;
@@ -22,6 +24,13 @@ const form = ref<ContactForm>({
 
 const isSubmitting = ref(false);
 const showSuccessMessage = ref(false);
+
+const isFormValid = computed(() => {
+  return form.value.name.trim() !== '' &&
+         form.value.email.trim() !== '' &&
+         form.value.phone.trim() !== '' &&
+         form.value.message.trim() !== '';
+});
 
 const handleSubmit = async () => {
   if (isSubmitting.value) return; // Prevenir múltiples envíos
@@ -72,29 +81,13 @@ const handleSubmit = async () => {
 
     <div class="contact-content">
       <div class="contact-info">
-        <div class="info-card">
-          <span class="material-icons">location_on</span>
-          <h3>Ubicación</h3>
-          <p>Calle 123 #45-67<br>Bogotá, Colombia</p>
-        </div>
-
-        <div class="info-card">
-          <span class="material-icons">phone</span>
-          <h3>Teléfono</h3>
-          <p>+57 (1) 123 4567<br>+57 300 123 4567</p>
-        </div>
-
-        <div class="info-card">
-          <span class="material-icons">email</span>
-          <h3>Email</h3>
-          <p>info@redglobal.com<br>ventas@redglobal.com</p>
-        </div>
-
-        <div class="info-card">
-          <span class="material-icons">schedule</span>
-          <h3>Horario</h3>
-          <p>Lunes a Viernes<br>8:00 AM - 6:00 PM</p>
-        </div>
+        <InfoCard
+          v-for="card in contactCards"
+          :key="card.title"
+          :icon="card.icon"
+          :title="card.title"
+          :lines="card.lines"
+        />
       </div>
 
       <div class="contact-form-container">
@@ -161,7 +154,7 @@ const handleSubmit = async () => {
             <RgButton
               :text="isSubmitting ? 'Enviando...' : 'Enviar mensaje'"
               :loading="isSubmitting"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || !isFormValid"
             />
           </div>
         </form>
@@ -211,35 +204,7 @@ const handleSubmit = async () => {
   gap: 1.5rem;
 }
 
-.info-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  transition: transform 0.2s;
-}
 
-.info-card:hover {
-  transform: translateY(-2px);
-}
-
-.info-card .material-icons {
-  font-size: 2rem;
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-}
-
-.info-card h3 {
-  font-size: 1.1rem;
-  color: #1a202c;
-  margin-bottom: 0.5rem;
-}
-
-.info-card p {
-  color: #64748b;
-  line-height: 1.5;
-}
 
 .contact-form-container {
   background: white;
