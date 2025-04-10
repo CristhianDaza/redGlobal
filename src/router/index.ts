@@ -32,6 +32,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import(/* webpackChunkName: "adminView" */ '../views/AdminView.vue'),
     name: 'admin',
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/contact',
+    component: () => import(/* webpackChunkName: "contactView" */ '../views/ContactView.vue'),
+    name: 'contact'
   }
 ];
 

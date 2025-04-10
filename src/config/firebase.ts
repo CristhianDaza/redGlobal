@@ -24,6 +24,7 @@ const storage: FirebaseStorage = getStorage(app, import.meta.env.VITE_BACKET_URL
 const auth: Auth = getAuth(app)
 
 export {
+  app,
   analytics,
   db,
   storage,
