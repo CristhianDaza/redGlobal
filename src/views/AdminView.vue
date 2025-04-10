@@ -264,6 +264,10 @@ const handleAddUser = () => {
 
 const isLoadingCard = ref(false);
 
+const pendingQuotesToAdmin = computed(() => {
+  return quoteStore.quotes.filter(quote => !quote.status || quote.status === 'pending').length;
+});
+
 const handleAddCard = () => {
   editingCard.value = undefined;
   showCardModal.value = true;
@@ -402,6 +406,7 @@ watch(activeTab, async (newTab: string) => {
         >
           <span class="material-icons">request_quote</span>
           <span>Cotizaciones</span>
+          <span v-if="isAdmin && pendingQuotesToAdmin > 0" class="quote-badge">{{ pendingQuotesToAdmin }}</span>
         </button>
         <button
           v-if="isAdmin"
@@ -891,9 +896,23 @@ watch(activeTab, async (newTab: string) => {
   gap: 0.75rem;
 }
 
+.quote-badge {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 9999px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
 .nav-item {
   display: flex;
   align-items: center;
+  position: relative;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
