@@ -799,8 +799,8 @@ watch(activeTab, async (newTab: string) => {
                 <tr v-for="item in selectedQuote.items" :key="item.productId">
                   <td>
                     <div class="product-info">
-                      <img :src="item.productImage" :alt="item.productName" class="product-thumbnail">
-                      <span>{{ item.productName }}</span>
+                      <img :src="item.productImage" :alt="item.productId" class="product-thumbnail">
+                      <span>{{ item.productId }}</span>
                     </div>
                   </td>
                   <td>
