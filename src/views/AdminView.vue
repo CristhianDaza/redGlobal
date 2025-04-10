@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import type { MenuItem, User, UserFormData } from '../types/common';
-import { useAuthStore } from '../store/useAuthStore';
+import type { MenuItem, User, UserFormData, QuoteStatus } from '../types/common';
+import { useAuthStore } from '../store/useAuthStore'; 
 import { useMenuStore } from '../store/useMenuStore';
 import { useUserStore } from '../store/useUserStore';
+import { useQuoteStore } from '../store/useQuoteStore';
 import RgButton from '../components/UI/RgButton.vue';
 import MenuItemForm from '../components/Admin/MenuItemForm.vue';
 import UserForm from '../components/Admin/UserForm.vue';
@@ -13,6 +14,9 @@ import { uploadImage } from '../config/cloudinary';
 const authStore = useAuthStore();
 const menuStore = useMenuStore();
 const userStore = useUserStore();
+const quoteStore = useQuoteStore();
+
+const isLoadingData = ref(false);
 
 const activeTab = ref('quotes'); // 'items' | 'users' | 'quotes'
 const showMenuItemModal = ref(false);
@@ -146,6 +150,56 @@ const handleCancelDelete = () => {
   itemToDelete.value = undefined;
 };
 
+interface Quote {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  status: string;
+  items: Array<{
+    productId: string;
+    productName: string;
+    productImage: string;
+    color: string;
+    colorName: string;
+    quantity: number;
+    maxQuantity: number;
+    includeMarking: boolean;
+    inkColors?: number;
+  }>;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const handleViewQuote = (quote: Quote) => {
+  selectedQuote.value = quote;
+  showQuoteDetailsModal.value = true;
+};
+
+const handleCloseQuoteDetails = () => {
+  showQuoteDetailsModal.value = false;
+  selectedQuote.value = null;
+};
+
+const quoteStatus = {
+  PENDING: 'pending',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled'
+};
+
+const showQuoteDetailsModal = ref(false);
+const selectedQuote = ref<Quote | null>(null);
+
+const handleCompleteQuote = async (quoteId: string) => {
+  try {
+    await quoteStore.updateQuoteStatus(quoteId, quoteStatus.COMPLETED);
+    await quoteStore.getQuotes();
+  } catch (error) {
+    console.error('Error al completar la cotización:', error);
+  }
+};
+
 const handleEditUser = (user: User) => {
   editingUser.value = { ...user };
   showUserModal.value = true;
@@ -163,29 +217,64 @@ const users = computed(() => userStore.users);
 // Stats computados
 const totalMenuItems = computed(() => menuItems.value.length);
 const totalUsers = computed(() => users.value.length);
+const activeUsers = computed(() => users.value.filter(u => u.active).length);
+const inactiveUsers = computed(() => users.value.filter(u => !u.active).length);
+
+// Stats de cotizaciones
+const filteredQuotes = computed(() => {
+  if (isAdmin.value) {
+    return quoteStore.quotes;
+  }
+  return quoteStore.quotes.filter(quote => quote.userEmail === userEmail.value);
+});
+
+const totalQuotes = computed(() => filteredQuotes.value.length);
+const pendingQuotes = computed(() => filteredQuotes.value.filter(q => q.status === quoteStatus.PENDING).length);
+const completedQuotes = computed(() => filteredQuotes.value.filter(q => q.status === quoteStatus.COMPLETED).length);
 
 // Estado de carga
-const isLoadingData = computed(() => {
+const loadingData = computed(() => {
   if (activeTab.value === 'items') {
     return menuStore.isLoadingMenu;
+  } else if (activeTab.value === 'users') {
+    return userStore.isLoadingUsers;
+  } else if (activeTab.value === 'quotes') {
+    return quoteStore.isLoadingQuotes;
   }
-  return userStore.isLoadingUsers;
+  return false;
 });
 
 // Inicializar datos
 onMounted(async () => {
-  await Promise.all([
-    menuStore.getMenu(),
-    userStore.getUsers()
-  ]);
+  try {
+    isLoadingData.value = true;
+    await Promise.all([
+      menuStore.getMenu(),
+      userStore.getUsers(),
+      quoteStore.getQuotes()
+    ]);
+  } catch (error) {
+    console.error('Error loading data:', error);
+  } finally {
+    isLoadingData.value = false;
+  }
 });
 
 // Observar cambios en la pestaña activa
 watch(activeTab, async (newTab: string) => {
-  if (newTab === 'items') {
-    await menuStore.getMenu();
-  } else {
-    await userStore.getUsers();
+  try {
+    isLoadingData.value = true;
+    if (newTab === 'items') {
+      await menuStore.getMenu();
+    } else if (newTab === 'users') {
+      await userStore.getUsers();
+    } else if (newTab === 'quotes') {
+      await quoteStore.getQuotes();
+    }
+  } catch (error) {
+    console.error('Error loading data:', error);
+  } finally {
+    isLoadingData.value = false;
   }
 });
 </script>
@@ -243,6 +332,7 @@ watch(activeTab, async (newTab: string) => {
                 : 'Cotizaciones'
           }}
         </h1>
+
         <RgButton
           v-if="activeTab !== 'quotes'"
           :text="activeTab === 'items' ? 'Agregar Item al Menú' : 'Crear Usuario'"
@@ -253,97 +343,53 @@ watch(activeTab, async (newTab: string) => {
       </header>
 
       <div class="main-content">
-        <div v-if="isLoadingData" class="loading-section">
+        <div v-if="loadingData" class="loading-section">
           <div class="loader"></div>
           <p>Cargando datos...</p>
         </div>
-        <div v-else-if="activeTab === 'items'" class="items-section">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span class="material-icons">menu</span>
-              <div class="stat-info">
-                <h3>Items en Menú</h3>
-                <p>{{ totalMenuItems }}</p>
-              </div>
-            </div>
-          </div>
 
-          <!-- Tabla de menú -->
-          <div class="menu-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Título</th>
-                  <th>Ruta</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="item in menuItems" :key="item.id">
-                  <td>{{ item.title }}</td>
-                  <td>{{ item.path }}</td>
-                  <td class="actions">
-                    <button class="action-btn edit" @click="handleEditMenuItem(item)">
-                      <span class="material-icons">edit</span>
-                    </button>
-                    <button class="action-btn delete" @click="handleDeleteClick(item.id, 'menu')">
-                      <span class="material-icons">delete</span>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <template v-else>
+          <!-- Sección de Items -->
+          <div v-if="activeTab === 'items'" class="items-section">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <span class="material-icons">menu</span>
+                <div class="stat-info">
+                  <h3>Items en Menú</h3>
+                  <p>{{ totalMenuItems }}</p>
+                </div>
+              </div>
+            </div>
 
-        <div v-else-if="activeTab === 'users'" class="users-section">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span class="material-icons">group</span>
-              <div class="stat-info">
-                <h3>Total Usuarios</h3>
-                <p>{{ totalUsers }}</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <span class="material-icons">verified_user</span>
-              <div class="stat-info">
-                <h3>Activos</h3>
-                <p>0</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <span class="material-icons">schedule</span>
-              <div class="stat-info">
-                <h3>Pendientes</h3>
-                <p>0</p>
-              </div>
-            </div>
-          </div>
-          <!-- Tabla de usuarios -->
+            <!-- Tabla de items -->
             <div class="menu-table">
               <table>
                 <thead>
                   <tr>
                     <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>% Incremento</th>
+                    <th>Ruta</th>
+                    <th>Orden</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="user in users" :key="user.id">
-                    <td>{{ user.name }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.priceIncrease }}%</td>
+                  <tr v-for="item in menuItems" :key="item.id">
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.path }}</td>
+                    <td>{{ item.order }}</td>
                     <td class="actions">
                       <button 
-                        class="action-btn edit" 
-                        @click="() => handleEditUser(user)"
+                        class="action-btn edit"
+                        @click="handleEditMenuItem(item)"
+                        title="Editar item"
                       >
                         <span class="material-icons">edit</span>
                       </button>
-                      <button class="action-btn delete" @click="handleDeleteClick(user.id, 'user')">
+                      <button 
+                        class="action-btn delete"
+                        @click="handleDeleteClick(item.id, 'menu')"
+                        title="Eliminar item"
+                      >
                         <span class="material-icons">delete</span>
                       </button>
                     </td>
@@ -351,83 +397,249 @@ watch(activeTab, async (newTab: string) => {
                 </tbody>
               </table>
             </div>
-        </div>
+          </div>
 
-        <!-- Sección de Cotizaciones -->
-        <div v-else-if="activeTab === 'quotes'" class="quotes-section">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span class="material-icons">request_quote</span>
-              <div class="stat-info">
-                <h3>Total Cotizaciones</h3>
-                <p>0</p>
+          <!-- Sección de Usuarios -->
+          <div v-else-if="activeTab === 'users'" class="users-section">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <span class="material-icons">group</span>
+                <div class="stat-info">
+                  <h3>Total Usuarios</h3>
+                  <p>{{ totalUsers }}</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="material-icons">check_circle</span>
+                <div class="stat-info">
+                  <h3>Activos</h3>
+                  <p>{{ activeUsers }}</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="material-icons">block</span>
+                <div class="stat-info">
+                  <h3>Inactivos</h3>
+                  <p>{{ inactiveUsers }}</p>
+                </div>
               </div>
             </div>
-            <div class="stat-card">
-              <span class="material-icons">pending</span>
-              <div class="stat-info">
-                <h3>Pendientes</h3>
-                <p>0</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <span class="material-icons">done</span>
-              <div class="stat-info">
-                <h3>Completadas</h3>
-                <p>0</p>
-              </div>
+
+            <!-- Tabla de usuarios -->
+            <div class="menu-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Estado</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="user in users" :key="user.id">
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                      <span :class="['status-badge', user.active ? 'completed' : 'pending']">
+                        {{ user.active ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </td>
+                    <td>{{ user.role === 'admin' ? 'Administrador' : 'Cliente' }}</td>
+                    <td class="actions">
+                      <button 
+                        class="action-btn edit"
+                        @click="handleEditUser(user)"
+                        title="Editar usuario"
+                      >
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button 
+                        class="action-btn delete"
+                        @click="handleDeleteClick(user.id, 'user')"
+                        title="Eliminar usuario"
+                      >
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <!-- Tabla de cotizaciones -->
-          <div class="menu-table">
+          <!-- Sección de Cotizaciones -->
+          <div v-else class="quotes-section">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <span class="material-icons">request_quote</span>
+                <div class="stat-info">
+                  <h3>Total Cotizaciones</h3>
+                  <p>{{ totalQuotes }}</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="material-icons">pending</span>
+                <div class="stat-info">
+                  <h3>Pendientes</h3>
+                  <p>{{ pendingQuotes }}</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="material-icons">done</span>
+                <div class="stat-info">
+                  <h3>Completadas</h3>
+                  <p>{{ completedQuotes }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabla de cotizaciones -->
+            <div class="menu-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Usuario</th>
+                    <th>Estado</th>
+                    <th>Items</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="filteredQuotes.length === 0">
+                    <td colspan="5" class="text-center">
+                      <p>No hay cotizaciones disponibles</p>
+                    </td>
+                  </tr>
+                  <tr v-else v-for="quote in filteredQuotes" :key="quote.id">
+                    <td>{{ new Date(quote.createdAt).toLocaleDateString() }}</td>
+                    <td>
+                      <div class="user-info">
+                        <span>{{ quote.userName }}</span>
+                        <small>{{ quote.userEmail }}</small>
+                      </div>
+                    </td>
+                    <td>
+                      <span :class="['status-badge', quote.status]">
+                        {{ quote.status === quoteStatus.PENDING ? 'Pendiente' : 'Completada' }}
+                      </span>
+                    </td>
+                    <td>{{ quote.items.length }} items</td>
+                    <td class="actions">
+                      <button 
+                        class="action-btn view" 
+                        title="Ver detalles"
+                        @click="handleViewQuote(quote)"
+                      >
+                        <span class="material-icons">visibility</span>
+                      </button>
+                      <button 
+                        v-if="quote.status === quoteStatus.PENDING && isAdmin"
+                        class="action-btn edit" 
+                        title="Marcar como completada"
+                        @click="handleCompleteQuote(quote.id)"
+                      >
+                        <span class="material-icons">done</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </template>
+
+        <!-- Modales -->
+        <MenuItemForm
+          :isOpen="showMenuItemModal"
+          :menuItem="editingMenuItem"
+          @save="handleSaveMenuItem"
+          @close="handleCloseModal"
+        />
+
+        <UserForm
+          :isOpen="showUserModal"
+          :user="editingUser"
+          @save="handleSaveUser"
+          @close="handleCloseModal"
+        />
+
+        <RgConfirmModal
+          :isOpen="showDeleteConfirm"
+          title="Confirmar eliminación"
+          :message="`¿Estás seguro de que deseas eliminar este ${itemToDelete?.type === 'menu' ? 'item del menú' : 'usuario'}?`"
+          @confirm="handleConfirmDelete"
+          @close="handleCancelDelete"
+        />
+      </div>
+    </main>
+    <!-- Modal de detalles de cotización -->
+    <div v-if="showQuoteDetailsModal" class="modal-overlay">
+      <div class="modal-content quote-details-modal">
+        <header class="modal-header">
+          <h2>Detalles de la Cotización</h2>
+          <button class="close-button" @click="handleCloseQuoteDetails">
+            <span class="material-icons">close</span>
+          </button>
+        </header>
+        <div class="modal-body" v-if="selectedQuote">
+          <div class="quote-info">
+            <p><strong>Fecha:</strong> {{ new Date(selectedQuote.createdAt).toLocaleDateString() }}</p>
+            <p><strong>Cliente:</strong> {{ selectedQuote.userName }}</p>
+            <p><strong>Email:</strong> {{ selectedQuote.userEmail }}</p>
+            <p><strong>Estado:</strong> 
+              <span :class="['status-badge', selectedQuote.status]">
+                {{ selectedQuote.status === quoteStatus.PENDING ? 'Pendiente' : 'Completada' }}
+              </span>
+            </p>
+          </div>
+          <div class="quote-items">
+            <h3>Items Solicitados</h3>
             <table>
               <thead>
                 <tr>
-                  <th>Fecha</th>
-                  <th>Cliente</th>
-                  <th>Estado</th>
-                  <th>Total</th>
-                  <th>Acciones</th>
+                  <th>Producto</th>
+                  <th>Color</th>
+                  <th>Cantidad</th>
+                  <th>Marcado</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colspan="5" class="text-center">
-                    <p>No hay cotizaciones disponibles</p>
+                <tr v-for="item in selectedQuote.items" :key="item.productId">
+                  <td>
+                    <div class="product-info">
+                      <img :src="item.productImage" :alt="item.productName" class="product-thumbnail">
+                      <span>{{ item.productName }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="color-info">
+                      <span class="color-circle" :style="{ backgroundColor: item.color }"></span>
+                      <span>{{ item.colorName }}</span>
+                    </div>
+                  </td>
+                  <td>{{ item.quantity }}</td>
+                  <td>
+                    <div v-if="item.includeMarking" class="marking-info">
+                      <span class="material-icons text-success">check_circle</span>
+                      <span>{{ item.inkColors }} colores</span>
+                    </div>
+                    <span v-else>No</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div class="quote-notes" v-if="selectedQuote.notes">
+            <h3>Notas Adicionales</h3>
+            <p>{{ selectedQuote.notes }}</p>
+          </div>
         </div>
       </div>
-    </main>
+    </div>
   </div>
-  <!-- Modal para agregar/editar items del menú -->
-  <MenuItemForm
-    :is-open="showMenuItemModal"
-    :menu-item="editingMenuItem"
-    @close="handleCloseModal"
-    @save="handleSaveMenuItem"
-  />
-
-  <!-- Modal para agregar/editar usuarios -->
-  <UserForm
-    :is-open="showUserModal"
-    :user="editingUser"
-    @close="handleCloseModal"
-    @save="handleSaveUser"
-  />
-
-  <!-- Modal de confirmación para eliminar -->
-  <RgConfirmModal
-    :is-open="showDeleteConfirm"
-    :title="`Eliminar ${itemToDelete?.type === 'menu' ? 'Item' : 'Usuario'}`"
-    :message="`¿Estás seguro de que deseas eliminar este ${itemToDelete?.type === 'menu' ? 'item del menú' : 'usuario'}?`"
-    @close="handleCancelDelete"
-    @confirm="handleConfirmDelete"
-  />
 </template>
 
 <style scoped>
@@ -609,6 +821,115 @@ watch(activeTab, async (newTab: string) => {
   }
 }
 
+/* Modal de detalles de cotización */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2d3748;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #718096;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background: #f7fafc;
+  color: #4a5568;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.quote-info {
+  margin-bottom: 2rem;
+}
+
+.quote-info p {
+  margin: 0.5rem 0;
+}
+
+.quote-items {
+  margin-bottom: 2rem;
+}
+
+.quote-items h3,
+.quote-notes h3 {
+  font-size: 1.125rem;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.quote-items table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.quote-items th,
+.quote-items td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.quote-items th {
+  background: #f7fafc;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.quote-notes {
+  background: #f7fafc;
+  padding: 1rem;
+  border-radius: 0.375rem;
+}
+
+.quote-notes p {
+  margin: 0;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
 /* Estilos de la tabla */
 .menu-table {
   margin-top: 2rem;
@@ -672,6 +993,43 @@ watch(activeTab, async (newTab: string) => {
   font-size: 1.25rem;
 }
 
+/* Estilos del modal de detalles */
+.product-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.product-thumbnail {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+.color-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.color-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+}
+
+.marking-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text-success {
+  color: #10b981;
+}
+
 /* Estilos para la sección de cotizaciones */
 .quotes-section {
   margin-top: 1rem;
@@ -695,6 +1053,36 @@ watch(activeTab, async (newTab: string) => {
 
 .quotes-section .stat-card:nth-child(3) .material-icons {
   color: #10b981;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-badge.pending {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.completed {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.user-info small {
+  color: #64748b;
+  font-size: 0.75rem;
 }
 .loading-container,
 .error-container,

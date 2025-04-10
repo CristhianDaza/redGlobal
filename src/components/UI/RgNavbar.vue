@@ -5,17 +5,21 @@ import { useRouter } from 'vue-router';
 import { useMenuStore } from '../../store/useMenuStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUserStore } from '../../store/useUserStore';
+import { useQuoteStore } from '../../store/useQuoteStore';
 import TvButton from '@todovue/tvbutton';
 import RgAutocomplete from './RgAutocomplete.vue';
 import RgLoginModal from './RgLoginModal.vue';
+import QuoteCart from '../Quote/QuoteCart.vue';
 
 const router = useRouter();
 const menuStore = useMenuStore();
 const authStore = useAuthStore()
 const userStore = useUserStore();
+const quoteStore = useQuoteStore();
 const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
+const showQuoteCart = ref(false);
 
 const handleLogout = async () => {
   try {
@@ -151,6 +155,16 @@ const handleKeydown = (event: KeyboardEvent) => {
       />
     </div>
     <div class="auth-buttons">
+      <button
+        v-if="authStore.isAuthenticated()"
+        class="nav-link quote-cart-btn"
+        @click="showQuoteCart = true"
+      >
+        <span class="material-icons">request_quote</span>
+        <span>Mi Cotización</span>
+        <span v-if="quoteStore.totalItems > 0" class="quote-badge">{{ quoteStore.totalItems }}</span>
+      </button>
+
       <router-link
         v-if="authStore.isAuthenticated()"
         to="/admin"
@@ -166,6 +180,7 @@ const handleKeydown = (event: KeyboardEvent) => {
       </p>
     </div>
     <RgLoginModal v-if="showLoginModal" :is-open="showLoginModal" @close="toggleLoginModal" />
+    <QuoteCart :is-open="showQuoteCart" @close="showQuoteCart = false" />
   </div>
 </template>
 
@@ -408,6 +423,94 @@ const handleKeydown = (event: KeyboardEvent) => {
       background-color: rgba(0, 0, 0, 0.05);
       color: var(--primary-color);
     }
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: #666;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    cursor: pointer;
+
+    .material-icons {
+      font-size: 18px;
+      color: var(--primary-color);
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: var(--primary-color);
+    }
+  }
+
+  .quote-cart-btn {
+    position: relative;
+  }
+
+  .quote-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.75rem;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: #666;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    cursor: pointer;
+
+    .material-icons {
+      font-size: 18px;
+      color: var(--primary-color);
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: var(--primary-color);
+    }
+  }
+
+  .quote-cart-btn {
+    position: relative;
+  }
+
+  .quote-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.75rem;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
   }
 }
 

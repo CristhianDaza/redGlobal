@@ -8,6 +8,8 @@ const props = defineProps<{
   maxWidth?: string
   confirmText?: string
   confirmClass?: 'primary' | 'danger' | 'default'
+  showConfirm?: boolean
+  customStyle?: { backgroundColor: string; color: string }
 }>()
 
 const emit = defineEmits<{
@@ -62,9 +64,10 @@ const handleConfirm = () => {
               @click="handleClose"
             />
             <RgButton
+              v-if="showConfirm !== false"
               :text="confirmText || 'Confirmar'"
               type="default"
-              :custom-style="customStyleConfirm"
+              :custom-style="customStyle || customStyleConfirm"
               @click="handleConfirm"
             />
           </slot>

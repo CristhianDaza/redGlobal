@@ -1,4 +1,4 @@
-import type { ProductsRedGlobal, MenuItem, User, UserFormData } from '../types/common.d'
+import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote } from '../types/common.d'
 import { UserRole } from '../types/common.d'
 
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where } from 'firebase/firestore'
@@ -273,5 +273,42 @@ export const firebaseService = {
   async deleteMenuItem(id: string): Promise<void> {
     const menuRef = doc(db, 'menu', id)
     await deleteDoc(menuRef)
+  },
+
+  // Métodos para cotizaciones
+  async getQuotes(): Promise<Quote[]> {
+    try {
+      const quotesRef = collection(db, 'quotes')
+      const snapshot = await getDocs(quotesRef)
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Quote[]
+    } catch (error) {
+      console.error('Error getting quotes:', error)
+      return []
+    }
+  },
+
+  async createQuote(quote: Omit<Quote, 'id'>): Promise<void> {
+    try {
+      await addDoc(collection(db, 'quotes'), quote)
+    } catch (error) {
+      console.error('Error creating quote:', error)
+      throw error
+    }
+  },
+
+  async updateQuoteStatus(id: string, status: string): Promise<void> {
+    try {
+      const quoteRef = doc(db, 'quotes', id)
+      await updateDoc(quoteRef, {
+        status,
+        updatedAt: new Date().toISOString()
+      })
+    } catch (error) {
+      console.error('Error updating quote status:', error)
+      throw error
+    }
   }
 }

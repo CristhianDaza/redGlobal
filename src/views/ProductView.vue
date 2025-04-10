@@ -8,6 +8,7 @@ import type { ProductsRedGlobal, TableEntry } from '../types/common';
 import RgImage from '../components/UI/RgImage.vue';
 import RgLoader from '../components/UI/RgLoader.vue';
 import RgButton from '../components/UI/RgButton.vue';
+import QuoteModal from '../components/Quote/QuoteModal.vue';
 import { formatColor, getRelativeTime, formatNumber } from '../utils';
 
 const route = useRoute();
@@ -21,6 +22,7 @@ const visibleThumbnails = 6;
 const selectedColor = ref('');
 const isLoading = ref(false);
 const showPricesWithIva = ref(false);
+const showQuoteModal = ref(false);
 const isPriceLoading = computed(() => {
   return authStore.isAuthenticated() && userStore.isLoadingUsers;
 });
@@ -234,6 +236,17 @@ const formatLabelName = (name: string) => {
                   <span class="detail-value">{{ product.packaging }}</span>
                 </div>
 
+                <!-- Botón de cotización -->
+                <div class="quote-section" v-if="authStore.isAuthenticated()">
+                  <RgButton
+                    variant="primary"
+                    @click="showQuoteModal = true"
+                  >
+                    <span class="material-icons">request_quote</span>
+                    <span>Crear cotización</span>
+                  </RgButton>
+                </div>
+
                 <div class="detail-row" v-if="product.category?.length && product.category?.length > 0">
                   <span class="detail-key">{{ product.category.length > 1 ? 'Categorías:' : 'Categoría:' }}</span>
                   <span class="detail-value categories">
@@ -338,6 +351,14 @@ const formatLabelName = (name: string) => {
         </div>
       </div>
     </div>
+
+    <!-- Modal de cotización -->
+    <QuoteModal
+      v-if="product"
+      :is-open="showQuoteModal"
+      :product="product"
+      @close="showQuoteModal = false"
+    />
   </div>
 </template>
 
@@ -909,6 +930,22 @@ const formatLabelName = (name: string) => {
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;
+}
+
+.quote-section {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.quote-section .rg-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quote-section .material-icons {
+  font-size: 1.25rem;
 }
 
 @keyframes loading {

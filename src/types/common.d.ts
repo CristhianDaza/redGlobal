@@ -64,6 +64,36 @@ export enum UserRole {
   CLIENT = 'client'
 }
 
+export enum QuoteStatus {
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled'
+}
+
+export interface QuoteItem {
+  productId: string
+  productName: string
+  productImage: string
+  color: string
+  colorName: string
+  quantity: number
+  maxQuantity: number
+  includeMarking: boolean
+  inkColors?: number
+}
+
+export interface Quote {
+  id: string
+  userId: string
+  userName: string
+  userEmail: string
+  status: QuoteStatus
+  items: QuoteItem[]
+  createdAt: string
+  updatedAt: string
+  total?: number
+}
+
 export interface User {
   id: string;
   name: string;
@@ -88,4 +118,11 @@ export interface UserState {
   users: User[];
   isLoadingUsers: boolean;
   lastUpdateUsers: string | null;
+}
+
+export interface QuoteState {
+  quotes: Quote[];
+  currentQuote: QuoteItem[];
+  isLoadingQuotes: boolean;
+  lastUpdateQuotes: string | null;
 }
