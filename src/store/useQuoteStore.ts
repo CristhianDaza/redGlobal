@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { Quote, QuoteItem, QuoteState } from '../types/common.d'
+import type { Quote, QuoteItem, QuoteState, User } from '../types/common.d'
 import { QuoteStatus } from '../types/common.d'
 import { useAuthStore } from './useAuthStore'
+import { useUserStore } from './useUserStore'
 import { firebaseService } from '../services/firebaseService'
 
 export const useQuoteStore = defineStore('quote', () => {
@@ -90,9 +91,12 @@ export const useQuoteStore = defineStore('quote', () => {
   const submitQuote = async () => {
     if (!authStore.user || state.value.currentQuote.length === 0) return
 
+    const userStore = useUserStore()
+    const currentUser = userStore.users.find((user: User) => user.email === authStore.user?.email)
+
     const quote: Omit<Quote, 'id'> = {
       userId: authStore.user.uid,
-      userName: authStore.user.displayName || 'Usuario',
+      userName: currentUser?.name || 'Usuario',
       userEmail: authStore.user.email || '',
       status: QuoteStatus.PENDING,
       items: [...state.value.currentQuote],
