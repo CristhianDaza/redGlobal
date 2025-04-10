@@ -1,39 +1,52 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import RgButton from '../components/UI/RgButton.vue';
+import RgFormField from '../components/UI/RgFormField.vue';
 import InfoCard from '../components/Contact/InfoCard.vue';
 import { emailService } from '../services/emailService';
 import type { EmailData } from '../services/emailService';
 import { contactCards } from '../config/contact';
+import { useForm, rules } from '../composable/useForm';
 
-interface ContactForm {
-  name: string;
-  email: string;
-  phone: string;
-  company: string;
-  message: string;
-}
-
-const form = ref<ContactForm>({
-  name: '',
-  email: '',
-  phone: '',
-  company: '',
-  message: ''
+const { 
+  form,
+  errors,
+  touched,
+  isValid,
+  validateForm,
+  touchField,
+  resetForm
+} = useForm({
+  initialValues: {
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    message: ''
+  },
+  rules: {
+    name: [rules.required('El nombre es requerido')],
+    email: [
+      rules.required('El email es requerido'),
+      rules.email('El email no es válido')
+    ],
+    phone: [
+      rules.required('El teléfono es requerido'),
+      rules.phone('El teléfono no es válido')
+    ],
+    message: [
+      rules.required('El mensaje es requerido'),
+      rules.minLength(10, 'El mensaje debe tener al menos 10 caracteres'),
+      rules.maxLength(500, 'El mensaje no puede exceder los 500 caracteres')
+    ]
+  }
 });
 
 const isSubmitting = ref(false);
 const showSuccessMessage = ref(false);
 
-const isFormValid = computed(() => {
-  return form.value.name.trim() !== '' &&
-         form.value.email.trim() !== '' &&
-         form.value.phone.trim() !== '' &&
-         form.value.message.trim() !== '';
-});
-
 const handleSubmit = async () => {
-  if (isSubmitting.value) return; // Prevenir múltiples envíos
+  if (isSubmitting.value || !validateForm()) return;
   
   isSubmitting.value = true;
   try {
@@ -48,14 +61,7 @@ const handleSubmit = async () => {
     await emailService.sendContactEmail(emailData);
     showSuccessMessage.value = true;
     
-    // Limpiar formulario
-    form.value = {
-      name: '',
-      email: '',
-      phone: '',
-      company: '',
-      message: ''
-    };
+    resetForm();
 
     setTimeout(() => {
       showSuccessMessage.value = false;
@@ -95,66 +101,76 @@ const handleSubmit = async () => {
           <h2>Envíanos un mensaje</h2>
           
           <div class="form-grid">
-            <div class="form-group">
-              <label for="name">Nombre completo</label>
-              <input
-                id="name"
-                v-model="form.name"
-                type="text"
-                required
-                placeholder="Tu nombre"
-              >
-            </div>
+            <RgFormField
+              v-model="form.name"
+              name="name"
+              label="Nombre completo"
+              placeholder="Tu nombre"
+              :errors="errors.name"
+              :touched="touched.has('name')"
+              required
+              @blur="touchField('name')"
+            />
 
-            <div class="form-group">
-              <label for="email">Correo electrónico</label>
-              <input
-                id="email"
-                v-model="form.email"
-                type="email"
-                required
-                placeholder="tu@email.com"
-              >
-            </div>
+            <RgFormField
+              v-model="form.email"
+              name="email"
+              type="email"
+              label="Correo electrónico"
+              placeholder="tu@email.com"
+              :errors="errors.email"
+              :touched="touched.has('email')"
+              required
+              @blur="touchField('email')"
+            />
 
-            <div class="form-group">
-              <label for="phone">Teléfono</label>
-              <input
-                id="phone"
-                v-model="form.phone"
-                type="tel"
-                required
-                placeholder="Tu número de contacto"
-              >
-            </div>
+            <RgFormField
+              v-model="form.phone"
+              name="phone"
+              type="tel"
+              label="Teléfono"
+              placeholder="Tu número de contacto"
+              :errors="errors.phone"
+              :touched="touched.has('phone')"
+              required
+              @blur="touchField('phone')"
+            />
 
-            <div class="form-group">
-              <label for="company">Empresa</label>
-              <input
-                id="company"
-                v-model="form.company"
-                type="text"
-                placeholder="Nombre de tu empresa (opcional)"
-              >
-            </div>
+            <RgFormField
+              v-model="form.company"
+              name="company"
+              label="Empresa"
+              placeholder="Nombre de tu empresa (opcional)"
+              :errors="errors.company"
+              :touched="touched.has('company')"
+              @blur="touchField('company')"
+            />
           </div>
 
-          <div class="form-group full-width">
-            <label for="message">Mensaje</label>
+          <div class="form-field full-width">
+            <label for="message" class="form-label">
+              Mensaje
+              <span class="required">*</span>
+            </label>
             <textarea
               id="message"
               v-model="form.message"
-              required
               rows="4"
+              class="form-input"
               placeholder="¿Cómo podemos ayudarte?"
+              :class="{ 'has-error': touched.has('message') && errors.message?.length }"
+              @blur="touchField('message')"
             ></textarea>
+            <span v-if="touched.has('message') && errors.message?.length" class="error-message">
+              {{ errors.message[0] }}
+            </span>
           </div>
 
           <div class="form-footer">
             <RgButton
               :text="isSubmitting ? 'Enviando...' : 'Enviar mensaje'"
               :loading="isSubmitting"
-              :disabled="isSubmitting || !isFormValid"
+              :disabled="isSubmitting || !isValid"
             />
           </div>
         </form>
@@ -226,34 +242,49 @@ const handleSubmit = async () => {
   margin-bottom: 1.5rem;
 }
 
-.form-group {
+.form-field {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.form-group.full-width {
+.form-field.full-width {
   grid-column: 1 / -1;
 }
 
-.form-group label {
+.form-label {
+  font-size: 0.875rem;
   font-weight: 500;
-  color: #4a5568;
+  color: #374151;
 }
 
-.form-group input,
-.form-group textarea {
+.required {
+  color: #dc2626;
+  margin-left: 0.25rem;
+}
+
+.form-input {
+  width: 100%;
   padding: 0.75rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e5e7eb;
   border-radius: 0.375rem;
-  font-size: 1rem;
-  transition: border-color 0.2s;
+  font-size: 0.875rem;
+  transition: all 0.2s;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.form-input:focus {
   outline: none;
   border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.form-input.has-error {
+  border-color: #dc2626;
+}
+
+.error-message {
+  font-size: 0.75rem;
+  color: #dc2626;
 }
 
 .form-footer {
