@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import type { MenuItem, User, UserFormData } from '../types/common';
+import type { MenuItem, User, UserFormData, CategoryCard, CategoryCardCreate } from '../types/common';
 import { useAuthStore } from '../store/useAuthStore'; 
 import { useMenuStore } from '../store/useMenuStore';
 import { useUserStore } from '../store/useUserStore';
 import { useQuoteStore } from '../store/useQuoteStore';
+import { useCategoryStore } from '../store/useCategoryStore';
 import RgButton from '../components/UI/RgButton.vue';
 import MenuItemForm from '../components/Admin/MenuItemForm.vue';
 import UserForm from '../components/Admin/UserForm.vue';
 import RgConfirmModal from '../components/UI/RgConfirmModal.vue';
+import CategoryCardForm from '../components/Admin/CategoryCardForm.vue';
 import { uploadImage } from '../config/cloudinary';
 import { getRelativeTime } from '../utils/helpers';
 
@@ -16,16 +18,20 @@ const authStore = useAuthStore();
 const menuStore = useMenuStore();
 const userStore = useUserStore();
 const quoteStore = useQuoteStore();
+const categoryStore = useCategoryStore();
+const categoryCards = computed(() => categoryStore.categoryCards as unknown as CategoryCard[]);
 
 const isLoadingData = ref(false);
 
-const activeTab = ref('quotes'); // 'items' | 'users' | 'quotes'
+const activeTab = ref('quotes'); // 'items' | 'users' | 'quotes' | 'cards'
 const showMenuItemModal = ref(false);
 const showUserModal = ref(false);
+const showCardModal = ref(false);
 const editingMenuItem = ref<MenuItem | undefined>(undefined);
 const editingUser = ref<User | null>(null);
+const editingCard = ref<CategoryCard | undefined>(undefined);
 const showDeleteConfirm = ref(false);
-const itemToDelete = ref<{ id: string; type: 'menu' | 'user' | 'quote' } | undefined>(undefined);
+const itemToDelete = ref<{ id: string; type: 'menu' | 'user' | 'quote' | 'card' } | undefined>(undefined);
 
 const isAuthenticated = computed(() => authStore.isAuthenticated())
 const isAdmin = computed(() => {
@@ -134,7 +140,7 @@ const handleCloseModal = () => {
   editingUser.value = null;
 };
 
-const handleDeleteClick = (id: string, type: 'menu' | 'user' | 'quote') => {
+const handleDeleteClick = (id: string, type: 'menu' | 'user' | 'quote' | 'card') => {
   itemToDelete.value = { id, type };
   showDeleteConfirm.value = true;
 };
@@ -151,6 +157,9 @@ const handleConfirmDelete = async () => {
       } else if (itemToDelete.value.type === 'quote') {
         await quoteStore.deleteQuote(itemToDelete.value.id);
         await quoteStore.getQuotes();
+      } else if (itemToDelete.value.type === 'card') {
+        await categoryStore.deleteCategoryCard(itemToDelete.value.id);
+        await categoryStore.getCategoryCards();
       }
     } catch (error) {
       console.error('Error deleting item:', error);
@@ -253,6 +262,38 @@ const handleAddUser = () => {
   showUserModal.value = true;
 };
 
+const isLoadingCard = ref(false);
+
+const handleAddCard = () => {
+  editingCard.value = undefined;
+  showCardModal.value = true;
+};
+
+const handleEditCard = (card: CategoryCard) => {
+  editingCard.value = card;
+  showCardModal.value = true;
+};
+
+const handleSaveCard = async (cardData: CategoryCardCreate) => {
+  try {
+    isLoadingCard.value = true;
+    if (editingCard.value) {
+      await categoryStore.updateCategoryCard(editingCard.value.id, cardData);
+    } else {
+      await categoryStore.createCategoryCard(cardData);
+    }
+    showCardModal.value = false;
+    editingCard.value = undefined;
+  } catch (error) {
+    console.error('Error saving card:', error);
+    if (error instanceof Error) {
+      alert(error.message);
+    }
+  } finally {
+    isLoadingCard.value = false;
+  }
+};
+
 // Computed properties para los datos
 const menuItems = computed(() => menuStore.menu);
 const users = computed(() => userStore.users);
@@ -313,6 +354,8 @@ watch(activeTab, async (newTab: string) => {
       await userStore.getUsers();
     } else if (newTab === 'quotes') {
       await quoteStore.getQuotes();
+    } else if (newTab === 'cards') {
+      await categoryStore.getCategoryCards();
     }
   } catch (error) {
     console.error('Error loading data:', error);
@@ -360,6 +403,15 @@ watch(activeTab, async (newTab: string) => {
           <span class="material-icons">request_quote</span>
           <span>Cotizaciones</span>
         </button>
+        <button
+          v-if="isAdmin"
+          class="nav-item"
+          :class="{ active: activeTab === 'cards' }"
+          @click="(e) => handleTabChange('cards', e)"
+        >
+          <span class="material-icons">category</span>
+          <span>Categorías</span>
+        </button>
       </nav>
     </aside>
 
@@ -369,18 +421,20 @@ watch(activeTab, async (newTab: string) => {
         <h1>
           {{
             activeTab === 'items'
-              ? 'Gestión de Items'
+              ? 'Menú'
               : activeTab === 'users'
-                ? 'Gestión de Usuarios'
-                : 'Cotizaciones'
+                ? 'Usuarios'
+                : activeTab === 'cards'
+                  ? 'Categorías'
+                  : 'Cotizaciones'
           }}
         </h1>
 
         <RgButton
           v-if="activeTab !== 'quotes' && isAdmin"
-          :text="activeTab === 'items' ? 'Agregar Item al Menú' : 'Crear Usuario'"
+          :text="activeTab === 'items' ? 'Agregar Item al Menú' : activeTab === 'users' ? 'Crear Usuario' : 'Agregar Categoría'"
           class="add-button"
-          @click="activeTab === 'items' ? handleAddMenuItem() : handleAddUser()"
+          @click="activeTab === 'items' ? handleAddMenuItem() : activeTab === 'users' ? handleAddUser() : handleAddCard()"
           type="default"
         />
       </header>
@@ -391,7 +445,7 @@ watch(activeTab, async (newTab: string) => {
           <p>Cargando datos...</p>
         </div>
 
-        <template v-else>
+        <div v-else>
           <!-- Sección de Items -->
           <div v-if="activeTab === 'items'" class="items-section">
             <div class="stats-grid">
@@ -513,7 +567,7 @@ watch(activeTab, async (newTab: string) => {
           </div>
 
           <!-- Sección de Cotizaciones -->
-          <div v-else class="quotes-section">
+          <div v-else-if="activeTab === 'quotes'" class="quotes-section">
             <div class="stats-grid">
               <div class="stat-card">
                 <span class="material-icons">request_quote</span>
@@ -600,7 +654,75 @@ watch(activeTab, async (newTab: string) => {
               </table>
             </div>
           </div>
-        </template>
+
+          <!-- Sección de Categorías -->
+          <div v-else-if="activeTab === 'cards'" class="cards-section">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <span class="material-icons">dashboard</span>
+                <div class="stat-info">
+                  <h3>Total Categorías</h3>
+                  <p>{{ categoryCards.length }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="cards-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Texto Botón</th>
+                    <th>Color de Fondo</th>
+                    <th>URL</th>
+                    <th>Estado</th>
+                    <th>Imagen</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="card in categoryCards" :key="card.id">
+                    <td>{{ card.title }}</td>
+                    <td>{{ card.buttonText }}</td>
+                    <td>
+                      <div class="color-preview" :style="{ backgroundColor: card.backgroundColor }"></div>
+                      {{ card.backgroundColor }}
+                    </td>
+                    <td>{{ card.url }}</td>
+                    <td>
+                      <span class="status-badge" :class="{ 'completed': card.active, 'pending': !card.active }">
+                        {{ card.active ? 'Activa' : 'Inactiva' }}
+                      </span>
+                    </td>
+                    <td>
+                      <img 
+                        :src="card.imageUrl" 
+                        :alt="card.title"
+                        class="card-thumbnail"
+                      >
+                    </td>
+                    <td class="actions">
+                      <button 
+                        class="action-btn edit"
+                        @click="handleEditCard(card)"
+                        title="Editar categoría"
+                      >
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button 
+                        class="action-btn delete"
+                        @click="handleDeleteClick(card.id, 'card')"
+                        title="Eliminar categoría"
+                      >
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
         <!-- Modales -->
         <MenuItemForm
@@ -623,6 +745,14 @@ watch(activeTab, async (newTab: string) => {
           :message="`¿Estás seguro de que deseas eliminar ${itemToDelete?.type === 'menu' ? 'este item del menú' : itemToDelete?.type === 'user' ? 'este usuario' : 'esta cotización'}?`"
           @confirm="handleConfirmDelete"
           @close="handleCancelDelete"
+        />
+
+        <CategoryCardForm
+          :is-open="showCardModal"
+          :card="editingCard"
+          :loading="isLoadingCard"
+          @save="handleSaveCard"
+          @close="showCardModal = false"
         />
       </div>
     </main>
@@ -821,6 +951,46 @@ watch(activeTab, async (newTab: string) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+/* Category Cards */
+.category-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.category-image {
+  position: relative;
+  height: 200px;
+  border-radius: 1rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-image img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+}
+
+.category-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 1rem;
+  color: white;
+}
+
+.category-content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
 /* Stats Grid */
 .stats-grid {
   display: grid;
@@ -970,6 +1140,29 @@ watch(activeTab, async (newTab: string) => {
   margin: 0.5rem 0;
 }
 
+.card-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 0.375rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.color-preview {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  border: 1px solid #e2e8f0;
+}
+
 .quote-items {
   margin-bottom: 2rem;
 }
@@ -1012,38 +1205,61 @@ watch(activeTab, async (newTab: string) => {
   line-height: 1.5;
 }
 
-/* Estilos de la tabla */
-.menu-table {
+/* Estilos de las tablas */
+.menu-table,
+.cards-table {
   margin-top: 2rem;
   overflow-x: auto;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.menu-table table {
+.menu-table table,
+.cards-table table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
 }
 
 .menu-table th,
-.menu-table td {
+.menu-table td,
+.cards-table th,
+.cards-table td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
 }
 
-.menu-table th {
+.menu-table tbody tr:last-child td,
+.cards-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.menu-table tbody tr:hover,
+.cards-table tbody tr:hover {
+  background-color: #f7fafc;
+}
+
+.menu-table th,
+.cards-table th {
   font-weight: 600;
   color: #4a5568;
   background: #f8fafc;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
 }
 
-.menu-table td {
+.menu-table td,
+.cards-table td {
   color: #2d3748;
 }
 
-.menu-table .actions {
+.menu-table .actions,
+.cards-table .actions {
   display: flex;
   gap: 0.5rem;
+  justify-content: flex-end;
 }
 
 .action-btn {

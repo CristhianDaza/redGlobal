@@ -85,6 +85,21 @@ export interface QuoteItem {
   totalPrice: number
 }
 
+export interface CategoryCard {
+  id: string;
+  title: string;
+  imageUrl: string;
+  buttonText: string;
+  backgroundColor: string;
+  active: boolean;
+  buttonColor: string;
+  order: number;
+  url: string;
+  textColor: string;
+}
+
+export type CategoryCardCreate = Pick<CategoryCard, 'title' | 'buttonText' | 'backgroundColor' | 'imageUrl' | 'active' | 'url' | 'textColor'>;
+
 export interface Quote {
   id: string
   userId: string

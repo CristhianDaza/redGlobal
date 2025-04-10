@@ -10,8 +10,10 @@ const props = withDefaults(defineProps<{
   confirmClass?: 'primary' | 'danger' | 'default'
   showConfirm?: boolean
   customStyle?: { backgroundColor: string; color: string }
+  loading?: boolean
 }>(), {
-  showConfirm: true
+  showConfirm: true,
+  loading: false
 })
 
 const emit = defineEmits<{
@@ -53,8 +55,11 @@ const handleConfirm = () => {
           </button>
         </div>
         
-        <div class="modal-body">
-          <slot></slot>
+        <div class="modal-body" :class="{ 'loading-overlay': loading }">
+          <div v-if="loading" class="loader"></div>
+          <div :class="{ 'content-blur': loading }">
+            <slot></slot>
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -133,6 +138,36 @@ const handleConfirm = () => {
 
 .modal-body {
   padding: 1.5rem;
+  position: relative;
+}
+
+.loading-overlay {
+  min-height: 150px;
+}
+
+.loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  border: 5px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 5px solid var(--primary-color);
+  animation: spin 1s linear infinite;
+  z-index: 10;
+}
+
+.content-blur {
+  filter: blur(2px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .modal-footer {

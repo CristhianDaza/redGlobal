@@ -1,34 +1,19 @@
 <script setup lang="ts">
-import type { Category } from '@/types/config';
+import { computed, onMounted } from 'vue';
 import { defineAsyncComponent } from 'vue';
+import { useCategoryStore } from '../../store/useCategoryStore';
+
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('../UI/RgButton.vue'));
 
-const categories: Category[] = [
-  {
-    title: 'Productos Promocionales',
-    image: 'https://firebasestorage.googleapis.com/v0/b/mega2024-6a453.appspot.com/o/cat-07.png?alt=media&token=67742bed-a013-46d9-b5ec-7abc9c617068',
-    link: '/productos-promocionales',
-    id: 1,
-    background: '#A4B7CB',
-    textButton: 'Ver catálogo'
-  },
-  {
-    title: 'Gift Promocionales',
-    image: 'https://firebasestorage.googleapis.com/v0/b/mega2024-6a453.appspot.com/o/revistas.png?alt=media&token=dfa11190-530a-4d5d-adf8-788ab89890b5',
-    link: '/gift-promocionales',
-    id: 2,
-    background: '#F4A676',
-    textButton: 'Ver catálogo'
-  },
-  {
-    title: 'Mix Promocionales',
-    image: 'https://firebasestorage.googleapis.com/v0/b/mega2024-6a453.appspot.com/o/tarjeta.png?alt=media&token=d1a54f94-deb5-4127-80c3-11c4fc2027ca',
-    link: '/mix-promocionales',
-    id: 3,
-    background: '#7DCFB6',
-    textButton: 'Ver catálogo'
-  }
-];
+const categoryStore = useCategoryStore();
+
+onMounted(async () => {
+  await categoryStore.getCategoryCards();
+});
+
+const activeCategories = computed(() => {
+  return categoryStore.categoryCards.filter(card => card.active);
+});
 
 const customStyle = {
   backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
@@ -40,20 +25,20 @@ const customStyle = {
   <section class="categories">
     <div class="categories-grid">
       <router-link 
-        v-for="category in categories" 
+        v-for="category in activeCategories" 
         :key="category.id"
-        :to="category.link"
+        :to="category.url"
         class="category-card"
       >
-        <div class="category-image" :style="{ backgroundColor: category.background }">
+        <div class="category-image" :style="{ backgroundColor: category.backgroundColor }">
           <div class="category-content">
-            <h3>{{ category.title }}</h3>
+            <h3 :style="{ color: category.textColor }">{{ category.title }}</h3>
             <RgButton
-              :text="category.textButton"
+              :text="category.buttonText"
               :custom-style="customStyle"
             />
           </div>
-          <img :src="category.image" :alt="category.title">
+          <img :src="category.imageUrl" :alt="category.title">
         </div>
       </router-link>
     </div>
