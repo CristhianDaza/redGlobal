@@ -9,6 +9,7 @@ import RgImage from '../components/UI/RgImage.vue';
 import RgLoader from '../components/UI/RgLoader.vue';
 import RgButton from '../components/UI/RgButton.vue';
 import QuoteModal from '../components/Quote/QuoteModal.vue';
+import SimilarProducts from '../components/Product/SimilarProducts.vue';
 import { formatColor, getRelativeTime, formatNumber } from '../utils';
 
 const route = useRoute();
@@ -349,6 +350,9 @@ const formatLabelName = (name: string) => {
               </tr>
             </tbody>
           </table>
+
+          <!-- Productos similares -->
+          <SimilarProducts v-if="product" :current-product="product" />
         </div>
       </div>
     </div>
