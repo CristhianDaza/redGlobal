@@ -672,11 +672,12 @@ watch(activeTab, async (newTab: string) => {
             <p>{{ selectedQuote.notes }}</p>
           </div>
         </div>
-        <footer class="modal-footer" v-if="isAdmin && selectedQuote && selectedQuote.status === quoteStatus.PENDING">
+        <footer class="modal-footer quote-modal-footer" v-if="isAdmin && selectedQuote && selectedQuote.status === quoteStatus.PENDING">
           <RgButton
             text="Marcar como Completada"
             @click="handleCompleteQuote(selectedQuote.id)"
             type="default"
+            class="complete-quote-btn"
           />
         </footer>
       </div>
@@ -843,6 +844,24 @@ watch(activeTab, async (newTab: string) => {
   .admin-layout {
     grid-template-columns: 200px 1fr;
   }
+}
+
+.quote-modal-footer {
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #e5e7eb;
+}
+
+.complete-quote-btn {
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.complete-quote-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 @media (max-width: 768px) {
