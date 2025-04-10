@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import type { MenuItem, User, UserFormData, QuoteStatus } from '../types/common';
+import type { MenuItem, User, UserFormData } from '../types/common';
 import { useAuthStore } from '../store/useAuthStore'; 
 import { useMenuStore } from '../store/useMenuStore';
 import { useUserStore } from '../store/useUserStore';
@@ -10,6 +10,7 @@ import MenuItemForm from '../components/Admin/MenuItemForm.vue';
 import UserForm from '../components/Admin/UserForm.vue';
 import RgConfirmModal from '../components/UI/RgConfirmModal.vue';
 import { uploadImage } from '../config/cloudinary';
+import { getRelativeTime } from '../utils/helpers';
 
 const authStore = useAuthStore();
 const menuStore = useMenuStore();
@@ -27,12 +28,17 @@ const showDeleteConfirm = ref(false);
 const itemToDelete = ref<{ id: string; type: 'menu' | 'user' } | undefined>(undefined);
 
 const isAuthenticated = computed(() => authStore.isAuthenticated())
-const isAdmin = computed(() => authStore.isAdmin)
+const isAdmin = computed(() => {
+  const currentUser = userStore.users.find(user => user.email === authStore.user?.email)
+  return currentUser?.role === 'admin' && authStore.isAdmin
+})
 
 // Establecer la pestaña inicial según el rol
 watch(isAdmin, (newIsAdmin) => {
-  if (newIsAdmin && activeTab.value === 'quotes') {
-    activeTab.value = 'items'
+  if (!newIsAdmin) {
+    activeTab.value = 'quotes';
+  } else if (activeTab.value === 'quotes') {
+    activeTab.value = 'items';
   }
 }, { immediate: true })
 
@@ -166,6 +172,8 @@ interface Quote {
     maxQuantity: number;
     includeMarking: boolean;
     inkColors?: number;
+    unitPrice: number;
+    totalPrice: number;
   }>;
   notes?: string;
   createdAt: string;
@@ -191,9 +199,31 @@ const quoteStatus = {
 const showQuoteDetailsModal = ref(false);
 const selectedQuote = ref<Quote | null>(null);
 
+// Cargar datos iniciales
+onMounted(async () => {
+  isLoadingData.value = true;
+  try {
+    await Promise.all([
+      menuStore.getMenu(),
+      quoteStore.getQuotes(),
+      userStore.getUsers()
+    ]);
+  } catch (error) {
+    console.error('Error loading data:', error);
+  } finally {
+    isLoadingData.value = false;
+  }
+});
+
 const handleCompleteQuote = async (quoteId: string) => {
   try {
     await quoteStore.updateQuoteStatus(quoteId, quoteStatus.COMPLETED);
+    if (selectedQuote.value) {
+      selectedQuote.value = {
+        ...selectedQuote.value,
+        status: quoteStatus.COMPLETED
+      };
+    }
     await quoteStore.getQuotes();
   } catch (error) {
     console.error('Error al completar la cotización:', error);
@@ -334,7 +364,7 @@ watch(activeTab, async (newTab: string) => {
         </h1>
 
         <RgButton
-          v-if="activeTab !== 'quotes'"
+          v-if="activeTab !== 'quotes' && isAdmin"
           :text="activeTab === 'items' ? 'Agregar Item al Menú' : 'Crear Usuario'"
           class="add-button"
           @click="activeTab === 'items' ? handleAddMenuItem() : handleAddUser()"
@@ -514,7 +544,7 @@ watch(activeTab, async (newTab: string) => {
                     </td>
                   </tr>
                   <tr v-else v-for="quote in filteredQuotes" :key="quote.id">
-                    <td>{{ new Date(quote.createdAt).toLocaleDateString() }}</td>
+                    <td>{{ getRelativeTime(quote.createdAt) }}</td>
                     <td>
                       <div class="user-info">
                         <span>{{ quote.userName }}</span>
@@ -586,7 +616,7 @@ watch(activeTab, async (newTab: string) => {
         </header>
         <div class="modal-body" v-if="selectedQuote">
           <div class="quote-info">
-            <p><strong>Fecha:</strong> {{ new Date(selectedQuote.createdAt).toLocaleDateString() }}</p>
+            <p><strong>Fecha:</strong> {{ getRelativeTime(selectedQuote.createdAt) }}</p>
             <p><strong>Cliente:</strong> {{ selectedQuote.userName }}</p>
             <p><strong>Email:</strong> {{ selectedQuote.userEmail }}</p>
             <p><strong>Estado:</strong> 
@@ -594,6 +624,7 @@ watch(activeTab, async (newTab: string) => {
                 {{ selectedQuote.status === quoteStatus.PENDING ? 'Pendiente' : 'Completada' }}
               </span>
             </p>
+            <p v-if="isAdmin"><strong>Nota:</strong> El precio es + IVA</p>
           </div>
           <div class="quote-items">
             <h3>Items Solicitados</h3>
@@ -604,6 +635,8 @@ watch(activeTab, async (newTab: string) => {
                   <th>Color</th>
                   <th>Cantidad</th>
                   <th>Marcado</th>
+                  <th v-if="isAdmin">Precio Unit.</th>
+                  <th v-if="isAdmin">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -628,6 +661,8 @@ watch(activeTab, async (newTab: string) => {
                     </div>
                     <span v-else>No</span>
                   </td>
+                  <td v-if="isAdmin">${{ (item.unitPrice || 0).toLocaleString('es-CO') }}</td>
+                  <td v-if="isAdmin">${{ (item.totalPrice || 0).toLocaleString('es-CO') }}</td>
                 </tr>
               </tbody>
             </table>
@@ -637,6 +672,13 @@ watch(activeTab, async (newTab: string) => {
             <p>{{ selectedQuote.notes }}</p>
           </div>
         </div>
+        <footer class="modal-footer" v-if="isAdmin && selectedQuote && selectedQuote.status === quoteStatus.PENDING">
+          <RgButton
+            text="Marcar como Completada"
+            @click="handleCompleteQuote(selectedQuote.id)"
+            type="default"
+          />
+        </footer>
       </div>
     </div>
   </div>

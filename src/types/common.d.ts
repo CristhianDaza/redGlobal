@@ -12,6 +12,7 @@ export interface ProductsRedGlobal {
   name: string;
   packaging?: string;
   printing?: string;
+  price: number;
   size?: string;
   stock?: number;
   tableQuantity?: TableEntry[];
@@ -80,6 +81,8 @@ export interface QuoteItem {
   maxQuantity: number
   includeMarking: boolean
   inkColors?: number
+  unitPrice: number
+  totalPrice: number
 }
 
 export interface Quote {
@@ -102,6 +105,7 @@ export interface User {
   primaryColor: string;
   secondaryColor: string;
   priceIncrease: number;
+  discount?: number;
   active: boolean;
   role: UserRole;
   createdAt: string;

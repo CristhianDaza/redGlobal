@@ -45,12 +45,12 @@ export const getRelativeTime = (dateString: string | Date | null): string => {
   ];
 
   const rule = timeRules.find(rule => diffInSeconds < rule.limit);
-  if (rule?.immediate) return 'Hace ' + rule.unit[0] + '.';
+  if (rule?.immediate) return 'Hace ' + rule.unit[0];
 
   const value = Math.floor(diffInSeconds / rule!.divisor);
   const unit = value === 1 ? rule!.unit[0] : rule!.unit[1];
   
-  return `Hace ${value} ${unit}.`;
+  return `Hace ${value} ${unit}`;
 };
 
 const _colors = new Map([

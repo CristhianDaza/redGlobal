@@ -292,10 +292,15 @@ export const firebaseService = {
 
   async createQuote(quote: Omit<Quote, 'id'>): Promise<void> {
     try {
-      await addDoc(collection(db, 'quotes'), quote)
+      // Convertir valores undefined a null para Firebase
+      const cleanQuote = JSON.parse(JSON.stringify(quote, (key, value) => {
+        return value === undefined ? null : value;
+      }));
+
+      await addDoc(collection(db, 'quotes'), cleanQuote);
     } catch (error) {
-      console.error('Error creating quote:', error)
-      throw error
+      console.error('Error creating quote:', error);
+      throw error;
     }
   },
 

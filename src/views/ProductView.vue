@@ -23,6 +23,7 @@ const selectedColor = ref('');
 const isLoading = ref(false);
 const showPricesWithIva = ref(false);
 const showQuoteModal = ref(false);
+
 const isPriceLoading = computed(() => {
   return authStore.isAuthenticated() && userStore.isLoadingUsers;
 });

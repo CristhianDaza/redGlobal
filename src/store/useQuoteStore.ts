@@ -48,7 +48,7 @@ export const useQuoteStore = defineStore('quote', () => {
   }
 
   // Actions
-  const addItemToQuote = (item: QuoteItem) => {
+  const addItemToQuote = async (item: QuoteItem) => {
     const existingIndex = state.value.currentQuote.findIndex(
       i => i.productId === item.productId && i.color === item.color
     )

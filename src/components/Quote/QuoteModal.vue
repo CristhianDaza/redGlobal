@@ -2,6 +2,9 @@
 import { ref, computed } from 'vue'
 import type { ProductsRedGlobal, TableEntry, QuoteItem } from '../../types/common.d'
 import RgModal from '../UI/RgModal.vue'
+import RgButton from '../UI/RgButton.vue'
+import { useAuthStore } from '../../store/useAuthStore'
+import { useUserStore } from '../../store/useUserStore'
 import { useQuoteStore } from '../../store/useQuoteStore'
 
 const props = defineProps<{
@@ -13,52 +16,91 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
+const authStore = useAuthStore()
+const userStore = useUserStore()
 const quoteStore = useQuoteStore()
 
-const selectedColor = ref<TableEntry | null>(null)
-const quantity = ref(1)
+const selectedColors = ref<Map<string, { color: TableEntry, quantity: number }>>(new Map())
 const includeMarking = ref(false)
 const inkColors = ref(1)
+const isLoading = ref(false)
+
+const resetForm = () => {
+  selectedColors.value.clear()
+  includeMarking.value = false
+  inkColors.value = 1
+}
 
 const availableColors = computed(() => {
   return props.product.tableQuantity?.filter(entry => entry.quantity > 0) || []
 })
 
-const maxQuantity = computed(() => {
-  return selectedColor.value?.quantity || 0
-})
-
 const handleColorChange = (color: TableEntry) => {
-  selectedColor.value = color
-  if (quantity.value > color.quantity) {
-    quantity.value = color.quantity
+  if (selectedColors.value.has(color.color)) {
+    selectedColors.value.delete(color.color)
+  } else {
+    selectedColors.value.set(color.color, { color, quantity: 1 })
+  }
+  selectedColors.value = new Map(selectedColors.value) // Forzar reactividad
+}
+
+const updateQuantity = (color: TableEntry, newQuantity: number) => {
+  if (selectedColors.value.has(color.color)) {
+    const entry = selectedColors.value.get(color.color)!
+    if (newQuantity <= color.quantity && newQuantity > 0) {
+      entry.quantity = newQuantity
+      selectedColors.value = new Map(selectedColors.value) // Forzar reactividad
+    }
   }
 }
 
-const handleSubmit = () => {
-  if (!selectedColor.value) return
+const calculatePriceWithIncrease = (price: number) => {
+  const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
 
-  const quoteItem: QuoteItem = {
-    productId: props.product.id,
-    productName: props.product.name,
-    productImage: props.product.mainImage,
-    color: selectedColor.value.color,
-    colorName: selectedColor.value.colorName,
-    quantity: quantity.value,
-    maxQuantity: selectedColor.value.quantity,
-    includeMarking: includeMarking.value,
-    inkColors: includeMarking.value ? inkColors.value : undefined
+  if (currentUser?.priceIncrease) {
+    // Aplicar el incremento de precio
+    const finalPrice = price * (1 + currentUser.priceIncrease / 100);
+    return Math.ceil(finalPrice);
   }
 
-  quoteStore.addItemToQuote(quoteItem)
-  emit('close')
+  return price;
+}
+
+const handleSubmit = async () => {
+  if (selectedColors.value.size === 0) return
+  isLoading.value = true
+
+  try {
+    // Crear un QuoteItem por cada color seleccionado
+    for (const { color, quantity } of selectedColors.value.values()) {
+      const unitPrice = calculatePriceWithIncrease(Number(color.price));
+      const quoteItem: QuoteItem = {
+        productId: props.product.id,
+        productName: props.product.name,
+        productImage: props.product.mainImage,
+        color: color.color,
+        colorName: color.colorName,
+        quantity: quantity,
+        maxQuantity: color.quantity,
+        includeMarking: includeMarking.value,
+        inkColors: includeMarking.value ? inkColors.value : undefined,
+        unitPrice: unitPrice,
+        totalPrice: unitPrice * quantity
+      }
+      await quoteStore.addItemToQuote(quoteItem)
+    }
+    
+    resetForm()
+    emit('close')
+  } catch (error) {
+    console.error('Error al agregar items a la cotización:', error)
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const handleClose = () => {
-  selectedColor.value = null
-  quantity.value = 1
-  includeMarking.value = false
-  inkColors.value = 1
+  resetForm()
   emit('close')
 }
 </script>
@@ -68,7 +110,6 @@ const handleClose = () => {
     :is-open="isOpen"
     :title="'Cotizar ' + product.name"
     @close="handleClose"
-    @confirm="handleSubmit"
   >
     <div class="quote-form">
       <!-- Información del producto -->
@@ -83,13 +124,13 @@ const handleClose = () => {
 
       <!-- Selección de color y cantidad -->
       <div class="form-group">
-        <label>Color:</label>
+        <label>Colores:</label>
         <div class="color-grid">
           <button
             v-for="color in availableColors"
             :key="color.color"
             class="color-button"
-            :class="{ active: selectedColor?.color === color.color }"
+            :class="{ active: selectedColors.has(color.color) }"
             @click="handleColorChange(color)"
           >
             <span 
@@ -102,20 +143,37 @@ const handleClose = () => {
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="quantity">Cantidad:</label>
-        <input
-          id="quantity"
-          v-model="quantity"
-          type="number"
-          :min="1"
-          :max="maxQuantity"
-          :disabled="!selectedColor"
-          required
+      <!-- Cantidades por color seleccionado -->
+      <div v-if="selectedColors.size > 0" class="selected-colors">
+        <div 
+          v-for="[colorKey, { color, quantity }] in selectedColors"
+          :key="colorKey"
+          class="selected-color-item"
         >
-        <span class="help-text" v-if="selectedColor">
-          Máximo: {{ maxQuantity }} unidades
-        </span>
+          <div class="color-info">
+            <span 
+              class="color-preview"
+              :style="{ backgroundColor: color.color }"
+            ></span>
+            <span class="color-name">{{ color.colorName }}</span>
+          </div>
+          <div class="quantity-control">
+            <label :for="'quantity-' + colorKey">Cantidad:</label>
+            <input
+              :id="'quantity-' + colorKey"
+              :value="quantity"
+              type="number"
+              :min="1"
+              :max="color.quantity"
+              @input="e => updateQuantity(color, Number((e.target as HTMLInputElement).value))"
+              required
+            >
+            <span class="help-text">
+              Máximo: {{ color.quantity }} unidades
+            </span>
+          </div>
+
+        </div>
       </div>
 
       <!-- Opciones de marcación -->
@@ -142,7 +200,34 @@ const handleClose = () => {
           <option value="4">4 tintas</option>
         </select>
       </div>
+
     </div>
+    <template #footer>
+      <div class="button-container">
+        <RgButton
+          text="Cancelar"
+          type="default"
+          :disabled="isLoading"
+          @click="handleClose"
+        />
+        <RgButton
+          text="Agregar a Cotización"
+          type="default"
+          :custom-style="{
+            backgroundColor: 'var(--primary-color)',
+            color: 'white',
+            boxShadow: 'var(--primary-color) 0px 0px 5px'
+          }"
+          :disabled="selectedColors.size === 0 || isLoading || ![...selectedColors.values()].some(item => item.quantity > 0)"
+          @click="handleSubmit"
+        >
+          <template #default>
+            <span v-if="!isLoading">Agregar a Cotización</span>
+            <span v-else class="loading-spinner"></span>
+          </template>
+        </RgButton>
+      </div>
+    </template>
   </RgModal>
 </template>
 
@@ -272,5 +357,77 @@ select:focus {
 .checkbox-label input[type="checkbox"] {
   width: 1rem;
   height: 1rem;
+}
+
+.button-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.selected-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.selected-color-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  align-items: center;
+}
+
+.quantity-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.price-info {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.price-row.total {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
