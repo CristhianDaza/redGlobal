@@ -126,6 +126,35 @@ export const useQuoteStore = defineStore('quote', () => {
     }
   }
 
+  const canDeleteQuote = (quote: Quote) => {
+    const currentUser = authStore.user
+    if (!currentUser) return false
+
+    // Si es el creador de la cotización
+    if (quote.userId === currentUser.uid) return true
+
+    // Si es admin y la cotización está completada
+    const isAdmin = authStore.isAdmin
+    return isAdmin && quote.status === QuoteStatus.COMPLETED
+  }
+
+  const deleteQuote = async (id: string) => {
+    const quote = state.value.quotes.find(q => q.id === id)
+    if (!quote) throw new Error('Cotización no encontrada')
+
+    if (!canDeleteQuote(quote)) {
+      throw new Error('No tienes permisos para eliminar esta cotización')
+    }
+
+    try {
+      await firebaseService.deleteQuote(id)
+      await getQuotes() // Recargar las cotizaciones
+    } catch (error) {
+      console.error('Error deleting quote:', error)
+      throw error
+    }
+  }
+
   // Inicializar
   loadCurrentQuoteFromStorage()
 
@@ -142,6 +171,8 @@ export const useQuoteStore = defineStore('quote', () => {
     clearQuote,
     submitQuote,
     getQuotes,
-    updateQuoteStatus
+    updateQuoteStatus,
+    deleteQuote,
+    canDeleteQuote
   }
 })

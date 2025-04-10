@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, withDefaults } from 'vue';
 import RgButton from './RgButton.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   isOpen: boolean
   title: string
   maxWidth?: string
@@ -10,7 +10,9 @@ const props = defineProps<{
   confirmClass?: 'primary' | 'danger' | 'default'
   showConfirm?: boolean
   customStyle?: { backgroundColor: string; color: string }
-}>()
+}>(), {
+  showConfirm: true
+})
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -23,7 +25,7 @@ const customStyleCancel = ref({
 })
 
 const customStyleConfirm = ref({
-  backgroundColor: props.confirmClass === 'danger' ? '#e53e3e' : props.confirmClass === 'default' ? '#718096' : '#ff4444',
+  backgroundColor: props.confirmClass === 'danger' ? 'var(--primary-color)' : props.confirmClass === 'default' ? '#718096' : 'var(--primary-color)',
   color: 'white'
 })
 

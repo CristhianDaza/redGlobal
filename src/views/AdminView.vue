@@ -25,7 +25,7 @@ const showUserModal = ref(false);
 const editingMenuItem = ref<MenuItem | undefined>(undefined);
 const editingUser = ref<User | null>(null);
 const showDeleteConfirm = ref(false);
-const itemToDelete = ref<{ id: string; type: 'menu' | 'user' } | undefined>(undefined);
+const itemToDelete = ref<{ id: string; type: 'menu' | 'user' | 'quote' } | undefined>(undefined);
 
 const isAuthenticated = computed(() => authStore.isAuthenticated())
 const isAdmin = computed(() => {
@@ -134,20 +134,33 @@ const handleCloseModal = () => {
   editingUser.value = null;
 };
 
-const handleDeleteClick = (id: string, type: 'menu' | 'user') => {
+const handleDeleteClick = (id: string, type: 'menu' | 'user' | 'quote') => {
   itemToDelete.value = { id, type };
   showDeleteConfirm.value = true;
 };
 
 const handleConfirmDelete = async () => {
   if (itemToDelete.value) {
-    if (itemToDelete.value.type === 'menu') {
-      await menuStore.deleteMenuItem(itemToDelete.value.id);
-    } else {
-      await userStore.deleteUser(itemToDelete.value.id);
+    try {
+      if (itemToDelete.value.type === 'menu') {
+        await menuStore.deleteMenuItem(itemToDelete.value.id);
+        await menuStore.getMenu();
+      } else if (itemToDelete.value.type === 'user') {
+        await userStore.deleteUser(itemToDelete.value.id);
+        await userStore.getUsers();
+      } else if (itemToDelete.value.type === 'quote') {
+        await quoteStore.deleteQuote(itemToDelete.value.id);
+        await quoteStore.getQuotes();
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    } finally {
+      showDeleteConfirm.value = false;
+      itemToDelete.value = undefined;
     }
-    showDeleteConfirm.value = false;
-    itemToDelete.value = undefined;
   }
 };
 
@@ -407,7 +420,7 @@ watch(activeTab, async (newTab: string) => {
                     <td>{{ item.title }}</td>
                     <td>{{ item.path }}</td>
                     <td>{{ item.order }}</td>
-                    <td class="actions">
+                    <td class="actions">  
                       <button 
                         class="action-btn edit"
                         @click="handleEditMenuItem(item)"
@@ -565,13 +578,21 @@ watch(activeTab, async (newTab: string) => {
                       >
                         <span class="material-icons">visibility</span>
                       </button>
-                      <button 
+                      <button
                         v-if="quote.status === quoteStatus.PENDING && isAdmin"
                         class="action-btn edit" 
                         title="Marcar como completada"
                         @click="handleCompleteQuote(quote.id)"
                       >
                         <span class="material-icons">done</span>
+                      </button>
+                      <button
+                        v-if="quoteStore.canDeleteQuote(quote)"
+                        class="action-btn delete"
+                        title="Eliminar cotización"
+                        @click="handleDeleteClick(quote.id, 'quote')"
+                      >
+                        <span class="material-icons">delete</span>
                       </button>
                     </td>
                   </tr>
@@ -599,7 +620,7 @@ watch(activeTab, async (newTab: string) => {
         <RgConfirmModal
           :isOpen="showDeleteConfirm"
           title="Confirmar eliminación"
-          :message="`¿Estás seguro de que deseas eliminar este ${itemToDelete?.type === 'menu' ? 'item del menú' : 'usuario'}?`"
+          :message="`¿Estás seguro de que deseas eliminar ${itemToDelete?.type === 'menu' ? 'este item del menú' : itemToDelete?.type === 'user' ? 'este usuario' : 'esta cotización'}?`"
           @confirm="handleConfirmDelete"
           @close="handleCancelDelete"
         />

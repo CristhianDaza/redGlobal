@@ -315,5 +315,15 @@ export const firebaseService = {
       console.error('Error updating quote status:', error)
       throw error
     }
+  },
+
+  async deleteQuote(id: string): Promise<void> {
+    try {
+      const quoteRef = doc(db, 'quotes', id)
+      await deleteDoc(quoteRef)
+    } catch (error) {
+      console.error('Error deleting quote:', error)
+      throw error
+    }
   }
 }
