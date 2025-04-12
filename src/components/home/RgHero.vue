@@ -21,13 +21,38 @@ const phrases = [
 ];
 
 const currentPhrase = ref(phrases[0]);
-let index = 0;
+let phraseIndex = ref(0);
+let typing = ref(true);
+let charIndex = ref(0);
+const displayedText = ref('');
+
+const typeWriterEffect = () => {
+  const currentPhrase = phrases[phraseIndex.value]
+
+  if (typing.value) {
+    if (charIndex.value < currentPhrase.length) {
+      displayedText.value += currentPhrase.charAt(charIndex.value)
+      charIndex.value++
+      setTimeout(typeWriterEffect, 60) // velocidad de escritura
+    } else {
+      typing.value = false
+      setTimeout(typeWriterEffect, 1500) // espera antes de borrar
+    }
+  } else {
+    if (charIndex.value > 0) {
+      displayedText.value = currentPhrase.substring(0, charIndex.value - 1)
+      charIndex.value--
+      setTimeout(typeWriterEffect, 30) // velocidad de borrado
+    } else {
+      typing.value = true
+      phraseIndex.value = (phraseIndex.value + 1) % phrases.length
+      setTimeout(typeWriterEffect, 200)
+    }
+  }
+}
 
 onMounted(() => {
-  setInterval(() => {
-    index = (index + 1) % phrases.length;
-    currentPhrase.value = phrases[index];
-  }, 4000); // Cambia cada 4 segundos
+  typeWriterEffect()
 });
 </script>
 
@@ -41,11 +66,7 @@ onMounted(() => {
       <hr class="hero-hr" />
       <h1 class="hero-title">{{ title }}</h1>
       <div class="hero-description-wrapper">
-        <transition name="fade" mode="out-in">
-          <p class="hero-description" :key="currentPhrase">
-            {{ currentPhrase }}
-          </p>
-        </transition>
+        <p class="hero-description">{{ displayedText }}<span class="cursor">|</span></p>
       </div>
       <router-link
         :to="{ name: routeButton }"
@@ -100,13 +121,12 @@ onMounted(() => {
   margin: 0;
   color: #333;
 }
-/* 
+
 .hero-description {
   font-size: 1.2rem;
   color: #333;
   margin: 0;
-  transition: opacity 0.5s;
-} */
+}
 
 .hero-image {
   display: flex;
@@ -148,29 +168,17 @@ onMounted(() => {
   }
 }
 
-.hero-description-wrapper {
-  position: relative;
-  height: 1.6em;
+.cursor {
+  display: inline-block;
+  width: 1px;
+  background-color: #333;
+  animation: blink 1s step-start infinite;
 }
 
-.hero-description {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  font-size: 1.2rem;
-  min-height: 1.6em;
-  transition: opacity 0.5s ease;
-}
-
-/* Transiciones */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 </style>
