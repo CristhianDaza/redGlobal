@@ -3,6 +3,7 @@ import { Cloudinary } from '@cloudinary/url-gen';
 import { fill } from '@cloudinary/url-gen/actions/resize';
 import { format, quality } from '@cloudinary/url-gen/actions/delivery';
 import { auto } from '@cloudinary/url-gen/qualifiers/quality';
+import { NotificationService } from '@/components/Notification/NotificationService';
 
 const cld = new Cloudinary({
   cloud: {
@@ -15,16 +16,12 @@ export const uploadImage = async (file: File): Promise<UploadApiResponse> => {
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
 
-    if (!uploadPreset) {
-      throw new Error('VITE_CLOUDINARY_UPLOAD_PRESET no está configurado')
-    }
-
-    if (!cloudName) {
-      throw new Error('VITE_CLOUDINARY_CLOUD_NAME no está configurado')
-    }
-
     if (!file.type.startsWith('image/')) {
-      throw new Error('El archivo debe ser una imagen')
+      NotificationService.push({
+        title: 'Error al subir la imagen',
+        description: 'El archivo no es una imagen válida.',
+        type: 'error'
+      })
     }
 
     const formData = new FormData()
@@ -41,18 +38,32 @@ export const uploadImage = async (file: File): Promise<UploadApiResponse> => {
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(
-        data.error?.message ||
-        `Error al subir la imagen: ${response.status} ${response.statusText}`
-      )
+      NotificationService.push({
+        title: 'Error al subir la imagen',
+        description: response.statusText,
+        type: 'error'
+      })
+      console.error('Error uploading image:', response.statusText)
     }
 
     return data
   } catch (error) {
     if (error instanceof Error) {
+      NotificationService.push({
+        title: 'Error al subir la imagen',
+        description: error.message,
+        type: 'error'
+      })
+      console.error('Error uploading image:', error.message)
       throw error
     } else {
-      throw new Error('Error desconocido al subir la imagen')
+      NotificationService.push({
+        title: 'Error al subir la imagen',
+        description: 'Error desconocido al subir la imagen',
+        type: 'error'
+      })
+      console.error('Unknown error uploading image:', error)
+      throw new Error('Unknown error uploading image')
     }
   }
 }

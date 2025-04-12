@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type {ProductsRedGlobal, TableEntry} from '@/types/common.d';
-import {computed, defineAsyncComponent, onMounted, ref, watch} from 'vue';
-import {useRoute} from 'vue-router';
-import {useAuthStore, useProductsStore, useUserStore} from '@/store';
-import {formatColor, formatNumber, getRelativeTime} from '@/utils'
+import type { ProductsRedGlobal, TableEntry } from '@/types/common.d';
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useAuthStore, useProductsStore, useUserStore } from '@/store';
+import { formatColor, formatNumber, getRelativeTime } from '@/utils'
 
 const RgImage = defineAsyncComponent(/* webpackChunkName: "rgImage" */() => import('@/components/UI/RgImage.vue'));
 const RgLoader = defineAsyncComponent(/* webpackChunkName: "rgLoader" */() => import('@/components/UI/RgLoader.vue'));

@@ -2,7 +2,6 @@ import type { User, UserFormData } from '@/types/common.d';
 import { ref, computed } from 'vue';
 import { useUserStore, useAuthStore } from '@/store';
 import { uploadImage } from '@/config';
-import { NotificationService } from '@/components/Notification/NotificationService';
 
 export function useUserAdmin() {
   const userStore = useUserStore();
@@ -34,12 +33,7 @@ export function useUserAdmin() {
           logoUrl = uploadResult.secure_url;
         } catch (error) {
           isLoading.value = false;
-          NotificationService.push({
-            title: 'Error al subir el logo',
-            description: 'Hubo un error al subir el logo. Por favor, intenta nuevamente.',
-            type: 'error'
-          });
-          throw new Error('Error al subir el logo: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+          console.error('Error uploading logo:', error);
         }
       }
       if (editingUser.value && currentUser.value?.role === 'admin') {
@@ -59,13 +53,7 @@ export function useUserAdmin() {
       editingUser.value = null;
       await loadUsers();
     } catch (error) {
-      NotificationService.push({
-        title: 'Error al procesar el usuario',
-        description: 'Hubo un error. Por favor, intenta nuevamente.',
-        type: 'error'
-      });
       console.error(error);
-      alert(error instanceof Error ? error.message : 'Error desconocido');
     } finally {
       isLoading.value = false;
     }
@@ -88,11 +76,6 @@ export function useUserAdmin() {
       await loadUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
-      NotificationService.push({
-        title: 'Error al eliminar el usuario',
-        description: 'Ocurrió un error. Intenta nuevamente.',
-        type: 'error'
-      });
     } finally {
       isLoading.value = false;
     }

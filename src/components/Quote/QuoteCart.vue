@@ -2,7 +2,6 @@
 import { computed, ref, defineAsyncComponent } from 'vue'
 import { useQuoteStore, useUserStore, useAuthStore } from '@/store'
 import { formatColor } from '@/utils'
-import { NotificationService } from '@/components/Notification/NotificationService'
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 const RgModal = defineAsyncComponent(/* webpackChunkName: "RgModal" */() => import('@/components/UI/RgModal.vue'))
@@ -33,11 +32,6 @@ const userColor = computed(() => {
 const handleRemoveItem = (index: number) => {
   isLoading.value = true
   quoteStore.removeQuoteItem(index)
-  NotificationService.push({
-    title: 'Producto eliminado',
-    description: 'El producto ha sido eliminado de la cotización',
-    type: 'success'
-  })
   isLoading.value = false
 }
 
@@ -69,11 +63,6 @@ const handleToggleMarking = (index: number) => {
 const handleClearCart = () => {
   isLoading.value = true
   quoteStore.clearQuote()
-  NotificationService.push({
-    title: 'Cotización limpiada',
-    description: 'Todos los productos han sido eliminados de la cotización',
-    type: 'success'
-  })
   isLoading.value = false
 }
 
@@ -82,19 +71,8 @@ const handleSubmitQuote = async () => {
     isLoading.value = true
     await quoteStore.submitQuote()
     emit('close')
-
-    NotificationService.push({
-      title: 'Cotización enviada',
-      description: 'La cotización se ha enviado correctamente',
-      type: 'success'
-    })
   } catch (error) {
     console.error('Error al enviar cotización:', error)
-    NotificationService.push({
-      title: 'Error al enviar cotización',
-      description: 'Ocurrió un error al enviar la cotización',
-      type: 'error'
-    })
   } finally {
     isLoading.value = false
   }

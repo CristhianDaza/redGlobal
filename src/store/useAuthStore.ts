@@ -50,6 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
         description: 'Hubo un error al iniciar sesión. Por favor, intenta nuevamente.',
         type: 'error'
       })
+      await router.push({ name: 'home' })
       return false
     } finally {
       loading.value = false
@@ -66,7 +67,6 @@ export const useAuthStore = defineStore('auth', () => {
         description: 'Has cerrado sesión exitosamente',
         type: 'success'
       })
-      await router.push({ name: 'home' })
       return true
     } catch (e: any) {
       error.value = e.message
@@ -78,6 +78,7 @@ export const useAuthStore = defineStore('auth', () => {
       return false
     } finally {
       loading.value = false
+      await router.push({ name: 'home' })
     }
   }
 

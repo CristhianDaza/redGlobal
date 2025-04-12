@@ -1,7 +1,6 @@
 import type { QuoteAdmin } from '@/types/common.d'
 import { ref, computed } from 'vue';
 import { useQuoteStore } from '@/store';
-import { NotificationService } from '@/components/Notification/NotificationService';
 
 const quoteStatus = {
   PENDING: 'pending',
@@ -48,11 +47,6 @@ export function useQuoteAdmin() {
         selectedQuote.value.status = quoteStatus.COMPLETED;
       }
       await loadQuotes();
-      NotificationService.push({
-        title: 'Cotización completada',
-        description: 'La cotización ha sido completada exitosamente',
-        type: 'success'
-      });
     } catch (error) {
       console.error('Error al completar la cotización:', error);
     }
@@ -65,11 +59,6 @@ export function useQuoteAdmin() {
       await loadQuotes();
     } catch (error) {
       console.error('Error deleting quote:', error);
-      NotificationService.push({
-        title: 'Error al eliminar la cotización',
-        description: 'Ocurrió un error. Intenta nuevamente.',
-        type: 'error'
-      });
     } finally {
       isLoading.value = false;
     }

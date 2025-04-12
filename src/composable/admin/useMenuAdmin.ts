@@ -1,7 +1,6 @@
 import type { MenuItem } from '@/types/common.d';
 import { ref, computed } from 'vue';
 import { useMenuStore } from '@/store';
-import { NotificationService } from '@/components/Notification/NotificationService';
 
 export function useMenuAdmin() {
   const menuStore = useMenuStore();
@@ -38,11 +37,6 @@ export function useMenuAdmin() {
       editingMenuItem.value = undefined;
     } catch (error) {
       console.error('Error saving menu item:', error);
-      NotificationService.push({
-        title: 'Error al guardar el item del menú',
-        description: 'Ocurrió un error. Intenta nuevamente.',
-        type: 'error'
-      });
     } finally {
       isLoading.value = false;
     }
@@ -55,11 +49,6 @@ export function useMenuAdmin() {
       await loadMenu();
     } catch (error) {
       console.error('Error deleting menu item:', error);
-      NotificationService.push({
-        title: 'Error al eliminar el item del menú',
-        description: 'Ocurrió un error. Intenta nuevamente.',
-        type: 'error'
-      });
     } finally {
       isLoading.value = false;
     }

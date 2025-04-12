@@ -4,7 +4,6 @@ import { ref, defineAsyncComponent } from 'vue';
 import { emailService } from '@/services';
 import { contactCards } from '@/config';
 import { useForm, rules } from '@/composable/useForm.ts';
-import { NotificationService } from '@/components/Notification/NotificationService';
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
 const RgFormField = defineAsyncComponent(/* webpackChunkName: "rgFormField" */() => import('@/components/UI/RgFormField.vue'));
@@ -62,12 +61,6 @@ const handleSubmit = async () => {
 
     await emailService.sendContactEmail(emailData);
     showSuccessMessage.value = true;
-    NotificationService.push({
-      title: 'Mensaje enviado',
-      description: 'Tu mensaje ha sido enviado con éxito',
-      type: 'success'
-    });
-
     resetForm();
 
     setTimeout(() => {
@@ -75,11 +68,6 @@ const handleSubmit = async () => {
     }, 3000);
   } catch (error) {
     console.error('Error al enviar el formulario:', error);
-    NotificationService.push({
-      title: 'Error al enviar el mensaje',
-      description: 'Hubo un error al enviar el mensaje. Por favor, intenta nuevamente.',
-      type: 'error'
-    });
   } finally {
     setTimeout(() => {
       isSubmitting.value = false;

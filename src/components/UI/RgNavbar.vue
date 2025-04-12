@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type {ProductsRedGlobal} from '@/types/common.d';
-import {computed, defineAsyncComponent, ref} from 'vue';
+import type { ProductsRedGlobal } from '@/types/common.d';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import TvButton from '@todovue/tvbutton';
-import {useRouter} from 'vue-router';
-import {useAuthStore, useMenuStore, useQuoteStore, useUserStore} from '@/store';
-import {NotificationService} from '../Notification/NotificationService';
+import { useRouter } from 'vue-router';
+import { useAuthStore, useMenuStore, useQuoteStore, useUserStore } from '@/store';
+import { NotificationService } from '../Notification/NotificationService';
 
 const RgAutocomplete = defineAsyncComponent(/* webpackChunkName: "rgAutocomplete" */ () => import('@/components/UI/RgAutocomplete.vue'));
 const RgLoginModal = defineAsyncComponent(/* webpackChunkName: "rgLoginModal" */ () => import('@/components/UI/RgLoginModal.vue'));
@@ -25,11 +25,6 @@ const handleLogout = async () => {
     await authStore.logout();
   } catch (error) {
     console.error('[Navbar] Error en logout:', error);
-    NotificationService.push({
-      title: 'Error al cerrar sesión',
-      description: 'Hubo un error al cerrar sesión. Por favor, intenta nuevamente.',
-      type: 'error'
-    })
   }
 };
 

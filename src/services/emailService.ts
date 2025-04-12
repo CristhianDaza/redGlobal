@@ -1,4 +1,5 @@
 import emailjs from '@emailjs/browser';
+import { NotificationService } from '@/components/Notification/NotificationService';
 
 emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
 
@@ -26,9 +27,18 @@ export const emailService = {
         },
         import.meta.env.VITE_EMAILJS_PUBLIC_KEY
       );
+      NotificationService.push({
+        title: 'Mensaje enviado',
+        description: 'Tu mensaje ha sido enviado con éxito',
+        type: 'success'
+      });
     } catch (error) {
+      NotificationService.push({
+        title: 'Error al enviar el mensaje',
+        description: 'Hubo un error al enviar el mensaje. Por favor, intenta nuevamente.',
+        type: 'error'
+      });
       console.error('Error sending email:', error);
-      throw error;
     }
   }
 };

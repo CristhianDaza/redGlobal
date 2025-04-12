@@ -3,7 +3,6 @@ import type { ProductsRedGlobal, TableEntry, QuoteItem } from '@/types/common.d'
 import { ref, computed, defineAsyncComponent } from 'vue'
 import { useAuthStore, useUserStore, useQuoteStore } from '@/store'
 import { formatColor } from '@/utils'
-import { NotificationService } from '@/components/Notification/NotificationService'
 
 const RgModal = defineAsyncComponent(/* webpackChunkName: "rgModal" */() => import('@/components/UI/RgModal.vue'))
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
@@ -91,19 +90,8 @@ const handleSubmit = async () => {
 
     resetForm()
     emit('close')
-
-    NotificationService.push({
-      title: 'Cotización agregada',
-      description: 'La cotización se ha agregado correctamente',
-      type: 'success'
-    })
   } catch (error) {
     console.error('Error al agregar items a la cotización:', error)
-    NotificationService.push({
-      title: 'Error al agregar cotización',
-      description: 'Ocurrió un error al agregar la cotización',
-      type: 'error'
-    })
   } finally {
     isLoading.value = false
   }
