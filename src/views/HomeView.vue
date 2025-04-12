@@ -36,7 +36,6 @@ const popularProducts = computed(() => {
       subtitle2=" tus productos."
       buttonText="Productos"
       background-image="https://firebasestorage.googleapis.com/v0/b/mega2024-6a453.appspot.com/o/cat-07.png?alt=media&token=67742bed-a013-46d9-b5ec-7abc9c617068"
-      description="Lore ipsum dolor sit amet consectetur adipisicing elit. Dolorum, quod."
       routeButton="products"
     />
 

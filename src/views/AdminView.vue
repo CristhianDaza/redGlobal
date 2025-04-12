@@ -13,6 +13,7 @@ import RgConfirmModal from '../components/UI/RgConfirmModal.vue';
 import CategoryCardForm from '../components/Admin/CategoryCardForm.vue';
 import { uploadImage } from '../config/cloudinary';
 import { getRelativeTime } from '../utils/helpers';
+import { NotificationService } from '../components/Notification/NotificationService';
 
 const authStore = useAuthStore();
 const menuStore = useMenuStore();
@@ -22,6 +23,7 @@ const categoryStore = useCategoryStore();
 const categoryCards = computed(() => categoryStore.categoryCards as unknown as CategoryCard[]);
 
 const isLoadingData = ref(false);
+const isLoading = ref(false);
 
 const activeTab = ref('quotes'); // 'items' | 'users' | 'quotes' | 'cards'
 const showMenuItemModal = ref(false);
@@ -70,9 +72,13 @@ const handleEditMenuItem = (item: MenuItem) => {
 const handleSaveMenuItem = async (menuItem: MenuItem) => {
   try {
     if (menuItem.id) {
+      isLoading.value = true;
       await menuStore.updateMenuItem(menuItem);
+      isLoading.value = false;
     } else {
+      isLoading.value = true;
       await menuStore.createMenuItem(menuItem);
+      isLoading.value = false;
     }
     showMenuItemModal.value = false;
     editingMenuItem.value = undefined;
@@ -84,6 +90,7 @@ const handleSaveMenuItem = async (menuItem: MenuItem) => {
 
 const handleSaveUser = async (formData: UserFormData) => {
   try {
+    isLoading.value = true;
     let logoUrl = '';
 
     // Si hay un logo nuevo como File, primero lo subimos a Cloudinary
@@ -92,6 +99,12 @@ const handleSaveUser = async (formData: UserFormData) => {
         const uploadResult = await uploadImage(formData.logo);
         logoUrl = uploadResult.secure_url;
       } catch (error) {
+        isLoading.value = false;
+        NotificationService.push({
+          title: 'Error al subir el logo',
+          description: 'Hubo un error al subir el logo. Por favor, intenta nuevamente.',
+          type: 'error'
+        })
         console.error('Error al subir logo a Cloudinary:', error);
         throw new Error('Error al subir el logo: ' + (error instanceof Error ? error.message : 'Error desconocido'));
       }
@@ -105,6 +118,12 @@ const handleSaveUser = async (formData: UserFormData) => {
           logo: logoUrl || (typeof logo === 'string' ? logo : undefined)
         });
       } catch (error) {
+        isLoading.value = false;
+        NotificationService.push({
+          title: 'Error al actualizar el usuario',
+          description: 'Hubo un error al actualizar el usuario. Por favor, intenta nuevamente.',
+          type: 'error'
+        })
         throw new Error('Error al actualizar usuario: ' + (error instanceof Error ? error.message : 'Error desconocido'));
       }
     } else {
@@ -115,6 +134,12 @@ const handleSaveUser = async (formData: UserFormData) => {
           logo: logoUrl || undefined
         });
       } catch (error) {
+        isLoading.value = false;
+        NotificationService.push({
+          title: 'Error al crear el usuario',
+          description: 'Hubo un error al crear el usuario. Por favor, intenta nuevamente.',
+          type: 'error'
+        })
         throw new Error('Error al crear usuario: ' + (error instanceof Error ? error.message : 'Error desconocido'));
       }
     }
@@ -122,14 +147,21 @@ const handleSaveUser = async (formData: UserFormData) => {
     showUserModal.value = false;
     editingUser.value = null;
     await userStore.getUsers();
+    isLoading.value = false;
+    NotificationService.push({
+      title: 'Usuario creado',
+      description: 'El usuario ha sido creado exitosamente',
+      type: 'success'
+    })
   } catch (error) {
-    console.error('Error al guardar usuario:', {
-      error,
-      message: error instanceof Error ? error.message : 'Error desconocido',
-      stack: error instanceof Error ? error.stack : undefined
-    });
+    isLoading.value = false;
+    NotificationService.push({
+      title: 'Error al crear el usuario',
+      description: 'Hubo un error al crear el usuario. Por favor, intenta nuevamente.',
+      type: 'error'
+    })
     
-    alert(error instanceof Error ? error.message : 'Error desconocido al guardar el usuario');
+    alert(error instanceof Error ? error.message : 'Error desconocido al crear el usuario');
   }
 };
 
@@ -149,17 +181,25 @@ const handleConfirmDelete = async () => {
   if (itemToDelete.value) {
     try {
       if (itemToDelete.value.type === 'menu') {
+        isLoading.value = true;
         await menuStore.deleteMenuItem(itemToDelete.value.id);
         await menuStore.getMenu();
+        isLoading.value = false;
       } else if (itemToDelete.value.type === 'user') {
+        isLoading.value = true;
         await userStore.deleteUser(itemToDelete.value.id);
         await userStore.getUsers();
+        isLoading.value = false;
       } else if (itemToDelete.value.type === 'quote') {
+        isLoading.value = true;
         await quoteStore.deleteQuote(itemToDelete.value.id);
         await quoteStore.getQuotes();
+        isLoading.value = false;
       } else if (itemToDelete.value.type === 'card') {
+        isLoading.value = true;
         await categoryStore.deleteCategoryCard(itemToDelete.value.id);
         await categoryStore.getCategoryCards();
+        isLoading.value = false;
       }
     } catch (error) {
       console.error('Error deleting item:', error);
@@ -247,6 +287,11 @@ const handleCompleteQuote = async (quoteId: string) => {
       };
     }
     await quoteStore.getQuotes();
+    NotificationService.push({
+      title: 'Cotización completada',
+      description: 'La cotización ha sido completada exitosamente',
+      type: 'success'
+    })
   } catch (error) {
     console.error('Error al completar la cotización:', error);
   }
@@ -255,11 +300,21 @@ const handleCompleteQuote = async (quoteId: string) => {
 const handleEditUser = (user: User) => {
   editingUser.value = { ...user };
   showUserModal.value = true;
+  NotificationService.push({
+    title: 'Usuario editado',
+    description: 'El usuario ha sido editado exitosamente',
+    type: 'success'
+  })
 };
 
 const handleAddUser = () => {
   editingUser.value = null;
   showUserModal.value = true;
+  NotificationService.push({
+    title: 'Usuario creado',
+    description: 'El usuario ha sido creado exitosamente',
+    type: 'success'
+  })
 };
 
 const isLoadingCard = ref(false);
@@ -733,6 +788,7 @@ watch(activeTab, async (newTab: string) => {
         <MenuItemForm
           :isOpen="showMenuItemModal"
           :menuItem="editingMenuItem"
+          :loading="isLoading"
           @save="handleSaveMenuItem"
           @close="handleCloseModal"
         />
@@ -740,6 +796,7 @@ watch(activeTab, async (newTab: string) => {
         <UserForm
           :isOpen="showUserModal"
           :user="editingUser"
+          :loading="isLoading"
           @save="handleSaveUser"
           @close="handleCloseModal"
         />
@@ -748,6 +805,7 @@ watch(activeTab, async (newTab: string) => {
           :isOpen="showDeleteConfirm"
           title="Confirmar eliminación"
           :message="`¿Estás seguro de que deseas eliminar ${itemToDelete?.type === 'menu' ? 'este item del menú' : itemToDelete?.type === 'user' ? 'este usuario' : 'esta cotización'}?`"
+          :isLoading="isLoading"
           @confirm="handleConfirmDelete"
           @close="handleCancelDelete"
         />

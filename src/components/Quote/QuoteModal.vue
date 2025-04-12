@@ -7,6 +7,7 @@ import { useAuthStore } from '../../store/useAuthStore'
 import { useUserStore } from '../../store/useUserStore'
 import { useQuoteStore } from '../../store/useQuoteStore'
 import { formatColor } from '../../utils'
+import { NotificationService } from '../../components/Notification/NotificationService'
 
 const props = defineProps<{
   isOpen: boolean
@@ -93,8 +94,19 @@ const handleSubmit = async () => {
     
     resetForm()
     emit('close')
+
+    NotificationService.push({
+      title: 'Cotización agregada',
+      description: 'La cotización se ha agregado correctamente',
+      type: 'success'
+    })
   } catch (error) {
     console.error('Error al agregar items a la cotización:', error)
+    NotificationService.push({
+      title: 'Error al agregar cotización',
+      description: 'Ocurrió un error al agregar la cotización',
+      type: 'error'
+    })
   } finally {
     isLoading.value = false
   }

@@ -10,6 +10,7 @@ import {
   useProductStockSur,
   useProductsCataProm,
 } from '../composable'
+import { NotificationService } from '../components/Notification/NotificationService';
 
 export const useProductsStore = defineStore('products', {
   state: (): StateGlobal => ({
@@ -33,6 +34,11 @@ export const useProductsStore = defineStore('products', {
         }
       } catch (error) {
         console.error('Error in getAllProducts:', error)
+        NotificationService.push({
+          title: 'Error al cargar los productos',
+          description: 'Hubo un error al cargar los productos. Por favor, intenta nuevamente.',
+          type: 'error'
+        })
       }
     },
     

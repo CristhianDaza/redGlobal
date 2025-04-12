@@ -5,6 +5,7 @@ import { QuoteStatus } from '../types/common.d'
 import { useAuthStore } from './useAuthStore'
 import { useUserStore } from './useUserStore'
 import { firebaseService } from '../services/firebaseService'
+import { NotificationService } from '../components/Notification/NotificationService';
 
 export const useQuoteStore = defineStore('quote', () => {
   const authStore = useAuthStore()
@@ -41,11 +42,21 @@ export const useQuoteStore = defineStore('quote', () => {
         console.error('Error loading quote from storage:', error)
         state.value.currentQuote = []
       }
+      NotificationService.push({
+        title: 'Cotización cargada',
+        description: 'La cotización ha sido cargada exitosamente',
+        type: 'success'
+      })
     }
   }
 
   const saveCurrentQuoteToStorage = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.value.currentQuote))
+    NotificationService.push({
+      title: 'Cotización guardada',
+      description: 'La cotización ha sido guardada exitosamente',
+      type: 'success'
+    })
   }
 
   // Actions
@@ -66,6 +77,11 @@ export const useQuoteStore = defineStore('quote', () => {
     }
 
     saveCurrentQuoteToStorage()
+    NotificationService.push({
+      title: 'Item agregado',
+      description: 'El item ha sido agregado exitosamente',
+      type: 'success'
+    })
   }
 
   const updateQuoteItem = (index: number, item: Partial<QuoteItem>) => {
@@ -75,17 +91,32 @@ export const useQuoteStore = defineStore('quote', () => {
         ...item
       }
       saveCurrentQuoteToStorage()
+      NotificationService.push({
+        title: 'Item actualizado',
+        description: 'El item ha sido actualizado exitosamente',
+        type: 'success'
+      })
     }
   }
 
   const removeQuoteItem = (index: number) => {
     state.value.currentQuote.splice(index, 1)
     saveCurrentQuoteToStorage()
+    NotificationService.push({
+      title: 'Item eliminado',
+      description: 'El item ha sido eliminado exitosamente',
+      type: 'success'
+    })
   }
 
   const clearQuote = () => {
     state.value.currentQuote = []
     localStorage.removeItem(STORAGE_KEY)
+    NotificationService.push({
+      title: 'Cotización limpiada',
+      description: 'La cotización ha sido limpiada exitosamente',
+      type: 'success'
+    })
   }
 
   const submitQuote = async () => {
@@ -106,6 +137,11 @@ export const useQuoteStore = defineStore('quote', () => {
 
     await firebaseService.createQuote(quote)
     clearQuote()
+    NotificationService.push({
+      title: 'Cotización creada',
+      description: 'La cotización ha sido creada exitosamente',
+      type: 'success'
+    })
   }
 
   const getQuotes = async () => {
@@ -124,8 +160,18 @@ export const useQuoteStore = defineStore('quote', () => {
     try {
       await firebaseService.updateQuoteStatus(id, status)
       await getQuotes() // Recargar las cotizaciones
+      NotificationService.push({
+        title: 'Cotización actualizada',
+        description: 'La cotización ha sido actualizada exitosamente',
+        type: 'success'
+      })
     } catch (error) {
       console.error('Error updating quote status:', error)
+      NotificationService.push({
+        title: 'Error al actualizar la cotización',
+        description: 'Hubo un error al actualizar la cotización. Por favor, intenta nuevamente.',
+        type: 'error'
+      })
       throw error
     }
   }
@@ -147,14 +193,29 @@ export const useQuoteStore = defineStore('quote', () => {
     if (!quote) throw new Error('Cotización no encontrada')
 
     if (!canDeleteQuote(quote)) {
+      NotificationService.push({
+        title: 'Error al eliminar la cotización',
+        description: 'No tienes permisos para eliminar esta cotización. Por favor, intenta nuevamente.',
+        type: 'error'
+      })
       throw new Error('No tienes permisos para eliminar esta cotización')
     }
 
     try {
       await firebaseService.deleteQuote(id)
+      NotificationService.push({
+        title: 'Cotización eliminada',
+        description: 'La cotización ha sido eliminada exitosamente',
+        type: 'success'
+      })
       await getQuotes() // Recargar las cotizaciones
     } catch (error) {
       console.error('Error deleting quote:', error)
+      NotificationService.push({
+        title: 'Error al eliminar la cotización',
+        description: 'Hubo un error al eliminar la cotización. Por favor, intenta nuevamente.',
+        type: 'error'
+      })
       throw error
     }
   }

@@ -8,6 +8,7 @@ import { useUserStore } from './store/useUserStore';
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
 const RgScrollToTop = defineAsyncComponent(/* webpackChunkName: "rgScrollToTop" */() => import('./components/UI/RgScrollToTop.vue'));
+const NotificationContainer = defineAsyncComponent(/* webpackChunkName: "notificationContainer" */() => import('./components/Notification/NotificationContainer.vue'));
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
@@ -65,6 +66,7 @@ onMounted(async () => {
     <RouterView />
     <RgFooter />
     <RgScrollToTop />
+    <NotificationContainer />
   </div>
 </template>
 

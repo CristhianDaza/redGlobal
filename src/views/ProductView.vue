@@ -256,7 +256,7 @@ const formatLabelName = (name: string) => {
                       :key="category" 
                       class="category-tag"
                     >
-                      <router-link :to="{name: 'search', query: {search: category}}">{{ category }}</router-link>
+                      <router-link :to="{name: 'search', query: {category: category}}">{{ category }}</router-link>
                     </span>
                   </span>
                 </div>
@@ -294,7 +294,7 @@ const formatLabelName = (name: string) => {
               <span class="total-value">{{ formatNumber(product.totalProducts) }} unidades.</span>
             </div>
             <div class="update-info">
-              <span class="update-label">Última actualización:</span>
+              <span class="update-label">Inventario actualizado:</span>
               <span class="update-value">{{ getRelativeTime(productsStore.lastUpdateProducts) }}</span>
             </div>
           </div>

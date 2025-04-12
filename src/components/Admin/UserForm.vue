@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import type { User, UserFormData } from '../../types/common.d'
 import { UserRole } from '../../types/common.d'
 import RgModal from '../UI/RgModal.vue'
+import { NotificationService } from '../Notification/NotificationService';
 
 const props = defineProps<{
   isOpen: boolean
@@ -68,7 +69,11 @@ const handleFileChange = (event: Event) => {
 
     // Validar el tipo de archivo
     if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen válido')
+      NotificationService.push({
+        title: 'Tipo de archivo no válido',
+        description: 'Por favor selecciona un archivo de imagen válido',
+        type: 'error'
+      })
       target.value = '' // Limpiar el input
       return
     }
@@ -76,7 +81,11 @@ const handleFileChange = (event: Event) => {
     // Validar el tamaño del archivo (máximo 5MB)
     const maxSize = 5 * 1024 * 1024 // 5MB en bytes
     if (file.size > maxSize) {
-      alert('El archivo es demasiado grande. El tamaño máximo es 5MB')
+      NotificationService.push({
+        title: 'Tamaño de archivo excedido',
+        description: 'El archivo es demasiado grande. El tamaño máximo es 5MB',
+        type: 'error'
+      })
       target.value = '' // Limpiar el input
       return
     }
@@ -118,7 +127,11 @@ const handleSubmit = async () => {
     password.value = '' // Limpiar contraseña después de enviar
   } catch (error) {
     console.error('Error en el formulario:', error)
-    alert(error instanceof Error ? error.message : 'Error al procesar el formulario')
+    NotificationService.push({
+      title: 'Error al procesar el formulario',
+      description: error instanceof Error ? error.message : 'Error al procesar el formulario',
+      type: 'error'
+    })
   }
 }
 

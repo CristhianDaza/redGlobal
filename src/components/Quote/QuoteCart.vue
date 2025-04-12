@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useQuoteStore } from '../../store/useQuoteStore'
 import { useUserStore } from '../../store/useUserStore'
 import { useAuthStore } from '../../store/useAuthStore'
@@ -7,6 +7,7 @@ import RgButton from '../UI/RgButton.vue'
 import RgModal from '../UI/RgModal.vue'
 import RgEmptyState from '../UI/RgEmptyState.vue'
 import { formatColor } from '../../utils'
+import { NotificationService } from '../../components/Notification/NotificationService'
 
 defineProps<{
   isOpen: boolean
@@ -15,6 +16,8 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
+
+const isLoading = ref(false)
 
 const quoteStore = useQuoteStore()
 const userStore = useUserStore()
@@ -29,20 +32,31 @@ const userColor = computed(() => {
 })
 
 const handleRemoveItem = (index: number) => {
+  isLoading.value = true
   quoteStore.removeQuoteItem(index)
+  NotificationService.push({
+    title: 'Producto eliminado',
+    description: 'El producto ha sido eliminado de la cotización',
+    type: 'success'
+  })
+  isLoading.value = false
 }
 
 const handleUpdateQuantity = (index: number, newQuantity: number) => {
+  isLoading.value = true
   if (newQuantity <= 0) return
   const item = currentQuote.value[index]
   if (newQuantity > item.maxQuantity) {
     newQuantity = item.maxQuantity
   }
   quoteStore.updateQuoteItem(index, { quantity: newQuantity })
+  isLoading.value = false
 }
 
 const handleUpdateInkColors = (index: number, colors: number) => {
+  isLoading.value = true
   quoteStore.updateQuoteItem(index, { inkColors: colors })
+  isLoading.value = false
 }
 
 const handleToggleMarking = (index: number) => {
@@ -54,12 +68,37 @@ const handleToggleMarking = (index: number) => {
 }
 
 const handleClearCart = () => {
+  isLoading.value = true
   quoteStore.clearQuote()
+  NotificationService.push({
+    title: 'Cotización limpiada',
+    description: 'Todos los productos han sido eliminados de la cotización',
+    type: 'success'
+  })
+  isLoading.value = false
 }
 
 const handleSubmitQuote = async () => {
-  await quoteStore.submitQuote()
-  emit('close')
+  try {
+    isLoading.value = true
+    await quoteStore.submitQuote()
+    emit('close')
+
+    NotificationService.push({
+      title: 'Cotización enviada',
+      description: 'La cotización se ha enviado correctamente',
+      type: 'success'
+    })
+  } catch (error) {
+    console.error('Error al enviar cotización:', error)
+    NotificationService.push({
+      title: 'Error al enviar cotización',
+      description: 'Ocurrió un error al enviar la cotización',
+      type: 'error'
+    })
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -76,6 +115,7 @@ const handleSubmitQuote = async () => {
     }"
     @close="$emit('close')"
     @confirm="handleSubmitQuote"
+    :loading="isLoading"
   >
     <div v-if="hasItems" class="quote-cart">
       <!-- Lista de productos -->

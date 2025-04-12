@@ -7,6 +7,7 @@ import { emailService } from '../services/emailService';
 import type { EmailData } from '../services/emailService';
 import { contactCards } from '../config/contact';
 import { useForm, rules } from '../composable/useForm';
+import { NotificationService } from '../components/Notification/NotificationService';
 
 const { 
   form,
@@ -60,6 +61,11 @@ const handleSubmit = async () => {
 
     await emailService.sendContactEmail(emailData);
     showSuccessMessage.value = true;
+    NotificationService.push({
+      title: 'Mensaje enviado',
+      description: 'Tu mensaje ha sido enviado con éxito',
+      type: 'success'
+    });
     
     resetForm();
 
@@ -68,7 +74,11 @@ const handleSubmit = async () => {
     }, 3000);
   } catch (error) {
     console.error('Error al enviar el formulario:', error);
-    alert('Hubo un error al enviar el mensaje. Por favor, intenta nuevamente.');
+    NotificationService.push({
+      title: 'Error al enviar el mensaje',
+      description: 'Hubo un error al enviar el mensaje. Por favor, intenta nuevamente.',
+      type: 'error'
+    });
   } finally {
     // Pequeño delay para mejor UX
     setTimeout(() => {
@@ -174,11 +184,6 @@ const handleSubmit = async () => {
             />
           </div>
         </form>
-
-        <div v-if="showSuccessMessage" class="success-message">
-          <span class="material-icons">check_circle</span>
-          <p>¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.</p>
-        </div>
       </div>
     </div>
   </div>
@@ -291,25 +296,6 @@ const handleSubmit = async () => {
   margin-top: 2rem;
   display: flex;
   justify-content: flex-end;
-}
-
-.success-message {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: #48bb78;
-  color: white;
-  padding: 1rem 1.5rem;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  animation: slideIn 0.3s ease-out;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.success-message .material-icons {
-  font-size: 1.5rem;
 }
 
 @keyframes slideIn {

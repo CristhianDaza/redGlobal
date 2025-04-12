@@ -10,6 +10,7 @@ import TvButton from '@todovue/tvbutton';
 import RgAutocomplete from './RgAutocomplete.vue';
 import RgLoginModal from './RgLoginModal.vue';
 import QuoteCart from '../Quote/QuoteCart.vue';
+import { NotificationService } from '../Notification/NotificationService';
 
 const router = useRouter();
 const menuStore = useMenuStore();
@@ -26,6 +27,11 @@ const handleLogout = async () => {
     await authStore.logout();
   } catch (error) {
     console.error('[Navbar] Error en logout:', error);
+    NotificationService.push({
+      title: 'Error al cerrar sesión',
+      description: 'Hubo un error al cerrar sesión. Por favor, intenta nuevamente.',
+      type: 'error'
+    })
   }
 };
 
@@ -70,7 +76,23 @@ const currentUserLogo = computed((): string | undefined => {
 });
 
 const handleSearch = () => {
-  if (!searchQuery.value.trim()) return;
+  if (!searchQuery.value.trim()) {
+    NotificationService.push({
+      title: 'Búsqueda inválida',
+      description: 'Por favor, ingresa un término de búsqueda válido.',
+      type: 'error'
+    })
+    return;
+  }
+
+  if (searchQuery.value.trim().length < 3) {
+    NotificationService.push({
+      title: 'Búsqueda inválida',
+      description: 'Por favor, ingresa al menos 3 caracteres de búsqueda.',
+      type: 'error'
+    })
+    return;
+  }
 
   // Si hay sugerencias y solo hay una, ir directamente al producto
   if (suggestions.value.length === 1) {

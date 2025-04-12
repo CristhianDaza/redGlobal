@@ -5,6 +5,7 @@ const props = defineProps<{
   isOpen: boolean
   title?: string
   message?: string
+  isLoading?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -29,6 +30,7 @@ const handleConfirm = () => {
     @confirm="handleConfirm"
     confirmText="Eliminar"
     confirmClass="danger"
+    :loading="isLoading"
   >
     <p class="confirm-message">
       {{ message || '¿Estás seguro de que deseas realizar esta acción?' }}

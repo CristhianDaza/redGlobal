@@ -6,6 +6,7 @@ import RgModal from '../UI/RgModal.vue'
 const props = defineProps<{
   isOpen: boolean
   menuItem?: MenuItem
+  isLoading?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -49,6 +50,7 @@ const handleClose = () => {
     :title="menuItem ? 'Editar Item del Menú' : 'Agregar Item al Menú'"
     @close="handleClose"
     @confirm="handleSave"
+    :loading="isLoading"
   >
     <form class="menu-form" @submit.prevent="handleSave">
       <div class="form-group">
@@ -72,8 +74,6 @@ const handleClose = () => {
           placeholder="Ej: /home"
         >
       </div>
-
-
 
       <div class="form-group">
         <label for="order">Orden</label>

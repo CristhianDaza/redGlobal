@@ -69,6 +69,7 @@ const handleConfirm = () => {
               type="default"
               :custom-style="customStyleCancel"
               @click="handleClose"
+              :disabled="loading"
             />
             <RgButton
               v-if="showConfirm !== false"
@@ -76,6 +77,7 @@ const handleConfirm = () => {
               type="default"
               :custom-style="customStyle || customStyleConfirm"
               @click="handleConfirm"
+              :disabled="loading"
             />
           </slot>
         </div>

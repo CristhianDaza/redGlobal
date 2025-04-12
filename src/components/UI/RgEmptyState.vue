@@ -25,7 +25,7 @@ const actions = [
   },
   {
     text: 'Explorar productos',
-    link: '/productos',
+    link: '/products',
     customStyle: {
       backgroundColor: '#f5f5f5',
       color: '#333'

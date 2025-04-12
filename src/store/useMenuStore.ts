@@ -1,6 +1,7 @@
 import type { MenuItem, MenuState } from '../types/common'
 import { defineStore } from 'pinia'
 import { firebaseService } from '../services/firebaseService'
+import { NotificationService } from '../components/Notification/NotificationService';
 
 export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
@@ -19,6 +20,11 @@ export const useMenuStore = defineStore('menu', {
         this.lastUpdateMenu = new Date().toISOString()
         this.isLoadingMenu = false
       } catch (error) {
+        NotificationService.push({
+          title: 'Error al cargar el menú',
+          description: 'Hubo un error al cargar el menú. Por favor, intenta nuevamente.',
+          type: 'error'
+        })
         console.error('Error in getMenu:', error)
         this.isLoadingMenu = false
       }
@@ -32,27 +38,57 @@ export const useMenuStore = defineStore('menu', {
           menuData.path = name
         }
         await firebaseService.createMenuItem(menuData as MenuItem)
+        NotificationService.push({
+          title: 'Menú creado',
+          description: 'El menú ha sido creado exitosamente',
+          type: 'success'
+        })
         await this.getMenu() // Refresh menu and localStorage after creation
       } catch (error) {
         console.error('Error creating menu item:', error)
+        NotificationService.push({
+          title: 'Error al crear el menú',
+          description: 'Hubo un error al crear el menú. Por favor, intenta nuevamente.',
+          type: 'error'
+        })
       }
     },
 
     async updateMenuItem(menuItem: MenuItem): Promise<void> {
       try {
         await firebaseService.updateMenuItem(menuItem)
+        NotificationService.push({
+          title: 'Menú actualizado',
+          description: 'El menú ha sido actualizado exitosamente',
+          type: 'success'
+        })
         await this.getMenu() // Refresh menu and localStorage after update
       } catch (error) {
         console.error('Error updating menu item:', error)
+        NotificationService.push({
+          title: 'Error al actualizar el menú',
+          description: 'Hubo un error al actualizar el menú. Por favor, intenta nuevamente.',
+          type: 'error'
+        })
       }
     },
 
     async deleteMenuItem(id: string): Promise<void> {
       try {
         await firebaseService.deleteMenuItem(id)
+        NotificationService.push({
+          title: 'Menú eliminado',
+          description: 'El menú ha sido eliminado exitosamente',
+          type: 'success'
+        })
         await this.getMenu() // Refresh menu and localStorage after deletion
       } catch (error) {
         console.error('Error deleting menu item:', error)
+        NotificationService.push({
+          title: 'Error al eliminar el menú',
+          description: 'Hubo un error al eliminar el menú. Por favor, intenta nuevamente.',
+          type: 'error'
+        })
       }
     },
 
