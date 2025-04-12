@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, withDefaults } from 'vue';
-import RgButton from './RgButton.vue'
+import { ref, withDefaults, defineAsyncComponent } from 'vue';
+
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */ () => import('@/components/UI/RgButton.vue'));
 
 const props = withDefaults(defineProps<{
   isOpen: boolean
@@ -43,7 +44,7 @@ const handleConfirm = () => {
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="modal-overlay" @click="handleClose">
-      <div 
+      <div
         class="modal-content"
         :style="{ maxWidth: maxWidth || '500px' }"
         @click.stop
@@ -54,7 +55,7 @@ const handleConfirm = () => {
             <span class="material-icons">close</span>
           </button>
         </div>
-        
+
         <div class="modal-body" :class="{ 'loading-overlay': loading }">
           <div v-if="loading" class="loader"></div>
           <div :class="{ 'content-blur': loading }">

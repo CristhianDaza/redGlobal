@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { MenuItem } from '../../types/common'
-import RgModal from '../UI/RgModal.vue'
+import type { MenuItem } from '@/types/common.d'
+import { ref, watch, defineAsyncComponent } from 'vue'
+
+const RgModal = defineAsyncComponent(/* webpackChunkName: "rgModal" */() => import('@/components/UI/RgModal.vue'))
 
 const props = defineProps<{
   isOpen: boolean
@@ -21,7 +22,6 @@ const formData = ref<MenuItem>({
   title: ''
 })
 
-// Actualizar el formulario cuando se edita un item existente
 watch(() => props.menuItem, (newItem) => {
   if (newItem) {
     formData.value = { ...newItem }

@@ -1,13 +1,12 @@
-import type { CataPromProduct, CataPromCategory } from '../types/cataprom';
-import type { ProductsRedGlobal } from '../types/common';
-import { constructCategoryCataProm, constructDescriptionCataProm, formatText } from '../utils';
-
+import type { CataPromProduct, CataPromCategory } from '@/types/cataprom.d';
+import type { ProductsRedGlobal } from '@/types/common.d';
 import { ref } from 'vue';
-import { getCategoriesCataProm, getProductsByCategory } from '../api';
+import { constructCategoryCataProm, constructDescriptionCataProm, formatText } from '@/utils';
+import { getCategoriesCataProm, getProductsByCategory } from '@/api';
 
 export function useProductsCataProm() {
   const isLoadingProductsCataPromComposable = ref<boolean>(false);
-  
+
   const getProductsCataProm = async (): Promise<ProductsRedGlobal[]> => {
     try {
       isLoadingProductsCataPromComposable.value = true;
@@ -16,23 +15,23 @@ export function useProductsCataProm() {
       const filteredCategories = categories.filter(
         (category) => !excludedCategoryIds.includes(category.id)
       );
-    
+
       const productsResults = await Promise.allSettled(
         filteredCategories.map((category) =>
           getProductsByCategory(String(category.id))
         )
       );
-    
+
       const productsArrays = productsResults
         .filter(result => result.status === 'fulfilled')
         .map((result: PromiseFulfilledResult<CataPromProduct[]>) => result.value);
-    
+
       const allProducts = productsArrays.flat();
 
       const uniqueProducts = Array.from(
         new Map(allProducts.map(product => [product.id, product])).values()
       );
-      
+
       return uniqueProducts.map(product => _normalizeProducts(product, categories));
     } catch (error) {
       console.error('Error in getProductsCataProm:', error);
@@ -41,8 +40,8 @@ export function useProductsCataProm() {
       isLoadingProductsCataPromComposable.value = false;
     }
   };
-  
-  
+
+
 
   const _normalizeProducts = (product: CataPromProduct, categories: CataPromCategory[]): ProductsRedGlobal => {
     return {
@@ -54,7 +53,7 @@ export function useProductsCataProm() {
       name: formatText(product?.nombre),
     };
   };
-  
+
   return {
     isLoadingProductsCataPromComposable,
     getProductsCataProm

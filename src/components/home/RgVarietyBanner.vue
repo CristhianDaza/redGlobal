@@ -14,7 +14,7 @@ defineProps<{
       </h2>
     </div>
     <div class="banner-image">
-      <img src="https://firebasestorage.googleapis.com/v0/b/mega2024-6a453.appspot.com/o/revistas.png?alt=media&token=dfa11190-530a-4d5d-adf8-788ab89890b5" alt="Variedad de productos" />
+      <img src="/src/assets/images/banner-image.png" alt="Variedad de productos"/>
     </div>
   </section>
 </template>
@@ -56,7 +56,7 @@ defineProps<{
 }
 
 .banner-image img {
-  max-width: 100%;
+  max-width: 80%;
   height: auto;
   object-fit: contain;
   border-radius: 0.5rem;

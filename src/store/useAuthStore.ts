@@ -1,34 +1,30 @@
+import { UserRole } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { auth } from '../config/firebase'
-import { 
+import { useRouter } from 'vue-router'
+import { auth } from '@/config'
+import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   type User as FirebaseUser
 } from 'firebase/auth'
-import { useUserStore } from './useUserStore'
-import { UserRole } from '../types/common.d'
-import { NotificationService } from '../components/Notification/NotificationService'
-import { useRouter } from 'vue-router'
+import { useUserStore } from '@/store'
+import { NotificationService } from '@/components/Notification/NotificationService'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<FirebaseUser | null>(null)
   const userStore = useUserStore()
   const loading = ref(false)
   const error = ref<string | null>(null)
-
-  // Establecer loading inicial
   loading.value = true
   const router = useRouter()
 
-  // Inicializar el listener de estado de autenticación
   onAuthStateChanged(auth, (currentUser) => {
     user.value = currentUser
     loading.value = false
   })
 
-  // Verificar el estado inicial de autenticación
   const currentUser = auth.currentUser
   if (currentUser) {
     user.value = currentUser
@@ -45,7 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
         description: 'Has iniciado sesión exitosamente',
         type: 'success'
       })
-      router.push({ name: 'admin' })
+      await router.push({ name: 'admin' })
       return true
     } catch (e: any) {
       error.value = e.message
@@ -70,7 +66,7 @@ export const useAuthStore = defineStore('auth', () => {
         description: 'Has cerrado sesión exitosamente',
         type: 'success'
       })
-      router.push({ name: 'home' })
+      await router.push({ name: 'home' })
       return true
     } catch (e: any) {
       error.value = e.message

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import RgModal from './RgModal.vue'
+import { defineAsyncComponent } from 'vue'
 
-const props = defineProps<{
+const RgModal = defineAsyncComponent(/* webpackChunkName: "rgModal" */ () => import('@/components/UI/RgModal.vue'))
+
+defineProps<{
   isOpen: boolean
   title?: string
   message?: string

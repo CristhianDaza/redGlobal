@@ -1,14 +1,5 @@
+import type { Notification } from '@/types/common.d'
 import { ref } from 'vue'
-
-export interface Notification {
-  id: string
-  title: string
-  description?: string
-  type?: 'success' | 'error' | 'warning' | 'info'
-  duration?: number
-  isClosed?: boolean
-}
-
 const notifications = ref<Notification[]>([])
 
 export const NotificationService = {

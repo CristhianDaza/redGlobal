@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useAuthStore } from '../../store/useAuthStore';
+import { useAuthStore } from '@/store';
 
 const props = defineProps<{
   isOpen: boolean
@@ -13,7 +13,6 @@ const email = ref('');
 const password = ref('');
 const errorMessage = ref('');
 
-// Limpiar el formulario cuando se cierra el modal
 watch(() => props.isOpen, (newValue) => {
   if (!newValue) {
     email.value = '';
@@ -22,7 +21,6 @@ watch(() => props.isOpen, (newValue) => {
   }
 });
 
-// Observar cambios en la autenticación
 watch(() => authStore.isAuthenticated(), (isAuthenticated) => {
   if (isAuthenticated) {
     emit('close');
@@ -41,7 +39,7 @@ const handleSubmit = async () => {
 
   try {
     const success = await authStore.login(email.value, password.value);
-    
+
     if (!success) {
       errorMessage.value = authStore.error || 'Error al iniciar sesión';
     }
@@ -69,9 +67,9 @@ const handleSubmit = async () => {
           </div>
           <div class="form-group">
             <label for="email">Email</label>
-            <input 
-              type="email" 
-              id="email" 
+            <input
+              type="email"
+              id="email"
               v-model="email"
               placeholder="Ingresa tu email"
               :disabled="authStore.loading"
@@ -79,16 +77,16 @@ const handleSubmit = async () => {
           </div>
           <div class="form-group">
             <label for="password">Contraseña</label>
-            <input 
-              type="password" 
-              id="password" 
+            <input
+              type="password"
+              id="password"
               v-model="password"
               placeholder="Ingresa tu contraseña"
               :disabled="authStore.loading"
             />
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             class="login-button"
             :disabled="authStore.loading"
           >

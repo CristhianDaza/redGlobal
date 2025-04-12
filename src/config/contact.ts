@@ -1,8 +1,4 @@
-export interface ContactInfo {
-  icon: string;
-  title: string;
-  lines: string[];
-}
+import type { ContactInfo } from '@/types/config';
 
 export const contactCards: ContactInfo[] = [
   {

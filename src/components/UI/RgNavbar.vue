@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import type { ProductsRedGlobal } from '../../types/common';
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useMenuStore } from '../../store/useMenuStore';
-import { useAuthStore } from '../../store/useAuthStore';
-import { useUserStore } from '../../store/useUserStore';
-import { useQuoteStore } from '../../store/useQuoteStore';
+import type {ProductsRedGlobal} from '@/types/common.d';
+import {computed, defineAsyncComponent, ref} from 'vue';
 import TvButton from '@todovue/tvbutton';
-import RgAutocomplete from './RgAutocomplete.vue';
-import RgLoginModal from './RgLoginModal.vue';
-import QuoteCart from '../Quote/QuoteCart.vue';
-import { NotificationService } from '../Notification/NotificationService';
+import {useRouter} from 'vue-router';
+import {useAuthStore, useMenuStore, useQuoteStore, useUserStore} from '@/store';
+import {NotificationService} from '../Notification/NotificationService';
+
+const RgAutocomplete = defineAsyncComponent(/* webpackChunkName: "rgAutocomplete" */ () => import('@/components/UI/RgAutocomplete.vue'));
+const RgLoginModal = defineAsyncComponent(/* webpackChunkName: "rgLoginModal" */ () => import('@/components/UI/RgLoginModal.vue'));
+const QuoteCart = defineAsyncComponent(/* webpackChunkName: "quoteCart" */ () => import('@/components/Quote/QuoteCart.vue'));
 
 const router = useRouter();
 const menuStore = useMenuStore();
@@ -40,9 +38,8 @@ const toggleLoginModal = () => {
 };
 
 const userButtonText = computed(() => {
-  const text = authStore.loading ? 'Cargando...' : 
-               authStore.isAuthenticated() ? 'Cerrar Sesión' : 'Iniciar Sesión';
-  return text;
+  return authStore.loading ? 'Cargando...' :
+      authStore.isAuthenticated() ? 'Cerrar Sesión' : 'Iniciar Sesión';
 });
 
 const userIcon = computed(() => {
@@ -54,24 +51,20 @@ const isLoadingLogo = computed(() => {
 });
 
 const currentUserLogo = computed((): string | undefined => {
-  // Si no está autenticado, mostrar logo por defecto
   if (!authStore.isAuthenticated()) {
     return '/src/assets/images/main-logo.png';
   }
 
-  // Si está cargando, retornar undefined para mostrar el loader
   if (isLoadingLogo.value) {
     return undefined;
   }
 
-  // Buscar el usuario y su logo
   const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
 
   if (currentUser?.logo) {
     return currentUser.logo;
   }
 
-  // Si no se encontró logo, mostrar el por defecto
   return '/src/assets/images/main-logo.png';
 });
 
@@ -94,7 +87,6 @@ const handleSearch = () => {
     return;
   }
 
-  // Si hay sugerencias y solo hay una, ir directamente al producto
   if (suggestions.value.length === 1) {
     router.push({
       name: 'product',
@@ -104,7 +96,6 @@ const handleSearch = () => {
     return;
   }
 
-  // Si no hay sugerencia única, buscar normalmente
   router.push({
     name: 'search',
     query: { search: searchQuery.value },

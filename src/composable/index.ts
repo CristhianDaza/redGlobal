@@ -3,6 +3,7 @@ import { useProductStockSur } from '@/composable/useProductStockSur';
 import { useProductsCataProm } from '@/composable/useProductsCataProm';
 import { useProductsMarpico } from '@/composable/useProductsMarpico';
 import { useProductsPromos } from '@/composable/useProductsPromos';
+import { useForm} from "@/composable/useForm.ts";
 
 import { useMenuAdmin } from '@/composable/admin/';
 import { useCategoryAdmin } from '@/composable/admin/';
@@ -15,6 +16,7 @@ export {
   useProductsCataProm,
   useProductsMarpico,
   useProductsPromos,
+  useForm,
 
   // Admin
   useMenuAdmin,

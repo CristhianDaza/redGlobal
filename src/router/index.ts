@@ -1,5 +1,5 @@
 import { createWebHistory, createRouter, RouteRecordRaw } from 'vue-router';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore } from '@/store';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -52,7 +52,6 @@ const router = createRouter({
   }
 });
 
-// Navigation guard global
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);

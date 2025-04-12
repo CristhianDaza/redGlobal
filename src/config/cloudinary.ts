@@ -1,26 +1,17 @@
+import type { UploadApiResponse } from '@/types/config.d'
 import { Cloudinary } from '@cloudinary/url-gen';
 import { fill } from '@cloudinary/url-gen/actions/resize';
 import { format, quality } from '@cloudinary/url-gen/actions/delivery';
 import { auto } from '@cloudinary/url-gen/qualifiers/quality';
 
-// Interfaz para la respuesta de la API de Cloudinary
-export interface UploadApiResponse {
-  secure_url: string;
-  public_id: string;
-  [key: string]: any;
-}
-
-// Configuración de Cloudinary
 const cld = new Cloudinary({
   cloud: {
     cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
   }
 });
 
-// Función para subir imágenes
 export const uploadImage = async (file: File): Promise<UploadApiResponse> => {
   try {
-    // Verificar las variables de entorno
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
 
@@ -32,7 +23,6 @@ export const uploadImage = async (file: File): Promise<UploadApiResponse> => {
       throw new Error('VITE_CLOUDINARY_CLOUD_NAME no está configurado')
     }
 
-    // Verificar el archivo
     if (!file.type.startsWith('image/')) {
       throw new Error('El archivo debe ser una imagen')
     }
@@ -67,7 +57,6 @@ export const uploadImage = async (file: File): Promise<UploadApiResponse> => {
   }
 }
 
-// Función para optimizar URLs de imágenes
 export const getOptimizedImageUrl = (publicId: string) => {
   return cld
     .image(publicId)
@@ -76,7 +65,6 @@ export const getOptimizedImageUrl = (publicId: string) => {
     .toURL()
 }
 
-// Función para transformar imágenes
 export const getTransformedImageUrl = (publicId: string, width = 500, height = 500) => {
   return cld
     .image(publicId)

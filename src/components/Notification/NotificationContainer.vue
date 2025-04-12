@@ -1,4 +1,11 @@
-<!-- NotificationContainer.vue -->
+<script setup lang="ts">
+import { computed } from 'vue'
+import { NotificationService } from '@/components/Notification/NotificationService'
+
+const notifications = computed(() => NotificationService.getNotifications().value)
+const remove = (id: string) => NotificationService.remove(id)
+</script>
+
 <template>
   <div class="notification-container">
     <TransitionGroup name="notification">
@@ -22,7 +29,7 @@
         <div v-if="!notification.isClosed" class="notification-progress">
           <div
             class="progress-bar"
-            :style="{ 
+            :style="{
               animationDuration: `${notification.duration}ms`,
               animationPlayState: 'running'
             }"
@@ -32,14 +39,6 @@
     </TransitionGroup>
   </div>
 </template>
-
-<script setup lang="ts">
-import { NotificationService } from './NotificationService'
-import { computed } from 'vue'
-
-const notifications = computed(() => NotificationService.getNotifications().value)
-const remove = (id: string) => NotificationService.remove(id)
-</script>
 
 <style scoped>
 .notification-container {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, defineAsyncComponent } from 'vue';
 import { useRouter } from 'vue-router';
-import { useProductsStore } from '../store/useProductsStore';
-import CategoryList from '../components/categories/CategoryList.vue';
+import { useProductsStore } from '@/store';
+const CategoryList = defineAsyncComponent(/* webpackChunkName: "categoryList" */() => import('@/components/categories/CategoryList.vue'));
 
 const router = useRouter();
 const productsStore = useProductsStore();
@@ -14,7 +14,7 @@ const categories = [
       "Bolígrafos Metálicos",
       "Bolígrafos Plásticos",
       "Bolígrafos Ecológicos",
-      "Boligrafos en Aluminio",
+      "Bolígrafos en Aluminio",
       "Bolígrafos con Resaltador",
       "Memorias - Bolígrafos"
     ]
@@ -136,8 +136,8 @@ const categories = [
     category: "Ecológicos",
     subcategories: [
       "EcoNature",
-      "Ecologia",
-      "Ecologicos",
+      "Ecología",
+      "Ecológicos",
       "Marca Ecopromo"
     ]
   },
@@ -170,6 +170,13 @@ const categories = [
   }
 ];
 
+const handleSubCategorySelect = (subCategory: string) => {
+  router.push({
+    name: 'search',
+    query: { category: subCategory }
+  });
+};
+
 const handleCategorySelect = (category: string) => {
   router.push({
     name: 'search',
@@ -192,7 +199,8 @@ onMounted(async () => {
         :key="cat.category"
         :category="cat.category"
         :subcategories="cat.subcategories"
-        @select="handleCategorySelect"
+        @select="handleSubCategorySelect"
+        @select-category="handleCategorySelect"
       />
     </div>
   </div>

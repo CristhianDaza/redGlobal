@@ -1,8 +1,7 @@
-import type { ProductsRedGlobal} from '../types/common';
-import type { MarpicoProduct } from '../types/marpico';
-
+import type { ProductsRedGlobal} from '@/types/common.d';
+import type { MarpicoProduct } from '@/types/marpico.d';
 import { ref } from 'vue';
-import { getAllProductsMarpico } from '../api';
+import { getAllProductsMarpico } from '@/api';
 import {
   constructCategoryMarpico,
   constructLabelsMarpico,
@@ -13,11 +12,11 @@ import {
   constructSizeMarpico,
   getDiscountsMarpico,
   constructImagesMarpico,
-} from '../utils';
+} from '@/utils';
 
 export function useProductsMarpico() {
   const isLoadingProductsMarpicoComposable = ref<boolean>(false);
-  
+
   const getProductsMarpico = async (): Promise<ProductsRedGlobal[]> => {
     try {
       isLoadingProductsMarpicoComposable.value = true;
@@ -31,7 +30,7 @@ export function useProductsMarpico() {
       isLoadingProductsMarpicoComposable.value = false;
     }
   };
-  
+
   const _normalizeProducts = (product: MarpicoProduct): ProductsRedGlobal => {
     return {
       api: 'marpico',
@@ -52,7 +51,7 @@ export function useProductsMarpico() {
       totalProducts: constructTotalProductsMarpico(product?.materiales)
     };
   };
-  
+
   return {
     isLoadingProductsMarpicoComposable,
     getProductsMarpico

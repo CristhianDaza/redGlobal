@@ -1,11 +1,10 @@
+import type { Quote, QuoteItem, QuoteState, User } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { Quote, QuoteItem, QuoteState, User } from '../types/common.d'
-import { QuoteStatus } from '../types/common.d'
-import { useAuthStore } from './useAuthStore'
-import { useUserStore } from './useUserStore'
-import { firebaseService } from '../services/firebaseService'
-import { NotificationService } from '../components/Notification/NotificationService';
+import { QuoteStatus } from '@/types/common.d'
+import { useAuthStore, useUserStore } from '@/store'
+import { firebaseService } from '@/services'
+import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useQuoteStore = defineStore('quote', () => {
   const authStore = useAuthStore()
@@ -16,23 +15,21 @@ export const useQuoteStore = defineStore('quote', () => {
     lastUpdateQuotes: null
   })
 
-  // Getters
   const quotes = computed(() => state.value.quotes)
   const currentQuote = computed(() => state.value.currentQuote)
   const isLoadingQuotes = computed(() => state.value.isLoadingQuotes)
-  const pendingQuotes = computed(() => 
+  const pendingQuotes = computed(() =>
     state.value.quotes.filter(q => q.status === QuoteStatus.PENDING)
   )
-  const completedQuotes = computed(() => 
+  const completedQuotes = computed(() =>
     state.value.quotes.filter(q => q.status === QuoteStatus.COMPLETED)
   )
-  const totalItems = computed(() => 
+  const totalItems = computed(() =>
     state.value.currentQuote.reduce((total, item) => total + item.quantity, 0)
   )
 
-  // Local Storage
   const STORAGE_KEY = 'currentQuote'
-  
+
   const loadCurrentQuoteFromStorage = () => {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
@@ -59,20 +56,17 @@ export const useQuoteStore = defineStore('quote', () => {
     })
   }
 
-  // Actions
   const addItemToQuote = async (item: QuoteItem) => {
     const existingIndex = state.value.currentQuote.findIndex(
       i => i.productId === item.productId && i.color === item.color
     )
 
     if (existingIndex >= 0) {
-      // Actualizar cantidad si ya existe
       state.value.currentQuote[existingIndex].quantity += item.quantity
       if (state.value.currentQuote[existingIndex].quantity > item.maxQuantity) {
         state.value.currentQuote[existingIndex].quantity = item.maxQuantity
       }
     } else {
-      // Agregar nuevo item
       state.value.currentQuote.push(item)
     }
 
@@ -159,7 +153,7 @@ export const useQuoteStore = defineStore('quote', () => {
   const updateQuoteStatus = async (id: string, status: string) => {
     try {
       await firebaseService.updateQuoteStatus(id, status)
-      await getQuotes() // Recargar las cotizaciones
+      await getQuotes()
       NotificationService.push({
         title: 'Cotización actualizada',
         description: 'La cotización ha sido actualizada exitosamente',
@@ -180,10 +174,8 @@ export const useQuoteStore = defineStore('quote', () => {
     const currentUser = authStore.user
     if (!currentUser) return false
 
-    // Si es el creador de la cotización
     if (quote.userId === currentUser.uid) return true
 
-    // Si es admin y la cotización está completada
     const isAdmin = authStore.isAdmin
     return isAdmin && quote.status === QuoteStatus.COMPLETED
   }
@@ -208,7 +200,7 @@ export const useQuoteStore = defineStore('quote', () => {
         description: 'La cotización ha sido eliminada exitosamente',
         type: 'success'
       })
-      await getQuotes() // Recargar las cotizaciones
+      await getQuotes()
     } catch (error) {
       console.error('Error deleting quote:', error)
       NotificationService.push({
@@ -220,7 +212,6 @@ export const useQuoteStore = defineStore('quote', () => {
     }
   }
 
-  // Inicializar
   loadCurrentQuoteFromStorage()
 
   return {

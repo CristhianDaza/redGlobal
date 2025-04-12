@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { User, UserFormData } from '../types/common'
-import { NotificationService } from '../components/Notification/NotificationService';
-import { firebaseService } from '../services/firebaseService'
+import type {User, UserFormData} from '@/types/common.d'
+import {defineStore} from 'pinia'
+import {ref} from 'vue'
+import {NotificationService} from '@/components/Notification/NotificationService';
+import {firebaseService} from '@/services'
 
 export const useUserStore = defineStore('user', () => {
   const users = ref<User[]>([])
@@ -12,8 +12,7 @@ export const useUserStore = defineStore('user', () => {
   const getUsers = async () => {
     try {
       isLoadingUsers.value = true
-      const fetchedUsers = await firebaseService.getUsers()
-      users.value = fetchedUsers
+      users.value = await firebaseService.getUsers()
       lastUpdateUsers.value = new Date().toISOString()
     } catch (error) {
       console.error('Error getting users:', error)

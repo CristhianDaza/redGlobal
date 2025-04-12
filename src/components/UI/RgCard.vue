@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import type { ProductsRedGlobal } from '../../types/common';
-import { formatNumber } from '../../utils/helpers';
-import RgImage from './RgImage.vue';
+import type { ProductsRedGlobal } from '@/types/common.d';
+import { defineAsyncComponent } from 'vue';
+import { formatNumber } from '@/utils';
 
-const props = defineProps<{
+const RgImage = defineAsyncComponent(/* webpackChunkName: "rgImage" */() => import('@/components/UI/RgImage.vue'));
+
+defineProps<{
   productsView: ProductsRedGlobal;
 }>();
 
@@ -86,7 +88,7 @@ const props = defineProps<{
   color: #666;
   margin-bottom: 0.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .product-name {
@@ -96,7 +98,7 @@ const props = defineProps<{
   margin-bottom: 0.5rem;
   transition: color 0.3s ease;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

@@ -1,15 +1,14 @@
-import type { MarpicoMaterial } from '@/types/marpico';
-import type { PromosProductChild } from '@/types/promos';
-import type { ImagesRedGlobal } from '@/types/common';
-
-import { StockSurVariant } from '@/types/stocksur';
+import type { MarpicoMaterial } from '@/types/marpico.d';
+import type { PromosProductChild } from '@/types/promos.d';
+import type { ImagesRedGlobal } from '@/types/common.d';
+import { StockSurVariant } from '@/types/stocksur.d';
 
 export const constructImagesPromos = (
   children: PromosProductChild[],
   mainImage: string[]
 ): ImagesRedGlobal[] => {
   const images: ImagesRedGlobal[] = [];
-  
+
   if (children) {
     children.forEach(child => {
       if (child?.imagenesHijo) {
@@ -21,7 +20,7 @@ export const constructImagesPromos = (
       }
     });
   }
-  
+
   if (mainImage.length > 0) {
     images.push({
       urlImage: mainImage,
@@ -29,13 +28,13 @@ export const constructImagesPromos = (
       id: 0
     });
   }
-  
+
   return images;
 };
 
 export const constructImagesStockSur = (variants: StockSurVariant[] | undefined): ImagesRedGlobal[] => {
   if (!variants || !Array.isArray(variants)) return []
-  
+
   return variants.map(variant => ({
     urlImage: [variant.picture?.original || '@/assets/images/no-image.jpg'],
     color: variant.color?.name || '',

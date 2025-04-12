@@ -1,4 +1,4 @@
-import type { HtmlEntities } from '../types/config'
+import type { HtmlEntities } from '@/types/config.d'
 
 const _decodeHtmlEntities = (text: string | undefined): string | undefined => {
   const htmlEntities: HtmlEntities = {
@@ -15,7 +15,7 @@ const _decodeHtmlEntities = (text: string | undefined): string | undefined => {
     '&Ntilde;': 'Ñ',
     '&ntilde;': 'ñ'
   };
-  
+
   if (!text) return text;
   return text.replace(/&[A-Za-z]+;/g, match => htmlEntities[match] || match);
 };
@@ -25,7 +25,7 @@ const _alwaysUppercase: string[] = ['USB', 'LED', 'ID', 'mAh', 'GB', 'TB', 'HD',
 export const formatText = (text: string | undefined, isUpperCase = false): string => {
   const decodedText = _decodeHtmlEntities(text);
   if (!decodedText) return '';
-  
+
   if (isUpperCase) {
     const words = decodedText.toLowerCase().split(' ');
     return words

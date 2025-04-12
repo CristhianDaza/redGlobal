@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useQuoteStore } from '../../store/useQuoteStore'
-import { useUserStore } from '../../store/useUserStore'
-import { useAuthStore } from '../../store/useAuthStore'
-import RgButton from '../UI/RgButton.vue'
-import RgModal from '../UI/RgModal.vue'
-import RgEmptyState from '../UI/RgEmptyState.vue'
-import { formatColor } from '../../utils'
-import { NotificationService } from '../../components/Notification/NotificationService'
+import { computed, ref, defineAsyncComponent } from 'vue'
+import { useQuoteStore, useUserStore, useAuthStore } from '@/store'
+import { formatColor } from '@/utils'
+import { NotificationService } from '@/components/Notification/NotificationService'
+
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
+const RgModal = defineAsyncComponent(/* webpackChunkName: "RgModal" */() => import('@/components/UI/RgModal.vue'))
+const RgEmptyState = defineAsyncComponent(/* webpackChunkName: "rgEmptyState" */() => import('@/components/UI/RgEmptyState.vue'))
 
 defineProps<{
   isOpen: boolean
@@ -61,7 +60,7 @@ const handleUpdateInkColors = (index: number, colors: number) => {
 
 const handleToggleMarking = (index: number) => {
   const item = currentQuote.value[index]
-  quoteStore.updateQuoteItem(index, { 
+  quoteStore.updateQuoteItem(index, {
     includeMarking: !item.includeMarking,
     inkColors: !item.includeMarking ? 1 : undefined
   })
@@ -128,12 +127,12 @@ const handleSubmitQuote = async () => {
           <div class="item-image">
             <img :src="item.productImage" :alt="item.productName">
           </div>
-          
+
           <div class="item-details">
             <h3>{{ item.productName }}</h3>
-            
+
             <div class="color-info">
-              <span 
+              <span
                 class="color-preview"
                 :style="{ backgroundColor: formatColor(item.colorName) }"
               ></span>
@@ -143,14 +142,14 @@ const handleSubmitQuote = async () => {
             <div class="quantity-control">
               <label>Cantidad:</label>
               <div class="quantity-input">
-                <button 
+                <button
                   class="quantity-btn"
                   @click="handleUpdateQuantity(index, item.quantity - 1)"
                   :disabled="item.quantity <= 1"
                 >
                   -
                 </button>
-                <input 
+                <input
                   type="number"
                   v-model.number="item.quantity"
                   :min="1"
@@ -160,7 +159,7 @@ const handleSubmitQuote = async () => {
                     handleUpdateQuantity(index, Number(target.value))
                   }"
                 >
-                <button 
+                <button
                   class="quantity-btn"
                   @click="handleUpdateQuantity(index, item.quantity + 1)"
                   :disabled="item.quantity >= item.maxQuantity"
@@ -199,7 +198,7 @@ const handleSubmitQuote = async () => {
             </div>
           </div>
 
-          <button 
+          <button
             class="remove-btn"
             @click="handleRemoveItem(index)"
           >
@@ -402,12 +401,6 @@ const handleSubmitQuote = async () => {
   justify-content: flex-end;
   padding-top: 0.5rem;
   border-top: 1px solid #e2e8f0;
-}
-
-.cart-actions .rg-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 ::-webkit-scrollbar {

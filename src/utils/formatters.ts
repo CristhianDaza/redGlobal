@@ -1,8 +1,8 @@
-import type { MarpicoProduct, MarpicoMaterial } from '../types/marpico';
-import type { Label, TableEntry, ProductsRedGlobal } from '@/types/common';
-import type { PromosPackaging, PromosProductChild, Stock } from '../types/promos';
-import type { StockSurProduct, StockSurPacking, StockSurIcono, StockSurVariant } from '../types/stocksur';
-import type { CataPromProduct, CataPromCategory } from '../types/cataprom';
+import type { MarpicoProduct, MarpicoMaterial } from '@/types/marpico.d';
+import type { Label, TableEntry, ProductsRedGlobal } from '@/types/common.d';
+import type { PromosPackaging, PromosProductChild, Stock } from '@/types/promos.d';
+import type { StockSurProduct, StockSurPacking, StockSurIcono, StockSurVariant } from '@/types/stocksur.d';
+import type { CataPromProduct, CataPromCategory } from '@/types/cataprom.d';
 
 const _processString = (input: string | undefined): string => {
   if (typeof input !== 'string') {
@@ -14,9 +14,9 @@ const _processString = (input: string | undefined): string => {
 
 export const constructPackagingPromos = (packaging: PromosPackaging | undefined): string => {
   if (!packaging) return ''
-  
+
   const parts = []
-  
+
   if (packaging.alto) parts.push(`${packaging.alto} cm de altura`)
   if (packaging.largo) parts.push(`${packaging.largo} cm de largo`)
   if (packaging.ancho) parts.push(`${packaging.ancho} cm de ancho`)
@@ -24,7 +24,7 @@ export const constructPackagingPromos = (packaging: PromosPackaging | undefined)
   if (packaging.pesoNeto) parts.push(`Peso neto: ${packaging.pesoNeto} ${packaging.unidadPeso}`)
   if (packaging.PiezasCaja) parts.push(`Contiene ${packaging.PiezasCaja} piezas por caja`)
   if (packaging.cajaIndividual) parts.push(`Caja individual: ${packaging.cajaIndividual === 'SI' ? 'Sí' : 'No'}`)
-  
+
   return parts.join(' | ')
 };
 
@@ -107,9 +107,9 @@ export const constructLabelsMarpico = (product: MarpicoProduct): Label[] => {
 
 export const constructPackagingMarpico = (packaging: MarpicoProduct | undefined): string => {
   if (!packaging) return ''
-  
+
   const parts = []
-  
+
   if (packaging.empaque_unds_caja) parts.push(`${packaging.empaque_unds_caja} unidades por caja`)
   if (packaging.empaque_largo) parts.push(`Largo: ${packaging.empaque_largo} cm`)
   if (packaging.empaque_ancho) parts.push(`Ancho: ${packaging.empaque_ancho} cm`)
@@ -117,31 +117,31 @@ export const constructPackagingMarpico = (packaging: MarpicoProduct | undefined)
   if (packaging.empaque_peso_neto) parts.push(`Peso neto: ${packaging.empaque_peso_neto} g`)
   if (packaging.empaque_peso_bruto) parts.push(`Peso bruto: ${packaging.empaque_peso_bruto} g`)
   if (packaging.cajas_individuales) parts.push(`Cajas individuales: ${packaging.cajas_individuales}`)
-  
+
   return parts.join(' | ')
 }
 
 export const constructSizeMarpico = (size: MarpicoProduct | undefined): string => {
   if (!size) return ''
-  
+
   const parts: string[] = []
-  
+
   if (size.medidas_largo) parts.push(`Largo: ${Number(size.medidas_largo)} cm`)
   if (size.medidas_ancho) parts.push(`Ancho: ${Number(size.medidas_ancho)} cm`)
   if (size.medidas_alto) parts.push(`Alto: ${Number(size.medidas_alto)} cm`)
   if (size.medidas_diametro) parts.push(`Diámetro: ${Number(size.medidas_diametro)} cm`)
-  
+
   return parts.join(' | ')
 }
 
 export const constructTableQuantityMarpico = (materials: MarpicoMaterial[] | undefined): TableEntry[] => {
   if (!materials) return [];
   const quantity: TableEntry[] = []
-  
+
   materials.forEach(material => {
     const discountFactor = material.descuento / 100
     const discountedPrice = material.precio + (material.precio * discountFactor)
-    
+
     const item: Partial<TableEntry> = {
       color: material.color_nombre,
       colorName: `${material.color_nombre}${material.variedad?.trim() && material.variedad.trim() !== '' ? ` (${material.variedad.trim()})` : ''}`,
@@ -153,16 +153,16 @@ export const constructTableQuantityMarpico = (materials: MarpicoMaterial[] | und
       idColorTracking: material.trackings_importacion.length > 0 ? material.trackings_importacion[0].material_id : null,
       price: discountedPrice
     }
-    
+
     Object.keys(item).forEach(key => {
       if (item[key as keyof TableEntry] == null) {
         delete item[key as keyof TableEntry]
       }
     })
-    
+
     quantity.push(item as TableEntry)
   })
-  
+
   return quantity
 }
 
@@ -180,16 +180,16 @@ export const constructCategoryStockSur = (product: StockSurProduct): string[] =>
 
 export const constructPackingStockSur = (packing: StockSurPacking | undefined): string => {
   if (!packing) return ''
-  
+
   const parts = []
-  
+
   if (packing.width) parts.push(`Ancho: ${packing.width} cm`)
   if (packing.height) parts.push(`Alto: ${packing.height} cm`)
   if (packing.depth) parts.push(`Profundidad: ${packing.depth} cm`)
   if (packing.volume) parts.push(`Volumen: ${packing.volume} m³`)
   if (packing.quantity) parts.push(`Cantidad por caja: ${packing.quantity}`)
   if (packing.weight) parts.push(`Peso: ${packing.weight} kg`)
-  
+
   return parts.length > 0 ? parts.join(' | ') : ''
 }
 
@@ -197,23 +197,23 @@ export const constructPrintingStockSur = (suggestions: StockSurIcono[] | undefin
   if (!suggestions || !Array.isArray(suggestions) || suggestions.length === 0) {
     return ''
   }
-  
+
   const filteredSuggestions = suggestions
     .filter(suggestion => ![1, 92, 93].includes(suggestion.id))
     .map(suggestion => suggestion.label.trim())
-  
+
   if (filteredSuggestions.length === 0) {
     return ''
   }
-  
+
   const formattedSuggestions = filteredSuggestions.length > 1
     ? filteredSuggestions.slice(0, -1).join(', ') + ' o ' + filteredSuggestions.slice(-1)
     : filteredSuggestions[0]
-  
+
   return `${formattedSuggestions}.`
 }
 
-export const constructTableQuantityStockSur = (variants: StockSurVariant[]): TableEntry[] => {  
+export const constructTableQuantityStockSur = (variants: StockSurVariant[]): TableEntry[] => {
   return variants.map(variant => ({
     color: variant.color?.name,
     colorName: variant.color?.name,
@@ -226,13 +226,13 @@ export const constructTotalProductsStockSur = (variants: StockSurVariant[] | und
   if (!variants || !Array.isArray(variants) || variants.length === 0) {
     return 0
   }
-  
+
   return variants.reduce((total, variant) => total + (variant.stock_available || 0), 0)
 };
 
 export const combineProducts = (docs: any[]): any[] => {
   const combinedProducts: ProductsRedGlobal[] = []
-  
+
   docs.forEach(doc => {
     const products = doc.data().products
     if (Array.isArray(products)) {
@@ -241,12 +241,12 @@ export const combineProducts = (docs: any[]): any[] => {
       console.warn('Without products:', doc)
     }
   })
-  
+
   return combinedProducts
 };
 
 export const constructCategoryCataProm = (
-  product: CataPromProduct, 
+  product: CataPromProduct,
   categories: CataPromCategory[]
 ): string[] => {
   const matchedCategory = categories.find(category => category.id === product.idCategoria);

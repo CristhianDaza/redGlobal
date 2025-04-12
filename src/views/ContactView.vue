@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import RgButton from '../components/UI/RgButton.vue';
-import RgFormField from '../components/UI/RgFormField.vue';
-import InfoCard from '../components/Contact/InfoCard.vue';
-import { emailService } from '../services/emailService';
 import type { EmailData } from '../services/emailService';
-import { contactCards } from '../config/contact';
-import { useForm, rules } from '../composable/useForm';
-import { NotificationService } from '../components/Notification/NotificationService';
+import { ref, defineAsyncComponent } from 'vue';
+import { emailService } from '@/services';
+import { contactCards } from '@/config';
+import { useForm, rules } from '@/composable/useForm.ts';
+import { NotificationService } from '@/components/Notification/NotificationService';
 
-const { 
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
+const RgFormField = defineAsyncComponent(/* webpackChunkName: "rgFormField" */() => import('@/components/UI/RgFormField.vue'));
+const InfoCard = defineAsyncComponent(/* webpackChunkName: "infoCard" */() => import('@/components/Contact/InfoCard.vue'));
+
+const {
   form,
   errors,
   touched,
@@ -48,7 +49,7 @@ const showSuccessMessage = ref(false);
 
 const handleSubmit = async () => {
   if (isSubmitting.value || !validateForm()) return;
-  
+
   isSubmitting.value = true;
   try {
     const emailData: EmailData = {
@@ -66,7 +67,7 @@ const handleSubmit = async () => {
       description: 'Tu mensaje ha sido enviado con éxito',
       type: 'success'
     });
-    
+
     resetForm();
 
     setTimeout(() => {
@@ -80,7 +81,6 @@ const handleSubmit = async () => {
       type: 'error'
     });
   } finally {
-    // Pequeño delay para mejor UX
     setTimeout(() => {
       isSubmitting.value = false;
     }, 500);
@@ -109,7 +109,7 @@ const handleSubmit = async () => {
       <div class="contact-form-container">
         <form @submit.prevent="handleSubmit" class="contact-form">
           <h2>Envíanos un mensaje</h2>
-          
+
           <div class="form-grid">
             <RgFormField
               v-model="form.name"

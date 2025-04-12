@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { CategoryCard } from '../../types/common'
-import RgModal from '../UI/RgModal.vue'
-import { uploadImage } from '../../config/cloudinary'
+import type { CategoryCard } from '@/types/common.d'
+import { ref, watch, defineAsyncComponent } from 'vue'
+import { uploadImage } from '@/config'
+import { NotificationService } from "@/components/Notification/NotificationService";
+
+const RgModal = defineAsyncComponent(/* webpackChunkName: "rgModal" */() => import('@/components/UI/RgModal.vue'))
 
 const props = defineProps<{
   isOpen: boolean
@@ -24,7 +26,6 @@ const textColor = ref('#333333')
 const imageFile = ref<File | null>(null)
 const imagePreview = ref('')
 
-// Resetear el formulario cuando se abre
 watch(() => props.isOpen, (newValue) => {
   if (newValue) {
     if (props.card) {
@@ -59,7 +60,7 @@ const handleImageChange = (event: Event) => {
 const handleSave = async () => {
   try {
     let imageUrl = props.card?.imageUrl || ''
-    
+
     if (imageFile.value) {
       const result = await uploadImage(imageFile.value)
       imageUrl = result.secure_url
@@ -78,7 +79,11 @@ const handleSave = async () => {
     })
   } catch (error) {
     console.error('Error saving category card:', error)
-    alert('Error al guardar la tarjeta')
+    NotificationService.push({
+      title: 'Error al guardar la categoría',
+      description: 'Hubo un error al guardar la categoría. Por favor, inténtalo de nuevo.',
+      type: 'error'
+    })
   }
 }
 
@@ -225,13 +230,6 @@ const handleClose = () => {
   height: auto;
   border-radius: 0.375rem;
   margin-top: 0.5rem;
-}
-
-.button-group {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
 }
 
 .switch-container {

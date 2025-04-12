@@ -1,7 +1,7 @@
-import type { Stock, PromosStock, PromosUserData, PrmosAllProducts, PromosProduct } from '../types/promos';
+import type { Stock, PromosStock, PromosUserData, PrmosAllProducts, PromosProduct } from '@/types/promos.d';
 
-import { apiConfigPromos } from './apiConfig';
-import { apiService } from '../services/apiService';
+import { apiConfigPromos } from '@/api';
+import { apiService } from '@/services';
 
 const userData: PromosUserData = {
   user: import.meta.env.VITE_API_PROMOS_USER,

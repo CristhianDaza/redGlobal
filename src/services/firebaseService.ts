@@ -1,12 +1,10 @@
-import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard } from '../types/common.d'
-import { UserRole } from '../types/common.d'
-
+import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard } from '@/types/common.d'
+import { UserRole } from '@/types/common.d'
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where } from 'firebase/firestore'
 import { getAuth, createUserWithEmailAndPassword, deleteUser } from 'firebase/auth'
-import { db } from '../config/firebase'
+import { db } from '@/config'
 
 export const firebaseService = {
-  // Métodos para usuarios
   async getUsers(): Promise<User[]> {
     try {
       const usersRef = collection(db, 'users')
@@ -15,21 +13,18 @@ export const firebaseService = {
         idDoc: doc.id,
         ...doc.data()
       })) as User[]
-      
+
       if (users.length === 0) {
-        // Si no hay usuarios y hay un usuario autenticado, crearlo
         const auth = getAuth()
         const currentUser = auth.currentUser
         if (currentUser) {
           try {
-            // Primero verificar si ya existe un documento para este usuario
             const userQuery = await getDocs(
-              query(collection(db, 'users'), 
+              query(collection(db, 'users'),
                 where('email', '==', currentUser.email))
             )
-            
+
             if (userQuery.empty) {
-              // El usuario no existe en Firestore, crearlo
               const now = new Date().toISOString()
               await addDoc(collection(db, 'users'), {
                 id: currentUser.uid,
@@ -43,8 +38,6 @@ export const firebaseService = {
                 createdAt: now,
                 updatedAt: now
               })
-              
-              // Obtener la lista actualizada
               return await this.getUsers()
             }
           } catch (error) {
@@ -52,7 +45,7 @@ export const firebaseService = {
           }
         }
       }
-      
+
       return users
     } catch (error) {
       console.error('Error getting users:', error)
@@ -62,23 +55,19 @@ export const firebaseService = {
 
   async createUser(user: UserFormData): Promise<void> {
     try {
-      // Validar datos requeridos
       if (!user.email || !user.password) {
         throw new Error('El email y la contraseña son requeridos')
       }
 
-      // Validar formato de email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(user.email)) {
         throw new Error('El formato del email no es válido')
       }
 
-      // Validar longitud de contraseña
       if (user.password.length < 6) {
         throw new Error('La contraseña debe tener al menos 6 caracteres')
       }
 
-      // Crear usuario en Authentication
       const auth = getAuth()
       let userCredential
       try {
@@ -90,23 +79,21 @@ export const firebaseService = {
         throw error
       }
 
-      // Crear usuario en Firestore
       const usersRef = collection(db, 'users')
       const now = new Date().toISOString()
-      const { password, logo, ...userData } = user // Excluir la contraseña y el logo (File) de los datos a guardar
-      
+      const { password, logo, ...userData } = user
+
       try {
         await addDoc(usersRef, {
           ...userData,
           id: userCredential.user.uid,
-          logo: user.logo || null, // Asegurar que se guarde la URL del logo
+          logo: user.logo || null,
           createdAt: now,
           updatedAt: now,
-          role: userData.role || UserRole.CLIENT, // Si no se especifica rol, será cliente
-          active: true // Asegurar que el usuario se crea activo
+          role: userData.role || UserRole.CLIENT,
+          active: true
         })
       } catch (error) {
-        // Si falla la creación en Firestore, eliminar el usuario de Auth
         await userCredential.user.delete()
         throw new Error('Error al guardar los datos del usuario')
       }
@@ -131,28 +118,23 @@ export const firebaseService = {
 
   async deleteUser(id: string): Promise<void> {
     try {
-      // 1. Obtener todos los usuarios que coincidan con el ID
       const usersQuery = await getDocs(
         query(collection(db, 'users'))
       )
-      
+
       const userDoc = usersQuery.docs.find(doc => doc.id === id)
-      
+
       if (!userDoc) {
         throw new Error('Usuario no encontrado')
       }
-      
       const userData = userDoc.data()
-      
-      // 2. Eliminar el usuario de Authentication si es posible
+
       try {
         const auth = getAuth()
         const currentUser = auth.currentUser
-        
-        // Solo intentar eliminar si no es el usuario actual
+
         if (currentUser && currentUser.uid !== userData.id) {
           try {
-            // Intentar eliminar el usuario de Auth
             await deleteUser(currentUser)
           } catch (authError) {
             throw new Error('Error al eliminar el usuario de Auth')
@@ -163,8 +145,6 @@ export const firebaseService = {
       } catch (authError) {
         throw new Error('Error al acceder a Auth')
       }
-      
-      // 3. Eliminar el documento de Firestore
       await deleteDoc(doc(db, 'users', id))
     } catch (error) {
       console.error('Error deleting user:', error)
@@ -174,7 +154,7 @@ export const firebaseService = {
   async saveProducts(allProducts: ProductsRedGlobal[]): Promise<void> {
     const batchSize = 500
     await this.deleteAllProducts()
-    
+
     for (let i = 0; i < allProducts.length; i += batchSize) {
       const batch = allProducts.slice(i, i + batchSize).map(product => {
         return JSON.parse(JSON.stringify(product, (_key, value) =>
@@ -211,8 +191,8 @@ export const firebaseService = {
 
   async updateLastUpdate(): Promise<void> {
     try {
-      await addDoc(collection(db, 'lastedUpdatedProducts'), { 
-        lastUpdate: new Date().toISOString() 
+      await addDoc(collection(db, 'lastedUpdatedProducts'), {
+        lastUpdate: new Date().toISOString()
       })
     } catch (error) {
       console.error('Error updating last update:', error)
@@ -224,17 +204,17 @@ export const firebaseService = {
     try {
       const productsRef = await getDocs(collection(db, 'productsRedGlobal'))
       const lastUpdateRef = await getDocs(collection(db, 'lastedUpdatedProducts'))
-      
-      const deleteLastUpdate = lastUpdateRef.docs.map(document => 
+
+      const deleteLastUpdate = lastUpdateRef.docs.map(document =>
         deleteDoc(doc(db, 'lastedUpdatedProducts', document.id))
       )
-      
-      const deleteProducts = productsRef.docs.map(document => 
+
+      const deleteProducts = productsRef.docs.map(document =>
         deleteDoc(doc(db, 'productsRedGlobal', document.id))
       )
-      
+
       if (deleteProducts.length === 0 && deleteLastUpdate.length === 0) return
-      
+
       await Promise.all([...deleteProducts, ...deleteLastUpdate])
     } catch (error) {
       console.error('Error deleting products:', error)
@@ -245,7 +225,7 @@ export const firebaseService = {
   async shouldUpdate(): Promise<boolean> {
     const lastUpdate = await this.getLastUpdate()
     if (!lastUpdate) return true
-    
+
     const now = new Date()
     return lastUpdate.getDate() !== now.getDate()
   },
@@ -275,7 +255,6 @@ export const firebaseService = {
     await deleteDoc(menuRef)
   },
 
-  // Métodos para cotizaciones
   async getQuotes(): Promise<Quote[]> {
     try {
       const quotesRef = collection(db, 'quotes')
@@ -292,7 +271,6 @@ export const firebaseService = {
 
   async createQuote(quote: Omit<Quote, 'id'>): Promise<void> {
     try {
-      // Convertir valores undefined a null para Firebase
       const cleanQuote = JSON.parse(JSON.stringify(quote, (_, value) => {
         return value === undefined ? null : value;
       }));
@@ -327,7 +305,6 @@ export const firebaseService = {
     }
   },
 
-  // Métodos para manejar las tarjetas de categorías
   async getCategoryCards(): Promise<CategoryCard[]> {
     try {
       const cardsRef = collection(db, 'categoryCards')
@@ -368,7 +345,6 @@ export const firebaseService = {
 
   async updateCategoryCard(id: string, card: Partial<CategoryCard>): Promise<void> {
     try {
-      // Si estamos actualizando el estado a inactivo, verificar que queden suficientes activas
       if (card.active === false) {
         const cards = await this.getCategoryCards()
         const currentCard = cards.find(c => c.id === id)
@@ -392,7 +368,7 @@ export const firebaseService = {
     try {
       const cards = await this.getCategoryCards()
       const cardToDelete = cards.find(c => c.id === id)
-      
+
       if (cardToDelete?.active) {
         const activeCards = cards.filter(c => c.active && c.id !== id)
         if (activeCards.length < 3) {

@@ -1,13 +1,12 @@
-import type { ProductsRedGlobal } from '../types/common';
+import type { ProductsRedGlobal } from '@/types/common.d';
 
 import { normalizeString } from './';
 
 export const filterProductsHelper = (products: ProductsRedGlobal[], searchTerm: string) => {
-  // Si no hay término de búsqueda, devolver todos los productos
   if (!searchTerm.trim()) return products;
 
   const normalizedSearchTerm = searchTerm.toLowerCase().trim().replace(/\s+/g, '');
-  
+
   return products.filter(product => {
     const productName = normalizeString(product.name)
     const productDescription = normalizeString(product.description)
@@ -15,7 +14,6 @@ export const filterProductsHelper = (products: ProductsRedGlobal[], searchTerm: 
     const productCategory = normalizeString(product.category || '')
     const normalizedId = product.id.toString().toLowerCase().replace(/\s+/g, '')
 
-    // Buscar coincidencia en cualquier campo
     return productName.includes(normalizedSearchTerm) ||
       productDescription.includes(normalizedSearchTerm) ||
       productMaterial.includes(normalizedSearchTerm) ||
@@ -49,7 +47,7 @@ export const getRelativeTime = (dateString: string | Date | null): string => {
 
   const value = Math.floor(diffInSeconds / rule!.divisor);
   const unit = value === 1 ? rule!.unit[0] : rule!.unit[1];
-  
+
   return `Hace ${value} ${unit}`;
 };
 

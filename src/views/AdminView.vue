@@ -1,27 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useMenuAdmin } from '@/composable';
-import { useUserAdmin } from '@/composable';
-import { useQuoteAdmin } from '@/composable';
-import { useCategoryAdmin } from '@/composable';
-import { getRelativeTime } from '@/utils/helpers';
+import { useAuthStore } from '@/store';
+import { useMenuAdmin, useUserAdmin, useQuoteAdmin, useCategoryAdmin } from '@/composable';
+import { getRelativeTime } from '@/utils';
 
-const MenuItemForm = defineAsyncComponent(() => import('../components/Admin/MenuItemForm.vue'));
-const UserForm = defineAsyncComponent(() => import('../components/Admin/UserForm.vue'));
-const RgConfirmModal = defineAsyncComponent(() => import('../components/UI/RgConfirmModal.vue'));
-const CategoryCardForm = defineAsyncComponent(() => import('../components/Admin/CategoryCardForm.vue'));
-const RgButton = defineAsyncComponent(() => import('../components/UI/RgButton.vue'));
+const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('../components/Admin/MenuItemForm.vue'));
+const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => import('../components/Admin/UserForm.vue'));
+const RgConfirmModal = defineAsyncComponent(/* webpackChunkName: "rgConfirmModal" */() => import('../components/UI/RgConfirmModal.vue'));
+const CategoryCardForm = defineAsyncComponent(/* webpackChunkName: "categoryCardForm" */() => import('../components/Admin/CategoryCardForm.vue'));
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('../components/UI/RgButton.vue'));
 
 const authStore = useAuthStore();
-// Autenticación y usuario
 const isAuthenticated = computed(() => authStore.isAuthenticated());
 const userEmail = computed(() => authStore.user?.email || 'No disponible');
-// const isAdmin = computed(() => authStore.user?.role === 'admin' && authStore.isAdmin);
 
-const currentUser = computed(() => authStore.user);
-
-// Pestaña activa
 const activeTab = ref<'items' | 'users' | 'quotes' | 'cards'>('quotes');
 
 const handleTabChange = (tab: string, event: Event) => {
@@ -29,7 +21,6 @@ const handleTabChange = (tab: string, event: Event) => {
   activeTab.value = tab as 'items' | 'users' | 'quotes' | 'cards';
 };
 
-// Instanciar composables
 const {
   isLoading: menuLoading,
   menuItems,
@@ -91,7 +82,6 @@ const isAdmin = computed(() => {
   return currentUser?.role === 'admin';
 })
 
-// Eliminación general
 const showDeleteConfirm = ref(false);
 const itemToDelete = ref<{ id: string; type: 'menu' | 'user' | 'quote' | 'card' } | undefined>(undefined);
 
@@ -130,7 +120,6 @@ const handleCancelDelete = () => {
   itemToDelete.value = undefined;
 };
 
-// Función para cerrar modales de menú y usuario
 const handleCloseModal = () => {
   showMenuItemModal.value = false;
   showUserModal.value = false;
@@ -138,10 +127,8 @@ const handleCloseModal = () => {
   editingUser.value = null;
 };
 
-// Badge de cotizaciones pendientes para admin
 const pendingQuotesToAdmin = computed(() => pendingQuotes.value);
 
-// Estado de carga global según pestaña activa
 const loadingData = computed(() => {
   switch (activeTab.value) {
     case 'items': return menuLoading.value;
@@ -152,7 +139,6 @@ const loadingData = computed(() => {
   }
 });
 
-// Cargar datos iniciales
 onMounted(async () => {
   try {
     await Promise.all([
@@ -166,7 +152,6 @@ onMounted(async () => {
   }
 });
 
-// Observar cambios en pestaña para recargar datos
 watch(activeTab, async (newTab) => {
   try {
     if (newTab === 'items') {
@@ -184,8 +169,6 @@ watch(activeTab, async (newTab) => {
 });
 </script>
 
-
-
 <template>
   <div v-if="!isAuthenticated" class="error-container">
     <p>Debes iniciar sesión para acceder a esta página</p>
@@ -201,7 +184,7 @@ watch(activeTab, async (newTab) => {
         <p class="user-email">{{ userEmail }}</p>
       </div>
       <nav class="sidebar-nav">
-        <button 
+        <button
           v-if="isAdmin"
           :class="['nav-item', { active: activeTab === 'items' }]"
           @click="(e) => handleTabChange('items', e)"
@@ -209,7 +192,7 @@ watch(activeTab, async (newTab) => {
           <span class="material-icons">menu</span>
           <span>Gestión de Menú</span>
         </button>
-        <button 
+        <button
           v-if="isAdmin"
           :class="['nav-item', { active: activeTab === 'users' }]"
           @click="(e) => handleTabChange('users', e)"
@@ -217,7 +200,7 @@ watch(activeTab, async (newTab) => {
           <span class="material-icons">group</span>
           <span>Gestión de Usuarios</span>
         </button>
-        <button 
+        <button
           :class="['nav-item', { active: activeTab === 'quotes' }]"
           @click="(e) => handleTabChange('quotes', e)"
         >
@@ -296,15 +279,15 @@ watch(activeTab, async (newTab) => {
                     <td>{{ item.title }}</td>
                     <td>{{ item.path }}</td>
                     <td>{{ item.order }}</td>
-                    <td class="actions">  
-                      <button 
+                    <td class="actions">
+                      <button
                         class="action-btn edit"
                         @click="handleEditMenuItem(item)"
                         title="Editar item"
                       >
                         <span class="material-icons">edit</span>
                       </button>
-                      <button 
+                      <button
                         class="action-btn delete"
                         @click="handleDeleteClick(item.id, 'menu')"
                         title="Eliminar item"
@@ -367,14 +350,14 @@ watch(activeTab, async (newTab) => {
                     </td>
                     <td>{{ user.role === 'admin' ? 'Administrador' : 'Cliente' }}</td>
                     <td class="actions">
-                      <button 
+                      <button
                         class="action-btn edit"
                         @click="handleEditUser(user)"
                         title="Editar usuario"
                       >
                         <span class="material-icons">edit</span>
                       </button>
-                      <button 
+                      <button
                         class="action-btn delete"
                         @click="handleDeleteClick(user.id, 'user')"
                         title="Eliminar usuario"
@@ -447,8 +430,8 @@ watch(activeTab, async (newTab) => {
                     </td>
                     <td>{{ quote.items.length }} items</td>
                     <td class="actions">
-                      <button 
-                        class="action-btn view" 
+                      <button
+                        class="action-btn view"
                         title="Ver detalles"
                         @click="handleViewQuote(quote)"
                       >
@@ -456,7 +439,7 @@ watch(activeTab, async (newTab) => {
                       </button>
                       <button
                         v-if="quote.status === quoteStatus.PENDING && isAdmin"
-                        class="action-btn edit" 
+                        class="action-btn edit"
                         title="Marcar como completada"
                         @click="handleCompleteQuote(quote.id)"
                       >
@@ -517,21 +500,21 @@ watch(activeTab, async (newTab) => {
                       </span>
                     </td>
                     <td>
-                      <img 
-                        :src="card.imageUrl" 
+                      <img
+                        :src="card.imageUrl"
                         :alt="card.title"
                         class="card-thumbnail"
                       >
                     </td>
                     <td class="actions">
-                      <button 
+                      <button
                         class="action-btn edit"
                         @click="handleEditCard(card)"
                         title="Editar categoría"
                       >
                         <span class="material-icons">edit</span>
                       </button>
-                      <button 
+                      <button
                         class="action-btn delete"
                         @click="handleDeleteClick(card.id, 'card')"
                         title="Eliminar categoría"
@@ -595,7 +578,7 @@ watch(activeTab, async (newTab) => {
             <p><strong>Fecha:</strong> {{ getRelativeTime(selectedQuote.createdAt) }}</p>
             <p><strong>Cliente:</strong> {{ selectedQuote.userName }}</p>
             <p><strong>Email:</strong> {{ selectedQuote.userEmail }}</p>
-            <p><strong>Estado:</strong> 
+            <p><strong>Estado:</strong>
               <span :class="['status-badge', selectedQuote.status]">
                 {{ selectedQuote.status === quoteStatus.PENDING ? 'Pendiente' : 'Completada' }}
               </span>
@@ -790,38 +773,12 @@ watch(activeTab, async (newTab) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Category Cards */
-.category-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.category-image {
-  position: relative;
-  height: 200px;
-  border-radius: 1rem;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .category-image img {
   position: absolute;
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: 0.7;
-}
-
-.category-content {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  padding: 1rem;
-  color: white;
 }
 
 .category-content h3 {
@@ -984,12 +941,6 @@ watch(activeTab, async (newTab) => {
   height: 60px;
   object-fit: cover;
   border-radius: 0.375rem;
-}
-
-.section-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
 }
 
 .color-preview {
@@ -1221,7 +1172,7 @@ watch(activeTab, async (newTab) => {
   color: #64748b;
   font-size: 0.75rem;
 }
-.loading-container,
+
 .error-container,
 .loading-section {
   display: flex;

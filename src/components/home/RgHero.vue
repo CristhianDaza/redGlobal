@@ -20,7 +20,6 @@ const phrases = [
   'Aumenta el impacto de tu marca con productos personalizados.'
 ];
 
-const currentPhrase = ref(phrases[0]);
 let phraseIndex = ref(0);
 let typing = ref(true);
 let charIndex = ref(0);
@@ -33,16 +32,16 @@ const typeWriterEffect = () => {
     if (charIndex.value < currentPhrase.length) {
       displayedText.value += currentPhrase.charAt(charIndex.value)
       charIndex.value++
-      setTimeout(typeWriterEffect, 60) // velocidad de escritura
+      setTimeout(typeWriterEffect, 60)
     } else {
       typing.value = false
-      setTimeout(typeWriterEffect, 1500) // espera antes de borrar
+      setTimeout(typeWriterEffect, 1500)
     }
   } else {
     if (charIndex.value > 0) {
       displayedText.value = currentPhrase.substring(0, charIndex.value - 1)
       charIndex.value--
-      setTimeout(typeWriterEffect, 30) // velocidad de borrado
+      setTimeout(typeWriterEffect, 30)
     } else {
       typing.value = true
       phraseIndex.value = (phraseIndex.value + 1) % phrases.length
@@ -110,8 +109,7 @@ onMounted(() => {
 .hero-subtitle {
   font-size: 1.2rem;
   font-weight: 600;
-  margin: 0;
-  margin-bottom: -1.5rem;
+  margin: 0 0 -1.5rem;
 }
 
 .hero-title {
@@ -142,7 +140,7 @@ onMounted(() => {
 
 .hero-hr {
   width: 98px;
-  height: 2.8px;
+  height: 3px;
   background-color: var(--primary-color);
   margin-bottom: -1.5rem;
   border: 0;

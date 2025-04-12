@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue';
+import { useRouter } from 'vue-router'
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('./RgButton.vue'));
+
+const router = useRouter();
 
 defineProps<{
   title?: string;
@@ -32,6 +35,12 @@ const actions = [
     }
   }
 ];
+
+const handleActionClick = (action:string) => {
+  if (action) {
+    router.push(action);
+  }
+};
 </script>
 
 <template>
@@ -49,7 +58,7 @@ const actions = [
           :key="action.link"
           :text="action.text"
           :custom-style="action.customStyle"
-          @click="$router.push(action.link)"
+          @click="handleActionClick(action.link)"
         />
       </div>
     </div>

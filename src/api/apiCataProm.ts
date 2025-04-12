@@ -1,6 +1,6 @@
-import type { CataPromCategory, CataPromProduct, CataPromStock, CataPromProductDetails } from '@/types/cataprom';
+import type { CataPromCategory, CataPromProduct, CataPromStock, CataPromProductDetails } from '@/types/cataprom.d';
 import { apiConfigCatalogProm } from '@/api';
-import { apiService } from '../services/apiService';
+import { apiService } from '@/services';
 
 /**
  * @description Get all categories from CataProm API

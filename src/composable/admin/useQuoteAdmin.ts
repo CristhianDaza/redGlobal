@@ -1,31 +1,7 @@
-// src/composables/useQuoteAdmin.ts
+import type { QuoteAdmin } from '@/types/common.d'
 import { ref, computed } from 'vue';
-import { useQuoteStore } from '@/store/useQuoteStore';
+import { useQuoteStore } from '@/store';
 import { NotificationService } from '@/components/Notification/NotificationService';
-
-export interface Quote {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  status: string;
-  items: Array<{
-    productId: string;
-    productName: string;
-    productImage: string;
-    color: string;
-    colorName: string;
-    quantity: number;
-    maxQuantity: number;
-    includeMarking: boolean;
-    inkColors?: number;
-    unitPrice: number;
-    totalPrice: number;
-  }>;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 const quoteStatus = {
   PENDING: 'pending',
@@ -37,15 +13,13 @@ export function useQuoteAdmin() {
   const quoteStore = useQuoteStore();
   const isLoading = ref(false);
   const showQuoteDetailsModal = ref(false);
-  const selectedQuote = ref<Quote | null>(null);
+  const selectedQuote = ref<QuoteAdmin | null>(null);
 
   const loadQuotes = async () => {
     await quoteStore.getQuotes();
   };
 
   const filteredQuotes = computed(() => {
-    // Suponemos que para este caso filtramos todas las cotizaciones. Si deseas filtrar por usuario, 
-    // esta lógica se puede ajustar desde el componente principal.
     return quoteStore.quotes;
   });
 
@@ -57,7 +31,7 @@ export function useQuoteAdmin() {
     filteredQuotes.value.filter(q => q.status === quoteStatus.COMPLETED).length
   );
 
-  const handleViewQuote = (quote: Quote) => {
+  const handleViewQuote = (quote: QuoteAdmin) => {
     selectedQuote.value = quote;
     showQuoteDetailsModal.value = true;
   };
@@ -100,10 +74,7 @@ export function useQuoteAdmin() {
       isLoading.value = false;
     }
   };
-
-  // Función para determinar si se puede eliminar una cotización.
-  // Por ejemplo, solo se puede eliminar si la cotización está pendiente.
-  const canDeleteQuote = (quote: Quote): boolean => {
+  const canDeleteQuote = (quote: QuoteAdmin): boolean => {
     return quote.status === quoteStatus.PENDING;
   };
 

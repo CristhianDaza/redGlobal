@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { ProductsRedGlobal } from '../../types/common';
+import type { ProductsRedGlobal } from '@/types/common.d';
 import { ref, watch } from 'vue';
-import { useProductsStore } from '../../store';
-import { normalizeString } from '../../utils';
+import { useProductsStore } from '@/store';
+import { normalizeString } from '@/utils';
 
 const props = defineProps<{
   modelValue: string;
@@ -36,7 +36,7 @@ const filterSuggestions = (query: string) => {
   }
 
   const searchTerms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-  
+
   suggestions.value = (storeProducts.products || [])
     .filter(product => {
       const normalizedName = normalizeString(product.name);
@@ -52,7 +52,7 @@ const filterSuggestions = (query: string) => {
           normalizedId.includes(normalizedTerm);
       });
     })
-    
+
   showSuggestions.value = suggestions.value.length > 0;
   emit('suggestions-update', suggestions.value);
 };
@@ -64,7 +64,6 @@ const selectSuggestion = (suggestion: ProductsRedGlobal) => {
 };
 
 const handleBlur = () => {
-  // Pequeño delay para permitir el click en las sugerencias
   setTimeout(() => {
     showSuggestions.value = false;
   }, 200);
@@ -99,11 +98,11 @@ watch(() => props.modelValue, (newValue) => {
       >
         <div class="suggestion-content">
           <span class="suggestion-name">{{ suggestion.name }}</span>
-          <img 
-            v-if="suggestion.mainImage" 
-            :src="suggestion.mainImage" 
-            :alt="suggestion.name" 
-            class="suggestion-image" 
+          <img
+            v-if="suggestion.mainImage"
+            :src="suggestion.mainImage"
+            :alt="suggestion.name"
+            class="suggestion-image"
           />
         </div>
       </div>
@@ -126,7 +125,6 @@ watch(() => props.modelValue, (newValue) => {
 .autocomplete input {
   width: 100%;
   padding: 0 1rem;
-  border: none;
   font-size: 0.875rem;
   background-color: #f5f5f5;
   color: #333;

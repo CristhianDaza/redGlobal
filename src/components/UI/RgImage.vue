@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import noImage from '../../assets/images/no-image.jpg'
+import noImage from '@/assets/images/no-image.jpg'
 
 const props = defineProps<{
   src: string
@@ -25,12 +25,10 @@ const handleLoad = () => {
 
 onMounted(() => {
   if ('loading' in HTMLImageElement.prototype) {
-    // Browser supports native lazy loading
     if (imgRef.value) {
       imgRef.value.loading = 'lazy'
     }
   } else {
-    // Fallback to Intersection Observer for older browsers
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting && imgRef.value) {

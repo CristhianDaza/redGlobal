@@ -18,7 +18,6 @@ export interface UseFormOptions<T> {
   rules?: FieldRules;
 }
 
-// Reglas de validación predefinidas
 export const rules = {
   required: (message = 'Este campo es requerido'): ValidationRule => ({
     validator: (value: any) => {

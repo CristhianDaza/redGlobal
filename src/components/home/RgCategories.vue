@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { defineAsyncComponent } from 'vue';
-import { useCategoryStore } from '../../store/useCategoryStore';
+import { computed, onMounted, defineAsyncComponent } from 'vue';
+import { useCategoryStore } from '@/store';
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('../UI/RgButton.vue'));
 
@@ -24,8 +23,8 @@ const customStyle = {
 <template>
   <section class="categories">
     <div class="categories-grid">
-      <router-link 
-        v-for="category in activeCategories" 
+      <router-link
+        v-for="category in activeCategories"
         :key="category.id"
         :to="category.url"
         class="category-card"
@@ -131,7 +130,7 @@ const customStyle = {
 
       .category-content {
         width: 55%;
-        
+
         h3 {
           font-size: 1.2rem;
           margin-bottom: 1rem;

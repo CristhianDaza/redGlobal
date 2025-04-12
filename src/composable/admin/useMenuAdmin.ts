@@ -1,7 +1,6 @@
-// src/composables/useMenuAdmin.ts
+import type { MenuItem } from '@/types/common.d';
 import { ref, computed } from 'vue';
-import type { MenuItem } from '@/types/common';
-import { useMenuStore } from '@/store/useMenuStore';
+import { useMenuStore } from '@/store';
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export function useMenuAdmin() {

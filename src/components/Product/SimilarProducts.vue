@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useProductsStore } from '../../store/useProductsStore';
-import type { ProductsRedGlobal } from '../../types/common';
-import RgImage from '../UI/RgImage.vue';
+import type { ProductsRedGlobal } from '@/types/common.d';
+import { ref, computed, defineAsyncComponent } from 'vue';
 import { useRouter } from 'vue-router';
-import RgCard from '../UI/RgCard.vue';
+import { useProductsStore } from '@/store';
+
+const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('@/components/UI/RgCard.vue'));
+const RgImage = defineAsyncComponent(/* webpackChunkName: "rgImage" */() => import('@/components/UI/RgImage.vue'));
 
 const props = defineProps({
   currentProduct: {
@@ -20,11 +21,8 @@ const similarProducts = computed(() => {
   const allProducts = productsStore.products;
   if (!allProducts) return [];
   const matches = new Set<ProductsRedGlobal>();
-  
-  // Obtener la primera palabra del título del producto actual
   const firstTitleWord = props.currentProduct.name.split(' ')[0].toLowerCase();
-  
-  // Buscar todas las coincidencias por título
+
   allProducts.forEach(product => {
     if (product.id !== props.currentProduct.id) {
       const productFirstWord = product.name.split(' ')[0].toLowerCase();
@@ -34,7 +32,6 @@ const similarProducts = computed(() => {
     }
   });
 
-  // Buscar todas las coincidencias por descripción
   if (props.currentProduct.description) {
     const firstDescWord = props.currentProduct.description.split(' ')[0].toLowerCase();
     allProducts.forEach(product => {
@@ -46,19 +43,16 @@ const similarProducts = computed(() => {
     });
   }
 
-  // Si no hay suficientes coincidencias, agregar productos aleatorios
   if (matches.size < 16) {
-    const remainingProducts = allProducts.filter(p => 
+    const remainingProducts = allProducts.filter(p =>
       p.id !== props.currentProduct.id && !matches.has(p)
     );
-    
-    // Mezclar los productos restantes y agregar los necesarios
+
     const shuffled = remainingProducts.sort(() => 0.5 - Math.random());
     const needed = 16 - matches.size;
     shuffled.slice(0, needed).forEach(product => matches.add(product));
   }
 
-  // Mezclar todas las coincidencias y tomar solo 16
   return Array.from(matches)
     .sort(() => 0.5 - Math.random())
     .slice(0, 16)
@@ -101,14 +95,14 @@ const navigateToProduct = (productId: string) => {
   <div class="similar-products">
     <h3>Productos Similares</h3>
     <div class="carousel-container">
-      <button 
-        class="nav-button prev" 
+      <button
+        class="nav-button prev"
         :disabled="!canScrollPrev"
         @click="scrollPrev"
       >
         ‹
       </button>
-      
+
       <div class="products-grid">
         <RgCard
           v-for="product in visibleProducts"
@@ -130,8 +124,8 @@ const navigateToProduct = (productId: string) => {
         </RgCard>
       </div>
 
-      <button 
-        class="nav-button next" 
+      <button
+        class="nav-button next"
         :disabled="!canScrollNext"
         @click="scrollNext"
       >
@@ -192,10 +186,6 @@ const navigateToProduct = (productId: string) => {
   object-fit: cover;
 }
 
-.product-info {
-  padding: 0.75rem;
-}
-
 .product-info h4 {
   font-size: 0.875rem;
   margin: 0;
@@ -203,7 +193,7 @@ const navigateToProduct = (productId: string) => {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 

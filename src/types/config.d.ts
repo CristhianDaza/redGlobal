@@ -40,3 +40,14 @@ export interface Category {
   background: string;
   textButton: string;
 }
+
+export interface UploadApiResponse {
+  secure_url: string;
+  public_id: string;
+  [key: string]: any;
+}
+export interface ContactInfo {
+  icon: string;
+  title: string;
+  lines: string[];
+}

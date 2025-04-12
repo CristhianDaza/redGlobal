@@ -1,7 +1,6 @@
-// src/composables/useCategoryAdmin.ts
+import type { CategoryCard, CategoryCardCreate } from '@/types/common.d';
 import { ref, computed } from 'vue';
-import type { CategoryCard, CategoryCardCreate } from '@/types/common';
-import { useCategoryStore } from '@/store/useCategoryStore';
+import { useCategoryStore } from '@/store';
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export function useCategoryAdmin() {

@@ -1,16 +1,10 @@
-import type { StateGlobal } from '../types/config'
-import type { ProductsRedGlobal } from '../types/common'
-
+import type { StateGlobal } from '@/types/config.d'
+import type { ProductsRedGlobal } from '@/types/common.d'
 import { defineStore } from 'pinia'
-import { firebaseService } from '../services/firebaseService'
-import { normalizeString } from '../utils'
-import {
-  useProductsMarpico,
-  useProductsPromos,
-  useProductStockSur,
-  useProductsCataProm,
-} from '../composable'
-import { NotificationService } from '../components/Notification/NotificationService';
+import { firebaseService } from '@/services'
+import { normalizeString } from '@/utils'
+import { useProductsCataProm, useProductsMarpico, useProductsPromos, useProductStockSur } from '@/composable'
+import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useProductsStore = defineStore('products', {
   state: (): StateGlobal => ({
@@ -41,13 +35,13 @@ export const useProductsStore = defineStore('products', {
         })
       }
     },
-    
+
     async _callServices(): Promise<void> {
       const { getProductsPromos, isLoadingProductsPromosComposable } = useProductsPromos()
       const { getProductsMarpico, isLoadingProductsMarpicoComposable } = useProductsMarpico()
       const { getProductsStockSur, isLoadingProductsStockSurComposable } = useProductStockSur()
       const { getProductsCataProm, isLoadingProductsCataPromComposable } = useProductsCataProm()
-  
+
       const shouldUpdate = await firebaseService.shouldUpdate()
       this.lastUpdateProducts = await firebaseService.getLastUpdate()
       if (!shouldUpdate) {
@@ -90,14 +84,13 @@ export const useProductsStore = defineStore('products', {
       }
 
       this.productsToView = (this.products || []).filter(product => {
-        // Filtrar por términos de búsqueda primero
         if (query) {
           const normalizedQuery = normalizeString(query);
           const normalizedName = normalizeString(product.name);
           const normalizedDescription = normalizeString(product.description);
           const normalizedId = normalizeString(product.id);
 
-          const matchesSearch = normalizedName.includes(normalizedQuery) || 
+          const matchesSearch = normalizedName.includes(normalizedQuery) ||
             normalizedDescription.includes(normalizedQuery) ||
             normalizedId.includes(normalizedQuery);
 
@@ -106,17 +99,15 @@ export const useProductsStore = defineStore('products', {
           }
         }
 
-        // Luego filtrar por categoría si existe
         if (category) {
           const normalizedCategory = normalizeString(category);
-          const productCategories = Array.isArray(product.category) ? 
-            product.category : 
+          const productCategories = Array.isArray(product.category) ?
+            product.category :
             [product.category || ''];
-          
+
           return productCategories.some(cat => {
             const normalizedCat = normalizeString(cat || '');
-            const matches = normalizedCat.includes(normalizedCategory);
-            return matches;
+            return normalizedCat.includes(normalizedCategory);
           });
         }
 

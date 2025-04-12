@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { User, UserFormData } from '../../types/common.d'
-import { UserRole } from '../../types/common.d'
-import RgModal from '../UI/RgModal.vue'
+import type { User, UserFormData } from '@/types/common.d'
+import { ref, watch, defineAsyncComponent } from 'vue'
+import { UserRole } from '@/types/common.d'
 import { NotificationService } from '../Notification/NotificationService';
+
+const RgModal = defineAsyncComponent(/* webpackChunkName: "rgModal" */() => import('@/components/UI/RgModal.vue'))
 
 const props = defineProps<{
   isOpen: boolean
@@ -15,7 +16,7 @@ const emit = defineEmits<{
   (e: 'save', user: UserFormData): void
 }>()
 
-const formData = ref<UserFormData>({ 
+const formData = ref<UserFormData>({
   name: '',
   email: '',
   logo: '',
@@ -67,26 +68,24 @@ const handleFileChange = (event: Event) => {
   if (target.files && target.files.length > 0) {
     const file = target.files[0]
 
-    // Validar el tipo de archivo
     if (!file.type.startsWith('image/')) {
       NotificationService.push({
         title: 'Tipo de archivo no válido',
         description: 'Por favor selecciona un archivo de imagen válido',
         type: 'error'
       })
-      target.value = '' // Limpiar el input
+      target.value = ''
       return
     }
 
-    // Validar el tamaño del archivo (máximo 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB en bytes
+    const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
       NotificationService.push({
         title: 'Tamaño de archivo excedido',
         description: 'El archivo es demasiado grande. El tamaño máximo es 5MB',
         type: 'error'
       })
-      target.value = '' // Limpiar el input
+      target.value = ''
       return
     }
 
@@ -97,34 +96,30 @@ const handleFileChange = (event: Event) => {
 
 const handleSubmit = async () => {
   try {
-    // Validar campos requeridos
     if (!formData.value.name || !formData.value.email) {
       throw new Error('Por favor completa todos los campos requeridos')
     }
 
-    // Validar email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.value.email)) {
       throw new Error('Por favor ingresa un email válido')
     }
 
-    // Validar contraseña para nuevos usuarios
     if (!props.user && (!password.value || password.value.length < 6)) {
       throw new Error('La contraseña debe tener al menos 6 caracteres')
     }
 
-    const userData = { 
+    const userData = {
       ...formData.value,
       password: password.value || undefined
     }
-    
-    // Si hay un archivo seleccionado, lo enviamos para ser procesado
+
     if (selectedFile.value) {
       userData.logo = selectedFile.value
     }
-    
+
     emit('save', userData)
-    password.value = '' // Limpiar contraseña después de enviar
+    password.value = ''
   } catch (error) {
     console.error('Error en el formulario:', error)
     NotificationService.push({

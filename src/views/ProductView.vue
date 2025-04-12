@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { useProductsStore } from '../store/useProductsStore';
-import { useAuthStore } from '../store/useAuthStore';
-import { useUserStore } from '../store/useUserStore';
-import type { ProductsRedGlobal, TableEntry } from '../types/common';
-import RgImage from '../components/UI/RgImage.vue';
-import RgLoader from '../components/UI/RgLoader.vue';
-import RgButton from '../components/UI/RgButton.vue';
-import QuoteModal from '../components/Quote/QuoteModal.vue';
-import SimilarProducts from '../components/Product/SimilarProducts.vue';
-import { formatColor, getRelativeTime, formatNumber } from '../utils';
+import type {ProductsRedGlobal, TableEntry} from '@/types/common.d';
+import {computed, defineAsyncComponent, onMounted, ref, watch} from 'vue';
+import {useRoute} from 'vue-router';
+import {useAuthStore, useProductsStore, useUserStore} from '@/store';
+import {formatColor, formatNumber, getRelativeTime} from '@/utils'
+
+const RgImage = defineAsyncComponent(/* webpackChunkName: "rgImage" */() => import('@/components/UI/RgImage.vue'));
+const RgLoader = defineAsyncComponent(/* webpackChunkName: "rgLoader" */() => import('@/components/UI/RgLoader.vue'));
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
+const QuoteModal = defineAsyncComponent(/* webpackChunkName: "quoteModal" */() => import('@/components/Quote/QuoteModal.vue'));
+const SimilarProducts = defineAsyncComponent(/* webpackChunkName: "similarProducts" */() => import('@/components/Product/SimilarProducts.vue'));
 
 const route = useRoute();
 const productsStore = useProductsStore();
@@ -30,16 +29,13 @@ const isPriceLoading = computed(() => {
 });
 
 const calculatePriceWithIncrease = (price: number) => {
-  // Si no hay usuario autenticado, retornar el precio base
   if (!authStore.isAuthenticated()) {
     return price;
   }
 
-  // Buscar el usuario y su incremento
   const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
 
   if (currentUser?.priceIncrease) {
-    // Aplicar el incremento de precio
     const finalPrice = price * (1 + currentUser.priceIncrease / 100);
     return Math.ceil(finalPrice);
   }
@@ -48,23 +44,17 @@ const calculatePriceWithIncrease = (price: number) => {
 };
 
 const calculatePriceWithIva = (price: number) => {
-  // Primero aplicar el incremento del usuario
   const priceWithIncrease = calculatePriceWithIncrease(price);
-  
-  // Luego aplicar IVA
-  const priceWithIva = Math.ceil(priceWithIncrease * 1.19);
-  return priceWithIva;
+
+  return Math.ceil(priceWithIncrease * 1.19);
 };
 
 const loadProduct = async () => {
   isLoading.value = true;
   try {
-    // Cargar usuarios si es necesario
     if (authStore.isAuthenticated() && !userStore.users.length) {
       await userStore.getUsers();
     }
-
-    // Cargar productos
     if (!productsStore.products) {
       await productsStore.getAllProducts();
     }
@@ -82,7 +72,6 @@ const loadProduct = async () => {
 
 onMounted(loadProduct);
 
-// Observar cambios en la ruta para cargar nuevo producto
 watch(() => route.params.id, loadProduct);
 
 const uniqueImages = computed(() => {
@@ -140,7 +129,7 @@ const formatLabelName = (name: string) => {
 <template>
   <div class="product-view">
     <RgLoader v-if="isLoading" />
-    
+
     <div v-else-if="product" class="product-container">
       <div class="product-main">
         <div class="product-gallery">
@@ -205,7 +194,7 @@ const formatLabelName = (name: string) => {
         <div class="product-info">
           <h1 class="product-name">{{ product.name }}</h1>
           <p class="product-id">Código: {{ product.id }}</p>
-          
+
           <div class="product-details">
             <div class="details-grid">
               <div class="detail-item description">
@@ -252,8 +241,8 @@ const formatLabelName = (name: string) => {
                 <div class="detail-row" v-if="product.category?.length && product.category?.length > 0">
                   <span class="detail-key">{{ product.category.length > 1 ? 'Categorías:' : 'Categoría:' }}</span>
                   <span class="detail-value categories">
-                    <span v-for="category in product.category" 
-                      :key="category" 
+                    <span v-for="category in product.category"
+                      :key="category"
                       class="category-tag"
                     >
                       <router-link :to="{name: 'search', query: {category: category}}">{{ category }}</router-link>
@@ -264,15 +253,15 @@ const formatLabelName = (name: string) => {
 
               <div class="labels-section" v-if="product.labels && product.labels.length > 0">
                 <div class="labels-grid">
-                  <div 
-                    v-for="label in product.labels" 
+                  <div
+                    v-for="label in product.labels"
                     :key="label.id"
                     class="label-container"
                   >
-                    <img 
-                      :src="label.image" 
-                      :alt="formatLabelName(label.name)" 
-                      width="100" 
+                    <img
+                      :src="label.image"
+                      :alt="formatLabelName(label.name)"
+                      width="100"
                       height="100"
                       class="label-image"
                       display="block"
@@ -318,7 +307,7 @@ const formatLabelName = (name: string) => {
               <tr v-for="entry in product.tableQuantity" :key="entry.colorName">
                 <td>
                   <div class="color-cell">
-                    <span 
+                    <span
                       class="color-dot"
                       :style="{ backgroundColor: formatColor(entry.colorName) }"
                     ></span>
@@ -341,9 +330,9 @@ const formatLabelName = (name: string) => {
                 <td v-if="authStore.isAuthenticated()">
                   <div v-if="isPriceLoading" class="price-skeleton"></div>
                   <template v-else>
-                    {{ showPricesWithIva 
+                    {{ showPricesWithIva
                       ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))} con IVA`
-                      : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))} + IVA` 
+                      : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))} + IVA`
                     }}
                   </template>
                 </td>
@@ -839,26 +828,6 @@ const formatLabelName = (name: string) => {
   font-weight: 500;
 }
 
-.status-processing {
-  background-color: #fff8e6;
-  color: #b77f00;
-}
-
-.status-shipped {
-  background-color: #e6f4ff;
-  color: #0958d9;
-}
-
-.status-delivered {
-  background-color: #e6ffe6;
-  color: #039003;
-}
-
-.status-cancelled {
-  background-color: #fff1f0;
-  color: #cf1322;
-}
-
 .table-header {
   display: flex;
   justify-content: space-between;
@@ -941,16 +910,6 @@ const formatLabelName = (name: string) => {
   margin-top: 1.5rem;
   display: flex;
   justify-content: flex-start;
-}
-
-.quote-section .rg-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.quote-section .material-icons {
-  font-size: 1.25rem;
 }
 
 @keyframes loading {

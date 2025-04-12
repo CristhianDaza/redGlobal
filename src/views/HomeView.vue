@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, defineAsyncComponent } from 'vue';
+import { useProductsStore } from '@/store';
 
-import { useProductsStore } from '../store/useProductsStore';
-import RgHero from '../components/home/RgHero.vue';
-import RgCategories from '../components/home/RgCategories.vue';
-import RgVarietyBanner from '../components/home/RgVarietyBanner.vue';
-import RgCard from '../components/UI/RgCard.vue';
+const RgHero = defineAsyncComponent(/* webpackChunkName: "rgHero" */() => import('@/components/home/RgHero.vue'));
+const RgCategories = defineAsyncComponent(/* webpackChunkName: "rgCategories" */() => import('@/components/home/RgCategories.vue'));
+const RgVarietyBanner = defineAsyncComponent(/* webpackChunkName: "rgVarietyBanner" */() => import('@/components/home/RgVarietyBanner.vue'));
+const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('@/components/UI/RgCard.vue'));
 
 const store = useProductsStore();
 
@@ -15,14 +15,14 @@ onMounted(async () => {
 
 const popularProducts = computed(() => {
   if (!store.products) return [];
-  
+
   const shuffled = [...store.products];
-  
+
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  
+
   return shuffled.slice(0, 12);
 });
 

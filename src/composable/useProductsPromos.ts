@@ -1,19 +1,18 @@
-import type { ProductsRedGlobal } from '../types/common';
-import type { Stock, PromosProduct } from '../types/promos';
-
+import type { ProductsRedGlobal } from '@/types/common.d';
+import type { Stock, PromosProduct } from '@/types/promos.d';
 import { ref } from 'vue';
-import { getAllProductsPromos, getStockPromos } from '../api';
+import { getAllProductsPromos, getStockPromos } from '@/api';
 import {
   constructImagesPromos,
   constructPackagingPromos,
   constructTableQuantityPromos,
   formatText,
   constructTotalProductsPromos
-} from '../utils';
+} from '@/utils';
 
 export function useProductsPromos() {
   const isLoadingProductsPromosComposable = ref<boolean>(false);
-  
+
   const getProductsPromos = async (): Promise<ProductsRedGlobal[]> => {
     try {
       isLoadingProductsPromosComposable.value = true;
@@ -24,7 +23,7 @@ export function useProductsPromos() {
         getAllProductsPromos() as Promise<PromosProduct[]>,
         getStockPromos() as Promise<Stock[]>
       ]);
-      
+
       return productsPromos.map(product => _normalizeProducts(product, stockPromos));
     } catch (error) {
       console.error('Error in getProducts:', error);
@@ -33,7 +32,7 @@ export function useProductsPromos() {
       isLoadingProductsPromosComposable.value = false;
     }
   };
-  
+
   const _normalizeProducts = (
     product: PromosProduct,
     stock: Stock[]
@@ -55,7 +54,7 @@ export function useProductsPromos() {
       totalProducts: constructTotalProductsPromos(product?.hijos, stock)
     };
   };
-  
+
   return {
     isLoadingProductsPromosComposable,
     getProductsPromos

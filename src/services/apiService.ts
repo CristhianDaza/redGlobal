@@ -1,4 +1,4 @@
-import type { ApiParams, ApiHeaders, ApiResponse } from '../types/config';
+import type { ApiParams, ApiHeaders, ApiResponse } from '@/types/config.d';
 
 import { AxiosInstance } from 'axios';
 
@@ -17,7 +17,7 @@ export const apiService = {
       throw error;
     }
   },
-  
+
   post: async <T>(
     apiInstance: AxiosInstance,
     url: string,

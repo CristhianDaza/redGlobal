@@ -1,7 +1,7 @@
-import type { MarpicoProduct, MarpicoResponse } from '../types/marpico';
+import type { MarpicoProduct, MarpicoResponse } from '@/types/marpico.d';
 
-import { apiConfigMarpico } from './apiConfig';
-import { apiService } from '../services/apiService';
+import { apiConfigMarpico } from '@/api';
+import { apiService } from '@/services';
 
 /**
  * @description This function is used to obtain the list of all products.

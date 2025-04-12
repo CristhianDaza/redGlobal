@@ -5,14 +5,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(['select']);
+const emit = defineEmits(['select', 'select-category']);
 </script>
 
 <template>
   <div class="category-container">
-    <h3 class="category-title">{{ props.category }}</h3>
+    <h3 class="category-title" @click="emit('select-category', props.category)">{{ props.category }}</h3>
     <ul class="subcategories-list">
-      <li v-for="sub in props.subcategories" 
+      <li v-for="sub in props.subcategories"
         :key="sub"
         @click="emit('select', sub)">
         {{ sub }}
@@ -50,8 +50,9 @@ const emit = defineEmits(['select']);
   transition: color 0.2s;
 }
 
-.subcategories-list li:hover {
+.subcategories-list li:hover, .category-title:hover {
   color: #1a73e8;
+  cursor: pointer;
 }
 
 @media (max-width: 768px) {

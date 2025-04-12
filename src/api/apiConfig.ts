@@ -1,4 +1,4 @@
-import type { ApiHeaders } from '@/types/config'
+import type { ApiHeaders } from '@/types/config.d'
 
 import axios, { AxiosInstance } from 'axios';
 

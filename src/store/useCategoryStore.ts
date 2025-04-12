@@ -1,8 +1,8 @@
+import type { CategoryCard, CategoryCardCreate } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { CategoryCard, CategoryCardCreate } from '../types/common'
-import { firebaseService } from '../services/firebaseService'
-import { NotificationService } from '../components/Notification/NotificationService';
+import { firebaseService } from '@/services'
+import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useCategoryStore = defineStore('category', () => {
   const categoryCards = ref<CategoryCard[]>([])

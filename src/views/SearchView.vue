@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import type { ProductsRedGlobal } from '../types/common'
-
+import type { ProductsRedGlobal } from '@/types/common.d'
 import { computed, defineAsyncComponent, ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter, LocationQuery } from 'vue-router';
-import { useProductsStore } from '../store/';
-import RgLoader from '../components/UI/RgLoader.vue';
+import { useProductsStore } from '@/store/';
+
+const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('@/components/UI/RgCard.vue'));
+const RgEmptyState = defineAsyncComponent(/* webpackChunkName: "rgEmptyState" */() => import('@/components/UI/RgEmptyState.vue'));
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
+const RgLoader = defineAsyncComponent(/* webpackChunkName: "rgLoader" */() => import('@/components/UI/RgLoader.vue'));
 
 const route = useRoute();
 const router = useRouter();
 const storeProducts = useProductsStore();
 
-// Estado de carga
 const isLoading = ref(true);
 
-// Inicializar con valores de la URL
 const searchQuery = ref(decodeURIComponent(route.query.search?.toString() || '').replace(/\+/g, ' '));
 const currentPage = ref(Number(route.query.page) || 1);
 const pageSize = ref(Number(route.query.size) || 16);
 
-// Cargar y filtrar productos al montar
 onMounted(async () => {
   isLoading.value = true;
   await storeProducts.getAllProducts();
@@ -28,7 +28,6 @@ onMounted(async () => {
   isLoading.value = false;
 });
 
-// Observar cambios en la búsqueda y categoría
 watch([() => route.query.search, () => route.query.category], async ([newSearch, newCategory]) => {
   searchQuery.value = decodeURIComponent(newSearch?.toString() || '').replace(/\+/g, ' ');
   const category = decodeURIComponent(newCategory?.toString() || '').replace(/\+/g, ' ');
@@ -47,64 +46,56 @@ const totalPages = computed(() => Math.ceil(productsLength.value / pageSize.valu
 const getPageNumbers = computed(() => {
   const totalNumbers = 10;
   const numbers: number[] = [];
-  
+
   if (totalPages.value <= totalNumbers) {
-    // Si hay 10 páginas o menos, mostrar todas
     for (let i = 1; i <= totalPages.value; i++) {
       numbers.push(i);
     }
   } else {
-    // Si estamos cerca del inicio
     if (currentPage.value <= 6) {
       for (let i = 1; i <= 10; i++) {
         numbers.push(i);
       }
     }
-    // Si estamos cerca del final
     else if (currentPage.value > totalPages.value - 6) {
       for (let i = totalPages.value - 9; i <= totalPages.value; i++) {
         numbers.push(i);
       }
     }
-    // Si estamos en el medio
     else {
       for (let i = currentPage.value - 4; i <= currentPage.value + 5; i++) {
         numbers.push(i);
       }
     }
   }
-  
+
   return numbers;
 });
 
 const handlePageSizeChange = (event: Event) => {
   const select = event.target as HTMLSelectElement;
   pageSize.value = Number(select.value);
-  currentPage.value = 1; // Reset a página 1
-  router.push({ 
-    query: { 
-      ...route.query, 
-      page: currentPage.value.toString(), 
-      size: pageSize.value.toString() 
-    } 
+  currentPage.value = 1;
+  router.push({
+    query: {
+      ...route.query,
+      page: currentPage.value.toString(),
+      size: pageSize.value.toString()
+    }
   });
 };
 
 const pageSizeOptions = computed(() => {
   const options: number[] = [];
   let size = 16;
-  
-  while (size <= 64) { // Hasta 64 (4 * 16)
+
+  while (size <= 64) {
     options.push(size);
     size += 16;
   }
-  
+
   return options;
 });
-
-const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('../components/UI/RgCard.vue'));
-const RgEmptyState = defineAsyncComponent(/* webpackChunkName: "rgEmptyState" */() => import('../components/UI/RgEmptyState.vue'));
-const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('../components/UI/RgButton.vue'));
 
 const getButtonStyle = (page: number) => ({
   backgroundColor: page === currentPage.value ? 'var(--primary-color)' : '#f5f5f5',
@@ -187,15 +178,15 @@ watch(
           </div>
           <div class="page-size">
             <label for="pageSize">Ver:</label>
-            <select 
-              id="pageSize" 
+            <select
+              id="pageSize"
               v-model="pageSize"
               class="page-size-select"
               @change="handlePageSizeChange"
             >
-              <option 
-                v-for="size in pageSizeOptions" 
-                :key="size" 
+              <option
+                v-for="size in pageSizeOptions"
+                :key="size"
                 :value="size"
               >
                 {{ size }}
@@ -210,7 +201,7 @@ watch(
       </div>
     </template>
     <template v-else>
-      <RgEmptyState 
+      <RgEmptyState
         :title="'No encontramos productos'"
         :message="'Lo sentimos, no encontramos productos que coincidan con tu búsqueda. Prueba con otras palabras clave o explora nuestro catálogo.'"
         :show-actions="true"

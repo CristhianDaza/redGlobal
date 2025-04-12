@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { ProductsRedGlobal, TableEntry, QuoteItem } from '../../types/common.d'
-import RgModal from '../UI/RgModal.vue'
-import RgButton from '../UI/RgButton.vue'
-import { useAuthStore } from '../../store/useAuthStore'
-import { useUserStore } from '../../store/useUserStore'
-import { useQuoteStore } from '../../store/useQuoteStore'
-import { formatColor } from '../../utils'
-import { NotificationService } from '../../components/Notification/NotificationService'
+import type { ProductsRedGlobal, TableEntry, QuoteItem } from '@/types/common.d'
+import { ref, computed, defineAsyncComponent } from 'vue'
+import { useAuthStore, useUserStore, useQuoteStore } from '@/store'
+import { formatColor } from '@/utils'
+import { NotificationService } from '@/components/Notification/NotificationService'
+
+const RgModal = defineAsyncComponent(/* webpackChunkName: "rgModal" */() => import('@/components/UI/RgModal.vue'))
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 
 const props = defineProps<{
   isOpen: boolean
@@ -43,7 +42,7 @@ const handleColorChange = (color: TableEntry) => {
   } else {
     selectedColors.value.set(color.color, { color, quantity: 1 })
   }
-  selectedColors.value = new Map(selectedColors.value) // Forzar reactividad
+  selectedColors.value = new Map(selectedColors.value)
 }
 
 const updateQuantity = (color: TableEntry, newQuantity: number) => {
@@ -51,7 +50,7 @@ const updateQuantity = (color: TableEntry, newQuantity: number) => {
     const entry = selectedColors.value.get(color.color)!
     if (newQuantity <= color.quantity && newQuantity > 0) {
       entry.quantity = newQuantity
-      selectedColors.value = new Map(selectedColors.value) // Forzar reactividad
+      selectedColors.value = new Map(selectedColors.value)
     }
   }
 }
@@ -60,7 +59,6 @@ const calculatePriceWithIncrease = (price: number) => {
   const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
 
   if (currentUser?.priceIncrease) {
-    // Aplicar el incremento de precio
     const finalPrice = price * (1 + currentUser.priceIncrease / 100);
     return Math.ceil(finalPrice);
   }
@@ -73,7 +71,6 @@ const handleSubmit = async () => {
   isLoading.value = true
 
   try {
-    // Crear un QuoteItem por cada color seleccionado
     for (const { color, quantity } of selectedColors.value.values()) {
       const unitPrice = calculatePriceWithIncrease(Number(color.price));
       const quoteItem: QuoteItem = {
@@ -91,7 +88,7 @@ const handleSubmit = async () => {
       }
       await quoteStore.addItemToQuote(quoteItem)
     }
-    
+
     resetForm()
     emit('close')
 
@@ -146,7 +143,7 @@ const handleClose = () => {
             :class="{ active: selectedColors.has(color.color) }"
             @click="handleColorChange(color)"
           >
-            <span 
+            <span
               class="color-preview"
               :style="{ backgroundColor: formatColor(color.colorName)}"
             ></span>
@@ -158,13 +155,13 @@ const handleClose = () => {
 
       <!-- Cantidades por color seleccionado -->
       <div v-if="selectedColors.size > 0" class="selected-colors">
-        <div 
+        <div
           v-for="[colorKey, { color, quantity }] in selectedColors"
           :key="colorKey"
           class="selected-color-item"
         >
           <div class="color-info">
-            <span 
+            <span
               class="color-preview"
               :style="{ backgroundColor: color.color }"
             ></span>
@@ -399,33 +396,6 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.price-info {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #f8fafc;
-  border-radius: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-  color: #4a5568;
-}
-
-.price-row.total {
-  margin-top: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid #e2e8f0;
-  font-weight: 600;
-  font-size: 1rem;
-  color: #1e293b;
 }
 
 .loading-spinner {

@@ -1,8 +1,7 @@
-import type { StockSurProduct } from '../types/stocksur';
-import type { ProductsRedGlobal } from '../types/common';
-
+import type { StockSurProduct } from '@/types/stocksur.d';
+import type { ProductsRedGlobal } from '@/types/common.d';
 import { ref } from 'vue';
-import { getAllProductsStockSur } from '../api';
+import { getAllProductsStockSur } from '@/api';
 import {
   cleanText,
   constructCategoryStockSur,
@@ -12,11 +11,11 @@ import {
   constructTableQuantityStockSur,
   constructTotalProductsStockSur,
   formatText,
-} from '../utils';
+} from '@/utils';
 
 export function useProductStockSur() {
   const isLoadingProductsStockSurComposable = ref<boolean>(false);
-  
+
   const getProductsStockSur = async (): Promise<ProductsRedGlobal[]> => {
     try {
       isLoadingProductsStockSurComposable.value = true;
@@ -29,10 +28,10 @@ export function useProductStockSur() {
       isLoadingProductsStockSurComposable.value = false;
     }
   };
-  
+
   const _normalizeProducts = (product: StockSurProduct): ProductsRedGlobal => {
     const images = constructImagesStockSur(product.variants);
-    
+
     return {
       api: 'stockSur',
       category: constructCategoryStockSur(product),
@@ -47,7 +46,7 @@ export function useProductStockSur() {
       totalProducts: constructTotalProductsStockSur(product.variants)
     };
   };
-  
+
   return {
     isLoadingProductsStockSurComposable,
     getProductsStockSur

@@ -1,4 +1,4 @@
-import type { FirebaseConfig } from '../types/firebase';
+import type { FirebaseConfig } from '@/types/firebase';
 
 import { initializeApp, FirebaseApp } from 'firebase/app'
 import { getFirestore, Firestore } from 'firebase/firestore'

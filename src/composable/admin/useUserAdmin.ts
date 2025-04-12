@@ -1,10 +1,8 @@
-// src/composables/useUserAdmin.ts
+import type { User, UserFormData } from '@/types/common.d';
 import { ref, computed } from 'vue';
-import type { User, UserFormData } from '@/types/common';
-import { useUserStore } from '@/store/useUserStore';
-import { uploadImage } from '@/config/cloudinary';
+import { useUserStore, useAuthStore } from '@/store';
+import { uploadImage } from '@/config';
 import { NotificationService } from '@/components/Notification/NotificationService';
-import { useAuthStore } from '@/store/useAuthStore';
 
 export function useUserAdmin() {
   const userStore = useUserStore();

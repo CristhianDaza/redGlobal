@@ -1,7 +1,7 @@
-import type { MenuItem, MenuState } from '../types/common'
+import type { MenuItem, MenuState } from '@/types/common.d'
 import { defineStore } from 'pinia'
-import { firebaseService } from '../services/firebaseService'
-import { NotificationService } from '../components/Notification/NotificationService';
+import { firebaseService } from '@/services'
+import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
@@ -33,7 +33,6 @@ export const useMenuStore = defineStore('menu', {
     async createMenuItem(menuItem: MenuItem): Promise<void> {
       try {
         const { name, ...menuData } = menuItem
-        // Si el path está vacío pero hay un name, usar el name como path
         if (!menuData.path && name) {
           menuData.path = name
         }
@@ -43,7 +42,7 @@ export const useMenuStore = defineStore('menu', {
           description: 'El menú ha sido creado exitosamente',
           type: 'success'
         })
-        await this.getMenu() // Refresh menu and localStorage after creation
+        await this.getMenu()
       } catch (error) {
         console.error('Error creating menu item:', error)
         NotificationService.push({
@@ -62,7 +61,7 @@ export const useMenuStore = defineStore('menu', {
           description: 'El menú ha sido actualizado exitosamente',
           type: 'success'
         })
-        await this.getMenu() // Refresh menu and localStorage after update
+        await this.getMenu()
       } catch (error) {
         console.error('Error updating menu item:', error)
         NotificationService.push({
@@ -81,7 +80,7 @@ export const useMenuStore = defineStore('menu', {
           description: 'El menú ha sido eliminado exitosamente',
           type: 'success'
         })
-        await this.getMenu() // Refresh menu and localStorage after deletion
+        await this.getMenu()
       } catch (error) {
         console.error('Error deleting menu item:', error)
         NotificationService.push({
@@ -93,7 +92,7 @@ export const useMenuStore = defineStore('menu', {
     },
 
     shouldUpdateMenu(): Promise<boolean> {
-      return Promise.resolve(true) // Siempre actualizar desde Firebase
+      return Promise.resolve(true)
     },
 
     getMenuFromLocalStorage(): MenuItem[] {

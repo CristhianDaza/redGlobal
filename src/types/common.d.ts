@@ -12,7 +12,7 @@ export interface ProductsRedGlobal {
   name: string;
   packaging?: string;
   printing?: string;
-  price: number;
+  price?: number;
   size?: string;
   stock?: number;
   tableQuantity?: TableEntry[];
@@ -132,6 +132,13 @@ export interface UserFormData extends Omit<User, 'id' | 'createdAt' | 'updatedAt
   password?: string;
   logo?: File | string;
   active?: boolean;
+  name: string,
+  email: string,
+  primaryColor: string;
+  secondaryColor: string;
+  priceIncrease: number;
+  role: UserRole;
+  idDoc?: string;
 }
 
 export interface UserState {
@@ -145,4 +152,37 @@ export interface QuoteState {
   currentQuote: QuoteItem[];
   isLoadingQuotes: boolean;
   lastUpdateQuotes: string | null;
+}
+
+export interface Notification {
+  id: string
+  title: string
+  description?: string
+  type?: 'success' | 'error' | 'warning' | 'info'
+  duration?: number
+  isClosed?: boolean
+}
+
+export interface QuoteAdmin {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  status: string;
+  items: Array<{
+    productId: string;
+    productName: string;
+    productImage: string;
+    color: string;
+    colorName: string;
+    quantity: number;
+    maxQuantity: number;
+    includeMarking: boolean;
+    inkColors?: number;
+    unitPrice: number;
+    totalPrice: number;
+  }>;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }

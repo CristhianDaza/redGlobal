@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { useMenuStore } from '@/store';
-import { storeToRefs } from 'pinia';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useUserStore } from '@/store/useUserStore';
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useMenuStore, useAuthStore, useUserStore } from '@/store';
 
 const menuStore = useMenuStore();
 const { menu } = storeToRefs(menuStore);
@@ -16,27 +14,21 @@ const isLoadingLogo = computed(() => {
 });
 
 const currentUserLogo = computed((): string | undefined => {
-  // Si no está autenticado, mostrar logo por defecto
   if (!authStore.isAuthenticated()) {
     return '/src/assets/images/main-logo.png';
   }
 
-  // Si está cargando, retornar undefined para mostrar el loader
   if (isLoadingLogo.value) {
     return undefined;
   }
 
-  // Buscar el usuario y su logo
   const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
   if (currentUser?.logo) {
     return currentUser.logo;
   }
 
-  // Si no se encontró logo, mostrar el por defecto
   return '/src/assets/images/main-logo.png';
 });
-
-
 
 const contactInfo = {
   address: 'Somos una compañía que cuenta con más de 25 años de experiencia en el mercado Publicitario',
