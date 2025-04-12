@@ -107,9 +107,10 @@ export const useQuoteStore = defineStore('quote', () => {
     })
   }
 
-  const clearQuote = () => {
+  const clearQuote = (isSend = false) => {
     state.value.currentQuote = []
     localStorage.removeItem(STORAGE_KEY)
+    if (isSend) return
     NotificationService.push({
       title: 'Has limpiado la cotización',
       description: 'La cotización ha sido limpiada exitosamente',
@@ -135,7 +136,7 @@ export const useQuoteStore = defineStore('quote', () => {
       }
 
       await firebaseService.createQuote(quote)
-      clearQuote()
+      clearQuote(true)
       NotificationService.push({
         title: 'Cotización enviada',
         description: 'La cotización se ha enviado correctamente',
