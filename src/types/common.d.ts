@@ -113,6 +113,7 @@ export interface Quote {
 }
 
 export interface User {
+  idDoc: string;
   id: string;
   name: string;
   email: string;

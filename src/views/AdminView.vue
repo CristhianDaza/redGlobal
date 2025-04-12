@@ -1,176 +1,99 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import type { MenuItem, User, UserFormData, CategoryCard, CategoryCardCreate } from '../types/common';
-import { useAuthStore } from '../store/useAuthStore'; 
-import { useMenuStore } from '../store/useMenuStore';
-import { useUserStore } from '../store/useUserStore';
-import { useQuoteStore } from '../store/useQuoteStore';
-import { useCategoryStore } from '../store/useCategoryStore';
-import RgButton from '../components/UI/RgButton.vue';
-import MenuItemForm from '../components/Admin/MenuItemForm.vue';
-import UserForm from '../components/Admin/UserForm.vue';
-import RgConfirmModal from '../components/UI/RgConfirmModal.vue';
-import CategoryCardForm from '../components/Admin/CategoryCardForm.vue';
-import { uploadImage } from '../config/cloudinary';
-import { getRelativeTime } from '../utils/helpers';
-import { NotificationService } from '../components/Notification/NotificationService';
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useMenuAdmin } from '@/composable';
+import { useUserAdmin } from '@/composable';
+import { useQuoteAdmin } from '@/composable';
+import { useCategoryAdmin } from '@/composable';
+import { getRelativeTime } from '@/utils/helpers';
+
+const MenuItemForm = defineAsyncComponent(() => import('../components/Admin/MenuItemForm.vue'));
+const UserForm = defineAsyncComponent(() => import('../components/Admin/UserForm.vue'));
+const RgConfirmModal = defineAsyncComponent(() => import('../components/UI/RgConfirmModal.vue'));
+const CategoryCardForm = defineAsyncComponent(() => import('../components/Admin/CategoryCardForm.vue'));
+const RgButton = defineAsyncComponent(() => import('../components/UI/RgButton.vue'));
 
 const authStore = useAuthStore();
-const menuStore = useMenuStore();
-const userStore = useUserStore();
-const quoteStore = useQuoteStore();
-const categoryStore = useCategoryStore();
-const categoryCards = computed(() => categoryStore.categoryCards as unknown as CategoryCard[]);
+// Autenticación y usuario
+const isAuthenticated = computed(() => authStore.isAuthenticated());
+const userEmail = computed(() => authStore.user?.email || 'No disponible');
+// const isAdmin = computed(() => authStore.user?.role === 'admin' && authStore.isAdmin);
 
-const isLoadingData = ref(false);
-const isLoading = ref(false);
+const currentUser = computed(() => authStore.user);
 
-const activeTab = ref('quotes'); // 'items' | 'users' | 'quotes' | 'cards'
-const showMenuItemModal = ref(false);
-const showUserModal = ref(false);
-const showCardModal = ref(false);
-const editingMenuItem = ref<MenuItem | undefined>(undefined);
-const editingUser = ref<User | null>(null);
-const editingCard = ref<CategoryCard | undefined>(undefined);
-const showDeleteConfirm = ref(false);
-const itemToDelete = ref<{ id: string; type: 'menu' | 'user' | 'quote' | 'card' } | undefined>(undefined);
-
-const isAuthenticated = computed(() => authStore.isAuthenticated())
-const isAdmin = computed(() => {
-  const currentUser = userStore.users.find(user => user.email === authStore.user?.email)
-  return currentUser?.role === 'admin' && authStore.isAdmin
-})
-
-// Establecer la pestaña inicial según el rol
-watch(isAdmin, (newIsAdmin) => {
-  if (!newIsAdmin) {
-    activeTab.value = 'quotes';
-  } else if (activeTab.value === 'quotes') {
-    activeTab.value = 'items';
-  }
-}, { immediate: true })
-
-const userEmail = computed(() => {
-  return authStore.user?.email || 'No disponible';
-});
+// Pestaña activa
+const activeTab = ref<'items' | 'users' | 'quotes' | 'cards'>('quotes');
 
 const handleTabChange = (tab: string, event: Event) => {
   event.preventDefault();
-  activeTab.value = tab;
+  activeTab.value = tab as 'items' | 'users' | 'quotes' | 'cards';
 };
 
-const handleAddMenuItem = () => {
-  editingMenuItem.value = undefined;
-  showMenuItemModal.value = true;
-};
+// Instanciar composables
+const {
+  isLoading: menuLoading,
+  menuItems,
+  showMenuItemModal,
+  editingMenuItem,
+  loadMenu,
+  handleAddMenuItem,
+  handleEditMenuItem,
+  handleSaveMenuItem,
+  deleteMenuItem
+} = useMenuAdmin();
 
-const handleEditMenuItem = (item: MenuItem) => {
-  editingMenuItem.value = item;
-  showMenuItemModal.value = true;
-};
+const {
+  isLoading: userLoading,
+  showUserModal,
+  editingUser,
+  users,
+  activeUsers,
+  inactiveUsers,
+  totalUsers,
+  loadUsers,
+  handleSaveUser,
+  handleEditUser,
+  handleAddUser,
+  deleteUser
+} = useUserAdmin();
 
-const handleSaveMenuItem = async (menuItem: MenuItem) => {
-  try {
-    if (menuItem.id) {
-      isLoading.value = true;
-      await menuStore.updateMenuItem(menuItem);
-      isLoading.value = false;
-    } else {
-      isLoading.value = true;
-      await menuStore.createMenuItem(menuItem);
-      isLoading.value = false;
-    }
-    showMenuItemModal.value = false;
-    editingMenuItem.value = undefined;
-    await menuStore.getMenu();
-  } catch (error) {
-    console.error('Error saving menu item:', error);
-  }
-};
+const {
+  isLoading: quoteLoading,
+  showQuoteDetailsModal,
+  selectedQuote,
+  loadQuotes,
+  filteredQuotes,
+  totalQuotes,
+  pendingQuotes,
+  completedQuotes,
+  handleViewQuote,
+  handleCloseQuoteDetails,
+  handleCompleteQuote,
+  deleteQuote,
+  canDeleteQuote,
+  quoteStatus
+} = useQuoteAdmin();
 
-const handleSaveUser = async (formData: UserFormData) => {
-  try {
-    isLoading.value = true;
-    let logoUrl = '';
+const {
+  categoryCards,
+  isLoadingCard,
+  showCardModal,
+  editingCard,
+  loadCategoryCards,
+  handleAddCard,
+  handleEditCard,
+  handleSaveCard,
+  deleteCategoryCard
+} = useCategoryAdmin();
 
-    // Si hay un logo nuevo como File, primero lo subimos a Cloudinary
-    if (formData.logo instanceof File) {
-      try {
-        const uploadResult = await uploadImage(formData.logo);
-        logoUrl = uploadResult.secure_url;
-      } catch (error) {
-        isLoading.value = false;
-        NotificationService.push({
-          title: 'Error al subir el logo',
-          description: 'Hubo un error al subir el logo. Por favor, intenta nuevamente.',
-          type: 'error'
-        })
-        console.error('Error al subir logo a Cloudinary:', error);
-        throw new Error('Error al subir el logo: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-      }
-    }
+const isAdmin = computed(() => {
+  const currentUser = users.value.find(u => u.email === authStore.user?.email);
+  return currentUser?.role === 'admin';
+})
 
-    if (editingUser.value) {
-      const { password, logo, ...userData } = formData;
-      try {
-        await userStore.updateUser(editingUser.value.id, {
-          ...userData,
-          logo: logoUrl || (typeof logo === 'string' ? logo : undefined)
-        });
-      } catch (error) {
-        isLoading.value = false;
-        NotificationService.push({
-          title: 'Error al actualizar el usuario',
-          description: 'Hubo un error al actualizar el usuario. Por favor, intenta nuevamente.',
-          type: 'error'
-        })
-        throw new Error('Error al actualizar usuario: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-      }
-    } else {
-      try {
-        await userStore.createUser({
-          ...formData,
-          id: '',
-          logo: logoUrl || undefined
-        });
-      } catch (error) {
-        isLoading.value = false;
-        NotificationService.push({
-          title: 'Error al crear el usuario',
-          description: 'Hubo un error al crear el usuario. Por favor, intenta nuevamente.',
-          type: 'error'
-        })
-        throw new Error('Error al crear usuario: ' + (error instanceof Error ? error.message : 'Error desconocido'));
-      }
-    }
-
-    showUserModal.value = false;
-    editingUser.value = null;
-    await userStore.getUsers();
-    isLoading.value = false;
-    NotificationService.push({
-      title: 'Usuario creado',
-      description: 'El usuario ha sido creado exitosamente',
-      type: 'success'
-    })
-  } catch (error) {
-    isLoading.value = false;
-    NotificationService.push({
-      title: 'Error al crear el usuario',
-      description: 'Hubo un error al crear el usuario. Por favor, intenta nuevamente.',
-      type: 'error'
-    })
-    
-    alert(error instanceof Error ? error.message : 'Error desconocido al crear el usuario');
-  }
-};
-
-const handleCloseModal = () => {
-  showMenuItemModal.value = false;
-  showUserModal.value = false;
-  editingMenuItem.value = undefined;
-  editingUser.value = null;
-};
+// Eliminación general
+const showDeleteConfirm = ref(false);
+const itemToDelete = ref<{ id: string; type: 'menu' | 'user' | 'quote' | 'card' } | undefined>(undefined);
 
 const handleDeleteClick = (id: string, type: 'menu' | 'user' | 'quote' | 'card') => {
   itemToDelete.value = { id, type };
@@ -178,38 +101,27 @@ const handleDeleteClick = (id: string, type: 'menu' | 'user' | 'quote' | 'card')
 };
 
 const handleConfirmDelete = async () => {
-  if (itemToDelete.value) {
-    try {
-      if (itemToDelete.value.type === 'menu') {
-        isLoading.value = true;
-        await menuStore.deleteMenuItem(itemToDelete.value.id);
-        await menuStore.getMenu();
-        isLoading.value = false;
-      } else if (itemToDelete.value.type === 'user') {
-        isLoading.value = true;
-        await userStore.deleteUser(itemToDelete.value.id);
-        await userStore.getUsers();
-        isLoading.value = false;
-      } else if (itemToDelete.value.type === 'quote') {
-        isLoading.value = true;
-        await quoteStore.deleteQuote(itemToDelete.value.id);
-        await quoteStore.getQuotes();
-        isLoading.value = false;
-      } else if (itemToDelete.value.type === 'card') {
-        isLoading.value = true;
-        await categoryStore.deleteCategoryCard(itemToDelete.value.id);
-        await categoryStore.getCategoryCards();
-        isLoading.value = false;
-      }
-    } catch (error) {
-      console.error('Error deleting item:', error);
-      if (error instanceof Error) {
-        alert(error.message);
-      }
-    } finally {
-      showDeleteConfirm.value = false;
-      itemToDelete.value = undefined;
+  if (!itemToDelete.value) return;
+  try {
+    switch (itemToDelete.value.type) {
+      case 'menu':
+        await deleteMenuItem(itemToDelete.value.id);
+        break;
+      case 'user':
+        await deleteUser(itemToDelete.value.id);
+        break;
+      case 'quote':
+        await deleteQuote(itemToDelete.value.id);
+        break;
+      case 'card':
+        await deleteCategoryCard(itemToDelete.value.id);
+        break;
     }
+  } catch (error) {
+    console.error('Error deleting item:', error);
+  } finally {
+    showDeleteConfirm.value = false;
+    itemToDelete.value = undefined;
   }
 };
 
@@ -218,211 +130,61 @@ const handleCancelDelete = () => {
   itemToDelete.value = undefined;
 };
 
-interface Quote {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  status: string;
-  items: Array<{
-    productId: string;
-    productName: string;
-    productImage: string;
-    color: string;
-    colorName: string;
-    quantity: number;
-    maxQuantity: number;
-    includeMarking: boolean;
-    inkColors?: number;
-    unitPrice: number;
-    totalPrice: number;
-  }>;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-const handleViewQuote = (quote: Quote) => {
-  selectedQuote.value = quote;
-  showQuoteDetailsModal.value = true;
+// Función para cerrar modales de menú y usuario
+const handleCloseModal = () => {
+  showMenuItemModal.value = false;
+  showUserModal.value = false;
+  editingMenuItem.value = undefined;
+  editingUser.value = null;
 };
 
-const handleCloseQuoteDetails = () => {
-  showQuoteDetailsModal.value = false;
-  selectedQuote.value = null;
-};
+// Badge de cotizaciones pendientes para admin
+const pendingQuotesToAdmin = computed(() => pendingQuotes.value);
 
-const quoteStatus = {
-  PENDING: 'pending',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled'
-};
-
-const showQuoteDetailsModal = ref(false);
-const selectedQuote = ref<Quote | null>(null);
+// Estado de carga global según pestaña activa
+const loadingData = computed(() => {
+  switch (activeTab.value) {
+    case 'items': return menuLoading.value;
+    case 'users': return userLoading.value;
+    case 'quotes': return quoteLoading.value;
+    case 'cards': return isLoadingCard.value;
+    default: return false;
+  }
+});
 
 // Cargar datos iniciales
 onMounted(async () => {
-  isLoadingData.value = true;
   try {
     await Promise.all([
-      menuStore.getMenu(),
-      quoteStore.getQuotes(),
-      userStore.getUsers()
+      loadMenu(),
+      loadUsers(),
+      loadQuotes(),
+      loadCategoryCards()
     ]);
   } catch (error) {
-    console.error('Error loading data:', error);
-  } finally {
-    isLoadingData.value = false;
+    console.error('Error loading initial data:', error);
   }
 });
 
-const handleCompleteQuote = async (quoteId: string) => {
+// Observar cambios en pestaña para recargar datos
+watch(activeTab, async (newTab) => {
   try {
-    await quoteStore.updateQuoteStatus(quoteId, quoteStatus.COMPLETED);
-    if (selectedQuote.value) {
-      selectedQuote.value = {
-        ...selectedQuote.value,
-        status: quoteStatus.COMPLETED
-      };
-    }
-    await quoteStore.getQuotes();
-    NotificationService.push({
-      title: 'Cotización completada',
-      description: 'La cotización ha sido completada exitosamente',
-      type: 'success'
-    })
-  } catch (error) {
-    console.error('Error al completar la cotización:', error);
-  }
-};
-
-const handleEditUser = (user: User) => {
-  editingUser.value = { ...user };
-  showUserModal.value = true;
-  NotificationService.push({
-    title: 'Usuario editado',
-    description: 'El usuario ha sido editado exitosamente',
-    type: 'success'
-  })
-};
-
-const handleAddUser = () => {
-  editingUser.value = null;
-  showUserModal.value = true;
-  NotificationService.push({
-    title: 'Usuario creado',
-    description: 'El usuario ha sido creado exitosamente',
-    type: 'success'
-  })
-};
-
-const isLoadingCard = ref(false);
-
-const pendingQuotesToAdmin = computed(() => {
-  return quoteStore.quotes.filter(quote => !quote.status || quote.status === 'pending').length;
-});
-
-const handleAddCard = () => {
-  editingCard.value = undefined;
-  showCardModal.value = true;
-};
-
-const handleEditCard = (card: CategoryCard) => {
-  editingCard.value = card;
-  showCardModal.value = true;
-};
-
-const handleSaveCard = async (cardData: CategoryCardCreate) => {
-  try {
-    isLoadingCard.value = true;
-    if (editingCard.value) {
-      await categoryStore.updateCategoryCard(editingCard.value.id, cardData);
-    } else {
-      await categoryStore.createCategoryCard(cardData);
-    }
-    showCardModal.value = false;
-    editingCard.value = undefined;
-  } catch (error) {
-    console.error('Error saving card:', error);
-    if (error instanceof Error) {
-      alert(error.message);
-    }
-  } finally {
-    isLoadingCard.value = false;
-  }
-};
-
-// Computed properties para los datos
-const menuItems = computed(() => menuStore.menu);
-const users = computed(() => userStore.users);
-
-// Stats computados
-const totalMenuItems = computed(() => menuItems.value.length);
-const totalUsers = computed(() => users.value.length);
-const activeUsers = computed(() => users.value.filter(u => u.active).length);
-const inactiveUsers = computed(() => users.value.filter(u => !u.active).length);
-
-// Stats de cotizaciones
-const filteredQuotes = computed(() => {
-  if (isAdmin.value) {
-    return quoteStore.quotes;
-  }
-  return quoteStore.quotes.filter(quote => quote.userEmail === userEmail.value);
-});
-
-const totalQuotes = computed(() => filteredQuotes.value.length);
-const pendingQuotes = computed(() => filteredQuotes.value.filter(q => q.status === quoteStatus.PENDING).length);
-const completedQuotes = computed(() => filteredQuotes.value.filter(q => q.status === quoteStatus.COMPLETED).length);
-
-// Estado de carga
-const loadingData = computed(() => {
-  if (activeTab.value === 'items') {
-    return menuStore.isLoadingMenu;
-  } else if (activeTab.value === 'users') {
-    return userStore.isLoadingUsers;
-  } else if (activeTab.value === 'quotes') {
-    return quoteStore.isLoadingQuotes;
-  }
-  return false;
-});
-
-// Inicializar datos
-onMounted(async () => {
-  try {
-    isLoadingData.value = true;
-    await Promise.all([
-      menuStore.getMenu(),
-      userStore.getUsers(),
-      quoteStore.getQuotes()
-    ]);
-  } catch (error) {
-    console.error('Error loading data:', error);
-  } finally {
-    isLoadingData.value = false;
-  }
-});
-
-// Observar cambios en la pestaña activa
-watch(activeTab, async (newTab: string) => {
-  try {
-    isLoadingData.value = true;
     if (newTab === 'items') {
-      await menuStore.getMenu();
+      await loadMenu();
     } else if (newTab === 'users') {
-      await userStore.getUsers();
+      await loadUsers();
     } else if (newTab === 'quotes') {
-      await quoteStore.getQuotes();
+      await loadQuotes();
     } else if (newTab === 'cards') {
-      await categoryStore.getCategoryCards();
+      await loadCategoryCards();
     }
   } catch (error) {
-    console.error('Error loading data:', error);
-  } finally {
-    isLoadingData.value = false;
+    console.error('Error loading data for tab:', newTab, error);
   }
 });
 </script>
+
+
 
 <template>
   <div v-if="!isAuthenticated" class="error-container">
@@ -513,7 +275,7 @@ watch(activeTab, async (newTab: string) => {
                 <span class="material-icons">menu</span>
                 <div class="stat-info">
                   <h3>Items en Menú</h3>
-                  <p>{{ totalMenuItems }}</p>
+                  <p>{{ menuItems.length }}</p>
                 </div>
               </div>
             </div>
@@ -701,7 +463,7 @@ watch(activeTab, async (newTab: string) => {
                         <span class="material-icons">done</span>
                       </button>
                       <button
-                        v-if="quoteStore.canDeleteQuote(quote)"
+                        v-if="canDeleteQuote(quote)"
                         class="action-btn delete"
                         title="Eliminar cotización"
                         @click="handleDeleteClick(quote.id, 'quote')"
@@ -788,7 +550,7 @@ watch(activeTab, async (newTab: string) => {
         <MenuItemForm
           :isOpen="showMenuItemModal"
           :menuItem="editingMenuItem"
-          :loading="isLoading"
+          :loading="menuLoading"
           @save="handleSaveMenuItem"
           @close="handleCloseModal"
         />
@@ -796,7 +558,7 @@ watch(activeTab, async (newTab: string) => {
         <UserForm
           :isOpen="showUserModal"
           :user="editingUser"
-          :loading="isLoading"
+          :loading="userLoading"
           @save="handleSaveUser"
           @close="handleCloseModal"
         />
@@ -805,7 +567,7 @@ watch(activeTab, async (newTab: string) => {
           :isOpen="showDeleteConfirm"
           title="Confirmar eliminación"
           :message="`¿Estás seguro de que deseas eliminar ${itemToDelete?.type === 'menu' ? 'este item del menú' : itemToDelete?.type === 'user' ? 'este usuario' : 'esta cotización'}?`"
-          :isLoading="isLoading"
+          :isLoading="isLoadingCard"
           @confirm="handleConfirmDelete"
           @close="handleCancelDelete"
         />

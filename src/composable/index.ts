@@ -1,8 +1,13 @@
-import { useFilters } from './useFilters';
-import { useProductStockSur } from './useProductStockSur';
-import { useProductsCataProm } from './useProductsCataProm';
-import { useProductsMarpico } from './useProductsMarpico';
-import { useProductsPromos } from './useProductsPromos';
+import { useFilters } from '@/composable/useFilters';
+import { useProductStockSur } from '@/composable/useProductStockSur';
+import { useProductsCataProm } from '@/composable/useProductsCataProm';
+import { useProductsMarpico } from '@/composable/useProductsMarpico';
+import { useProductsPromos } from '@/composable/useProductsPromos';
+
+import { useMenuAdmin } from '@/composable/admin/';
+import { useCategoryAdmin } from '@/composable/admin/';
+import { useQuoteAdmin } from '@/composable/admin/';
+import { useUserAdmin } from '@/composable/admin/';
 
 export {
   useFilters,
@@ -10,4 +15,10 @@ export {
   useProductsCataProm,
   useProductsMarpico,
   useProductsPromos,
+
+  // Admin
+  useMenuAdmin,
+  useCategoryAdmin,
+  useQuoteAdmin,
+  useUserAdmin
 };

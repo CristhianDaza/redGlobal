@@ -12,7 +12,7 @@ export const firebaseService = {
       const usersRef = collection(db, 'users')
       const snapshot = await getDocs(usersRef)
       const users = snapshot.docs.map(doc => ({
-        id: doc.id,
+        idDoc: doc.id,
         ...doc.data()
       })) as User[]
       
@@ -99,7 +99,7 @@ export const firebaseService = {
         await addDoc(usersRef, {
           ...userData,
           id: userCredential.user.uid,
-          logo: user.logo, // Asegurar que se guarde la URL del logo
+          logo: user.logo || null, // Asegurar que se guarde la URL del logo
           createdAt: now,
           updatedAt: now,
           role: userData.role || UserRole.CLIENT, // Si no se especifica rol, será cliente
