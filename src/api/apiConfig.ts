@@ -1,4 +1,4 @@
-import type { ApiHeaders } from '../types/config'
+import type { ApiHeaders } from '@/types/config'
 
 import axios, { AxiosInstance } from 'axios';
 
@@ -12,7 +12,7 @@ const createApiInstance = (baseURL: string, headers: ApiHeaders = { 'Content-Typ
       return Promise.reject(error);
     }
   );
-  
+
   return instance;
 };
 
