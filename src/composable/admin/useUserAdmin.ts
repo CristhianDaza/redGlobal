@@ -50,8 +50,6 @@ export function useUserAdmin() {
           ...userData,
           logo: logoUrl || (typeof logo === 'string' ? logo : undefined)
         });
-        console.log('Editing user:', editingUser.value);
-        console.log('currentUser:', currentUser.value);
       } else {
         await userStore.createUser({
           ...formData,

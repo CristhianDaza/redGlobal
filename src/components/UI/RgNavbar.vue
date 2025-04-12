@@ -154,7 +154,9 @@ const handleKeydown = (event: KeyboardEvent) => {
     <template v-if="isLoadingLogo">
       <div class="logo-skeleton"></div>
     </template>
-    <img v-else :src="currentUserLogo" alt="Logo" class="logo">
+    <router-link to="/">
+      <img v-if="currentUserLogo" :src="currentUserLogo" alt="Logo" class="logo">
+    </router-link>
     <div class="search-container">
       <RgAutocomplete
         v-model="searchQuery"
