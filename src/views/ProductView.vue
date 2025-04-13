@@ -129,7 +129,6 @@ const formatLabelName = (name: string) => {
 <template>
   <div class="product-view">
     <RgLoader v-if="isLoading" />
-
     <div v-else-if="product" class="product-container">
       <div class="product-main">
         <div class="product-gallery">
@@ -275,7 +274,7 @@ const formatLabelName = (name: string) => {
         </div>
       </div>
 
-      <div class="table-section" v-if="product.totalProducts">
+      <div class="table-section">
         <div class="table-container">
           <div class="table-header">
             <div class="total-info">

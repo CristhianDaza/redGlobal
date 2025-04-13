@@ -21,12 +21,12 @@ export const getCategoriesCataProm = async (): Promise<CataPromCategory[]> => {
  * @param category - Category name
  * @returns Promise with list of products
  */
-export const getProductsByCategory = async (category: string): Promise<CataPromProduct[]> => {
+export const getProductsByCategoryCataProm = async (category: string): Promise<CataPromProduct[]> => {
   try {
     const products = await apiService.get<CataPromProduct[]>(apiConfigCatalogProm, `categorias/${category}/productos`);
     return products.resultado;
   } catch (error) {
-    console.error('Error in getProductsByCategory:', error);
+    console.error('Error in getProductsByCategoryCataProm:', error);
     throw error;
   }
 };
@@ -36,7 +36,7 @@ export const getProductsByCategory = async (category: string): Promise<CataPromP
  * @param productId
  * @returns Promise with product details
  */
-export const getStockByProductCataProm = async (productId: string): Promise<CataPromStock> => {
+export const getStockByProductCataProm = async (productId: string): Promise<CataPromStock[]> => {
  try {
   const stock = await apiService.get<CataPromStock>(apiConfigCatalogProm, `stock/${productId}`);
   return stock.resultado;
