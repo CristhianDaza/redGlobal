@@ -177,13 +177,13 @@ const formatLabelName = (name: string) => {
               ›
             </button>
           </div>
-          <div class="color-selector" v-if="product?.tableQuantity?.length">
+          <div class="color-selector" v-if="product?.tableQuantity?.length  && product.api !== 'cataProm'">
             <button
               v-for="item in product.tableQuantity"
               :key="item.color"
               class="color-button"
               :class="{ active: selectedColor === item.color }"
-              :style="{ backgroundColor: formatColor(item.colorName) }"
+              :style="{ backgroundColor: formatColor(item.color) }"
               :title="item.colorName"
               @click="selectColor(item)"
             />

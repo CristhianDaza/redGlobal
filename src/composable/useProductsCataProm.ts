@@ -22,10 +22,10 @@ export function useProductsCataProm() {
 
   const mapProductDetailsToImages = (details: CataPromProductDetails, stocks: CataPromStock[]): ImagesRedGlobal[] => {
     return details.imagenes.map((img, index) => {
-      const stockForImage = stocks[index]; // asumiendo que el orden coincide
+      const stockForImage = stocks[index];
       return {
-        urlImage: [img],
-        color: stockForImage ? stockForImage.color : '', // Se asigna el color del stock si existe.
+        urlImage: [`https:${img}`],
+        color: stockForImage ? stockForImage.color : '',
         id: index
       };
     });
