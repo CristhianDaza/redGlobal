@@ -177,7 +177,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 
       <router-link
         v-if="authStore.isAuthenticated()"
-        to="/admin"
+        :to="{ name: 'admin', query: { tab: 'quotes' } }"
         class="admin-link"
       >
         <span class="material-icons">admin_panel_settings</span>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store';
 import { useMenuAdmin, useUserAdmin, useQuoteAdmin, useCategoryAdmin } from '@/composable';
 import { getRelativeTime } from '@/utils';
@@ -11,14 +12,17 @@ const CategoryCardForm = defineAsyncComponent(/* webpackChunkName: "categoryCard
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('../components/UI/RgButton.vue'));
 
 const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
 const isAuthenticated = computed(() => authStore.isAuthenticated());
 const userEmail = computed(() => authStore.user?.email || 'No disponible');
 
-const activeTab = ref<'items' | 'users' | 'quotes' | 'cards'>('quotes');
+const activeTab = ref<'menu' | 'users' | 'quotes' | 'cards'>('quotes');
 
 const handleTabChange = (tab: string, event: Event) => {
   event.preventDefault();
-  activeTab.value = tab as 'items' | 'users' | 'quotes' | 'cards';
+  router.push({ query: { tab } });
+  activeTab.value = tab as 'menu' | 'users' | 'quotes' | 'cards';
 };
 
 const {
@@ -131,7 +135,7 @@ const pendingQuotesToAdmin = computed(() => pendingQuotes.value);
 
 const loadingData = computed(() => {
   switch (activeTab.value) {
-    case 'items': return menuLoading.value;
+    case 'menu': return menuLoading.value;
     case 'users': return userLoading.value;
     case 'quotes': return quoteLoading.value;
     case 'cards': return isLoadingCard.value;
@@ -154,17 +158,27 @@ onMounted(async () => {
 
 watch(activeTab, async (newTab) => {
   try {
-    if (newTab === 'items') {
+    if (newTab === 'menu') {
       await loadMenu();
+      await router.push({ query: { tab: 'menu' } });
     } else if (newTab === 'users') {
       await loadUsers();
+      await router.push({ query: { tab: 'users' } });
     } else if (newTab === 'quotes') {
       await loadQuotes();
+      await router.push({ query: { tab: 'quotes' } });
     } else if (newTab === 'cards') {
       await loadCategoryCards();
+      await router.push({ query: { tab: 'cards' } });
     }
   } catch (error) {
     console.error('Error loading data for tab:', newTab, error);
+  }
+});
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab && ['menu', 'users', 'quotes', 'cards'].includes(newTab as string)) {
+    activeTab.value = newTab as 'menu' | 'users' | 'quotes' | 'cards';
   }
 });
 </script>
@@ -186,8 +200,8 @@ watch(activeTab, async (newTab) => {
       <nav class="sidebar-nav">
         <button
           v-if="isAdmin"
-          :class="['nav-item', { active: activeTab === 'items' }]"
-          @click="(e) => handleTabChange('items', e)"
+          :class="['nav-item', { active: activeTab === 'menu' }]"
+          @click="(e) => handleTabChange('menu', e)"
         >
           <span class="material-icons">menu</span>
           <span>Gestión de Menú</span>
@@ -201,14 +215,6 @@ watch(activeTab, async (newTab) => {
           <span>Gestión de Usuarios</span>
         </button>
         <button
-          :class="['nav-item', { active: activeTab === 'quotes' }]"
-          @click="(e) => handleTabChange('quotes', e)"
-        >
-          <span class="material-icons">request_quote</span>
-          <span>Cotizaciones</span>
-          <span v-if="isAdmin && pendingQuotesToAdmin > 0" class="quote-badge">{{ pendingQuotesToAdmin }}</span>
-        </button>
-        <button
           v-if="isAdmin"
           class="nav-item"
           :class="{ active: activeTab === 'cards' }"
@@ -216,6 +222,14 @@ watch(activeTab, async (newTab) => {
         >
           <span class="material-icons">category</span>
           <span>Categorías</span>
+        </button>
+        <button
+          :class="['nav-item', { active: activeTab === 'quotes' }]"
+          @click="(e) => handleTabChange('quotes', e)"
+        >
+          <span class="material-icons">request_quote</span>
+          <span>Cotizaciones</span>
+          <span v-if="isAdmin && pendingQuotesToAdmin > 0" class="quote-badge">{{ pendingQuotesToAdmin }}</span>
         </button>
       </nav>
     </aside>
@@ -225,7 +239,7 @@ watch(activeTab, async (newTab) => {
       <header class="main-header">
         <h1>
           {{
-            activeTab === 'items'
+            activeTab === 'menu'
               ? 'Menú'
               : activeTab === 'users'
                 ? 'Usuarios'
@@ -237,9 +251,9 @@ watch(activeTab, async (newTab) => {
 
         <RgButton
           v-if="activeTab !== 'quotes' && isAdmin"
-          :text="activeTab === 'items' ? 'Agregar Item al Menú' : activeTab === 'users' ? 'Crear Usuario' : 'Agregar Categoría'"
+          :text="activeTab === 'menu' ? 'Agregar Item al Menú' : activeTab === 'users' ? 'Crear Usuario' : 'Agregar Categoría'"
           class="add-button"
-          @click="activeTab === 'items' ? handleAddMenuItem() : activeTab === 'users' ? handleAddUser() : handleAddCard()"
+          @click="activeTab === 'menu' ? handleAddMenuItem() : activeTab === 'users' ? handleAddUser() : handleAddCard()"
           type="default"
         />
       </header>
@@ -252,7 +266,7 @@ watch(activeTab, async (newTab) => {
 
         <div v-else>
           <!-- Sección de Items -->
-          <div v-if="activeTab === 'items'" class="items-section">
+          <div v-if="activeTab === 'menu'" class="items-section">
             <div class="stats-grid">
               <div class="stat-card">
                 <span class="material-icons">menu</span>
