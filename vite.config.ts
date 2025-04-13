@@ -27,5 +27,20 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('src/store/')) {
+            return 'stores';
+          }
+          if (id.includes('src/utils/')) {
+            return 'utils';
+          }
+        }
+      }
+    },
+    chunkSizeWarningLimit: 600,
   }
 })
