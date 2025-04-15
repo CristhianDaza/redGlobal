@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, defineAsyncComponent } from 'vue';
+import { onMounted, defineAsyncComponent, watch } from 'vue';
 import { useMenuStore, useProductsStore, useAuthStore, useUserStore } from '@/store';
 
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
 const RgScrollToTop = defineAsyncComponent(/* webpackChunkName: "rgScrollToTop" */() => import('./components/UI/RgScrollToTop.vue'));
 const NotificationContainer = defineAsyncComponent(/* webpackChunkName: "notificationContainer" */() => import('./components/Notification/NotificationContainer.vue'));
+const RgModalApi = defineAsyncComponent(/* webpackChunkName: "rgModalApi" */() => import('./components/UI/RgModalApi.vue'));
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
@@ -25,16 +26,30 @@ const updateCustomColors = () => {
   }
 };
 
-onMounted(async () => {
-  await Promise.all([
-    storeProducts.getAllProducts(),
-    menuStore.getMenu()
-  ]);
+onMounted(() => {
+  let executed = false;
+  const stopWatch = watch(
+  () => authStore.currenLoggingUser,
+  async (currentUser) => {
+    if (currentUser && !executed) {
+      executed = true;
+      const isRoleAdmin = currentUser.role === 'admin';
 
-  if (authStore.isAuthenticated()) {
-    await userStore.getUsers();
-    updateCustomColors();
-  }
+      await Promise.all([
+        storeProducts.getAllProducts(isRoleAdmin),
+        menuStore.getMenu()
+      ]);
+      if (authStore.isAuthenticated()) {
+        await userStore.getUsers();
+        updateCustomColors();
+      }
+      stopWatch();
+    } else if (!currentUser) {
+      updateCustomColors();
+    }
+  },
+    { immediate: true }
+  );
 
   authStore.$subscribe(async (_, state) => {
     if (state.user) {
@@ -58,6 +73,7 @@ onMounted(async () => {
     <RgFooter />
     <RgScrollToTop />
     <NotificationContainer />
+    <RgModalApi />
   </div>
 </template>
 

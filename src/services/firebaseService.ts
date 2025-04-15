@@ -191,9 +191,11 @@ export const firebaseService = {
 
   async updateLastUpdate(): Promise<void> {
     try {
+      localStorage.removeItem('lastUpdate')
       await addDoc(collection(db, 'lastedUpdatedProducts'), {
         lastUpdate: new Date().toISOString()
       })
+      localStorage.setItem('lastUpdate', new Date().toISOString())
     } catch (error) {
       console.error('Error updating last update:', error)
       throw error
@@ -225,7 +227,6 @@ export const firebaseService = {
   async shouldUpdate(): Promise<boolean> {
     const lastUpdate = await this.getLastUpdate()
     if (!lastUpdate) return true
-
     const now = new Date()
     return lastUpdate.getDate() !== now.getDate()
   },

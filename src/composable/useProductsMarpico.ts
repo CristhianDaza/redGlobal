@@ -15,14 +15,12 @@ import {
 } from '@/utils';
 
 export function useProductsMarpico() {
-  const isLoadingProductsMarpicoComposable = ref<boolean>(false);
+  const isLoadingProductsMarpicoComposable = ref<boolean>(true);
 
   const getProductsMarpico = async (): Promise<ProductsRedGlobal[]> => {
     try {
-      isLoadingProductsMarpicoComposable.value = true;
       const productsMarpico = await getAllProductsMarpico() as MarpicoProduct[];
       return productsMarpico.map<ProductsRedGlobal>(product => _normalizeProducts(product));
-
     } catch (error) {
       console.error('Error in getProducts:', error);
       throw error;

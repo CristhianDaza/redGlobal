@@ -14,11 +14,10 @@ import {
 } from '@/utils';
 
 export function useProductStockSur() {
-  const isLoadingProductsStockSurComposable = ref<boolean>(false);
+  const isLoadingProductsStockSurComposable = ref<boolean>(true);
 
   const getProductsStockSur = async (): Promise<ProductsRedGlobal[]> => {
     try {
-      isLoadingProductsStockSurComposable.value = true;
       const products = await getAllProductsStockSur() as StockSurProduct[];
       return products.map(product => _normalizeProducts(product));
     } catch (error) {

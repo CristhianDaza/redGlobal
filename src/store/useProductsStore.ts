@@ -1,5 +1,6 @@
 import type { StateGlobal } from '@/types/config.d'
 import type { ProductsRedGlobal } from '@/types/common.d'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { firebaseService } from '@/services'
 import { normalizeString } from '@/utils'
@@ -10,12 +11,13 @@ export const useProductsStore = defineStore('products', {
   state: (): StateGlobal => ({
     products: null,
     isLoadingApiPromos: false,
-    isLoadingApiMarpico: false,
+    isLoadingApiMarpico: ref<boolean>(false),
     isLoadingApiStockSur: false,
     isLoadingApiCataProm: false,
     isLoadingSaveProducts: false,
     lastUpdateProducts: null,
     productsToView: [],
+    isUpdating: false,
   }),
   actions: {
     async getAllProducts(isAdminUser = false): Promise<void> {
@@ -36,7 +38,7 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
-    async _callServices(): Promise<void> {
+    _callServices: async function (): Promise<void> {
       const { getProductsPromos, isLoadingProductsPromosComposable } = useProductsPromos()
       const { getProductsMarpico, isLoadingProductsMarpicoComposable } = useProductsMarpico()
       const { getProductsStockSur, isLoadingProductsStockSurComposable } = useProductStockSur()
@@ -48,11 +50,11 @@ export const useProductsStore = defineStore('products', {
         this.products = await firebaseService.getAllProducts()
         return
       }
-
-      this.isLoadingApiPromos = isLoadingProductsPromosComposable.value
-      this.isLoadingApiMarpico = isLoadingProductsMarpicoComposable.value
-      this.isLoadingApiStockSur = isLoadingProductsStockSurComposable.value
-      this.isLoadingApiCataProm = isLoadingProductsCataPromComposable.value
+      this.isUpdating = true
+      this.isLoadingApiPromos = isLoadingProductsPromosComposable
+      this.isLoadingApiMarpico = isLoadingProductsMarpicoComposable
+      this.isLoadingApiStockSur = isLoadingProductsStockSurComposable
+      this.isLoadingApiCataProm = isLoadingProductsCataPromComposable
 
       const [productsPromos, productsMarpico, productsStockSur, productsCataProm] = await Promise.all([
         getProductsPromos(),
@@ -68,10 +70,20 @@ export const useProductsStore = defineStore('products', {
         ...productsCataProm,
       ].sort((a, b) => a.name.localeCompare(b.name))
 
+      while (
+        isLoadingProductsPromosComposable.value ||
+        isLoadingProductsMarpicoComposable.value ||
+        isLoadingProductsStockSurComposable.value ||
+        isLoadingProductsCataPromComposable.value
+        ) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+
       this.isLoadingSaveProducts = true
       await firebaseService.saveProducts(allProducts)
       this.products = allProducts
       this.isLoadingSaveProducts = false
+      this.isUpdating = false
     },
 
     setProductsToView(products: ProductsRedGlobal[]): void {

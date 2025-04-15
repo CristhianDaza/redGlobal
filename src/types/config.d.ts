@@ -23,13 +23,14 @@ export interface HtmlEntities {
 
 export interface StateGlobal {
   products: ProductsRedGlobal[] | null;
-  isLoadingApiPromos: boolean;
-  isLoadingApiMarpico: boolean;
-  isLoadingApiStockSur: boolean;
-  isLoadingApiCataProm: boolean;
-  isLoadingSaveProducts: boolean;
+  isLoadingApiPromos: ref<boolean>;
+  isLoadingApiMarpico: ref<boolean>;
+  isLoadingApiStockSur: ref<boolean>;
+  isLoadingApiCataProm: ref<boolean>;
+  isLoadingSaveProducts: ref<boolean>;
   lastUpdateProducts: Date | null;
   productsToView: ProductsRedGlobal[];
+  isUpdating: boolean;
 }
 
 export interface Category {

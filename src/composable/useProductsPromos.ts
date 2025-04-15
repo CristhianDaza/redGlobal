@@ -11,11 +11,10 @@ import {
 } from '@/utils';
 
 export function useProductsPromos() {
-  const isLoadingProductsPromosComposable = ref<boolean>(false);
+  const isLoadingProductsPromosComposable = ref<boolean>(true);
 
   const getProductsPromos = async (): Promise<ProductsRedGlobal[]> => {
     try {
-      isLoadingProductsPromosComposable.value = true;
       const [
         productsPromos,
         stockPromos

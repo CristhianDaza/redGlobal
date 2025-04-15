@@ -10,7 +10,7 @@ import {
 } from '@/api';
 
 export function useProductsCataProm() {
-  const isLoadingProductsCataPromComposable = ref<boolean>(false);
+  const isLoadingProductsCataPromComposable = ref<boolean>(true);
 
   const chunkArray = <T>(arr: T[], chunkSize: number): T[][] => {
     const result: T[][] = [];
@@ -58,7 +58,6 @@ export function useProductsCataProm() {
 
   const getProductsCataProm = async (): Promise<ProductsRedGlobal[]> => {
     try {
-      isLoadingProductsCataPromComposable.value = true;
       const excludedCategoryIds = [1];
       const categories = await getCategoriesCataProm();
       const filteredCategories = categories.filter(

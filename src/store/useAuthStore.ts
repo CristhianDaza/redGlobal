@@ -96,6 +96,12 @@ export const useAuthStore = defineStore('auth', () => {
     return userRole.value === UserRole.ADMIN;
   })
 
+  const currenLoggingUser = computed(() => {
+    if (!user.value) return null
+    const currentUser = userStore.users.find(u => u.email === user.value?.email)
+    return currentUser || null
+  })
+
   return {
     user,
     loading,
@@ -104,6 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     isAuthenticated,
     userRole,
-    isAdmin
+    isAdmin,
+    currenLoggingUser
   }
 })
