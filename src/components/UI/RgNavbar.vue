@@ -5,6 +5,7 @@ import TvButton from '@todovue/tvbutton';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useMenuStore, useQuoteStore, useUserStore } from '@/store';
 import { NotificationService } from '../Notification/NotificationService';
+import mainLogo from '@/assets/images/main-logo.png'
 
 const RgAutocomplete = defineAsyncComponent(/* webpackChunkName: "rgAutocomplete" */ () => import('@/components/UI/RgAutocomplete.vue'));
 const RgLoginModal = defineAsyncComponent(/* webpackChunkName: "rgLoginModal" */ () => import('@/components/UI/RgLoginModal.vue'));
@@ -47,7 +48,7 @@ const isLoadingLogo = computed(() => {
 
 const currentUserLogo = computed((): string | undefined => {
   if (!authStore.isAuthenticated()) {
-    return '/src/assets/images/main-logo.png';
+    return mainLogo;
   }
 
   if (isLoadingLogo.value) {
@@ -60,7 +61,7 @@ const currentUserLogo = computed((): string | undefined => {
     return currentUser.logo;
   }
 
-  return '/src/assets/images/main-logo.png';
+  return mainLogo;
 });
 
 const handleSearch = () => {
