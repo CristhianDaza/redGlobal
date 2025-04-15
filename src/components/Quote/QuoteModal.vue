@@ -115,7 +115,7 @@ const handleClose = () => {
         <img :src="product.mainImage" :alt="product.name">
         <div class="product-details">
           <h3>{{ product.name }}</h3>
-          <p v-if="product.description">{{ product.description }}</p>
+          <p v-if="product.description" v-html="product.description"></p>
           <p v-if="product.size">Medidas: {{ product.size }}</p>
         </div>
       </div>
