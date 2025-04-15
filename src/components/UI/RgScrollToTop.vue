@@ -52,7 +52,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 10px rgba(27, 231, 153, 0.3);
+  box-shadow: 0 2px 10px rgba(var(--primary-color), 0.3);
   transition: all 0.3s ease;
   z-index: 1000;
 }
