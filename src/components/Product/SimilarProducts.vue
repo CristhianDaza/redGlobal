@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '@/types/common.d';
-import { ref, computed, defineAsyncComponent } from 'vue';
+import { ref, computed, defineAsyncComponent, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useProductsStore } from '@/store';
 
@@ -89,6 +89,15 @@ const scrollNext = () => {
 const navigateToProduct = (productId: string) => {
   router.push({ name: 'product', params: { id: productId } });
 };
+
+watch(
+  () => props.currentProduct,
+  (newProduct, oldProduct) => {
+    if (newProduct && (!oldProduct || newProduct.id !== oldProduct.id)) {
+      currentIndex.value = 0;
+    }
+  }
+);
 </script>
 
 <template>
