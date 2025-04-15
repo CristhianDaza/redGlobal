@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, withDefaults, defineAsyncComponent } from 'vue';
+import { ref, defineAsyncComponent } from 'vue';
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */ () => import('@/components/UI/RgButton.vue'));
 
