@@ -26,8 +26,8 @@ onUnmounted(() => {
 
 <template>
   <Transition name="fade">
-    <button 
-      v-show="showButton" 
+    <button
+      v-show="showButton"
       class="scroll-to-top"
       @click="scrollToTop"
       aria-label="Volver arriba"
@@ -42,7 +42,7 @@ onUnmounted(() => {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  background-color: #1be799;
+  background-color: var(--primary-color);
   color: white;
   width: 3rem;
   height: 3rem;
@@ -59,8 +59,8 @@ onUnmounted(() => {
 
 .scroll-to-top:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 15px rgba(27, 231, 153, 0.4);
-  background-color: #18d68c;
+  box-shadow: 0 4px 15px rgba(var(--primary-color), 0.2);
+  background-color: var(--primary-color);
 }
 
 .scroll-to-top:active {
