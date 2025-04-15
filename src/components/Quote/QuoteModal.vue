@@ -133,7 +133,7 @@ const handleClose = () => {
           >
             <span
               class="color-preview"
-              :style="{ backgroundColor: formatColor(color.colorName)}"
+              :style="{ backgroundColor: formatColor(color.color)}"
             ></span>
             <span class="color-name">{{ color.colorName }}</span>
             <span class="color-stock">({{ color.quantity }} disponibles)</span>
@@ -308,10 +308,9 @@ const handleClose = () => {
 }
 
 .color-preview {
-  width: 1.5rem;
-  height: 1.5rem;
+  min-width: 1.2rem;
+  min-height: 1.2rem;
   border-radius: 0.25rem;
-  border: 1px solid #e2e8f0;
 }
 
 .color-name {
