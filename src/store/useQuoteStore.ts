@@ -47,12 +47,13 @@ export const useQuoteStore = defineStore('quote', () => {
     }
   }
 
-  const saveCurrentQuoteToStorage = () => {
+  const saveCurrentQuoteToStorage = (isUpdate = false) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.value.currentQuote))
+      if (isUpdate) return
       NotificationService.push({
-        title: 'Item agregado',
-        description: 'El item ha sido agregado exitosamente a la cotización',
+        title: 'Producto agregado',
+        description: 'El producto ha sido agregado exitosamente a la cotización',
         type: 'success'
       })
     } catch (error ) {
@@ -88,10 +89,10 @@ export const useQuoteStore = defineStore('quote', () => {
         ...state.value.currentQuote[index],
         ...item
       }
-      saveCurrentQuoteToStorage()
+      saveCurrentQuoteToStorage(true)
       NotificationService.push({
-        title: 'Item actualizado',
-        description: 'El item ha sido actualizado exitosamente',
+        title: 'Producto actualizado',
+        description: 'El producto ha sido actualizado exitosamente',
         type: 'success'
       })
     }
@@ -99,7 +100,7 @@ export const useQuoteStore = defineStore('quote', () => {
 
   const removeQuoteItem = (index: number) => {
     state.value.currentQuote.splice(index, 1)
-    saveCurrentQuoteToStorage()
+    saveCurrentQuoteToStorage(true)
     NotificationService.push({
       title: 'Producto eliminado',
       description: 'El producto ha sido eliminado de la cotización',
