@@ -7,6 +7,7 @@ const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => im
 const RgScrollToTop = defineAsyncComponent(/* webpackChunkName: "rgScrollToTop" */() => import('./components/UI/RgScrollToTop.vue'));
 const NotificationContainer = defineAsyncComponent(/* webpackChunkName: "notificationContainer" */() => import('./components/Notification/NotificationContainer.vue'));
 const RgModalApi = defineAsyncComponent(/* webpackChunkName: "rgModalApi" */() => import('./components/UI/RgModalApi.vue'));
+const RgWhatsApp = defineAsyncComponent(/* webpackChunkName: "rgWhatsApp" */() => import('./components/UI/RgWhatsApp.vue'));
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
@@ -74,6 +75,7 @@ onMounted(() => {
     <RgScrollToTop />
     <NotificationContainer />
     <RgModalApi />
+    <RgWhatsApp />
   </div>
 </template>
 

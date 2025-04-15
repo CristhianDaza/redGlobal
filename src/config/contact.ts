@@ -9,12 +9,12 @@ export const contactCards: ContactInfo[] = [
   {
     icon: 'phone',
     title: 'Teléfono',
-    lines: ['+57 (1) 123 4567', '+57 300 123 4567']
+    lines: ['601 236 0535', '+57 320 835 4041']
   },
   {
     icon: 'email',
     title: 'Email',
-    lines: ['info@redglobal.com', 'ventas@redglobal.com']
+    lines: ['servicioalcliente@redglobalpromo.com.co', 'ventas@redglobal.com']
   },
   {
     icon: 'schedule',
