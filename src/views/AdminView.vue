@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store';
 import { useMenuAdmin, useUserAdmin, useQuoteAdmin, useCategoryAdmin } from '@/composable';
 import { getRelativeTime } from '@/utils';
+import {UserFormData} from "@/types/common";
 
 const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('../components/Admin/MenuItemForm.vue'));
 const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => import('../components/Admin/UserForm.vue'));
@@ -15,7 +16,6 @@ const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const isAuthenticated = computed(() => authStore.isAuthenticated());
-const userEmail = computed(() => authStore.user?.email || 'No disponible');
 
 const activeTab = ref<'menu' | 'users' | 'quotes' | 'cards'>('quotes');
 
@@ -81,9 +81,13 @@ const {
   deleteCategoryCard
 } = useCategoryAdmin();
 
+const currentUser = computed(():UserFormData | undefined => {
+  return users.value.find(u => u.email === authStore.user?.email);
+})
+
 const isAdmin = computed(() => {
-  const currentUser = users.value.find(u => u.email === authStore.user?.email);
-  return currentUser?.role === 'admin';
+  if (!isAuthenticated.value) return false;
+  return currentUser.value?.role === 'admin';
 })
 
 const showDeleteConfirm = ref(false);
@@ -195,7 +199,7 @@ watch(() => route.query.tab, (newTab) => {
           <span class="material-icons">admin_panel_settings</span>
           <h2>Administración</h2>
         </div>
-        <p class="user-email">{{ userEmail }}</p>
+        <p class="user-email">{{ currentUser?.name || 'Usuario' }}</p>
       </div>
       <nav class="sidebar-nav">
         <button
