@@ -81,7 +81,7 @@ export const useProductsStore = defineStore('products', {
 
       this.isLoadingSaveProducts = true
       await firebaseService.saveProducts(allProducts)
-      this.products = allProducts
+      this.$patch({ products: allProducts })
       this.isLoadingSaveProducts = false
       this.isUpdating = false
     },
