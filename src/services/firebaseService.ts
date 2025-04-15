@@ -176,17 +176,12 @@ export const firebaseService = {
   },
 
   async getLastUpdate(): Promise<Date | null> {
-    const stored = localStorage.getItem('lastUpdate')
-    if (stored) {
-      return new Date(stored)
-    } else {
-      const querySnapshot = await getDocs(collection(db, 'lastedUpdatedProducts'))
-      if (querySnapshot.empty) return null
-      const data = querySnapshot.docs[0].data()
-      const lastUpdate = new Date(data.lastUpdate)
-      localStorage.setItem('lastUpdate', lastUpdate.toISOString())
-      return lastUpdate
-    }
+    const querySnapshot = await getDocs(collection(db, 'lastedUpdatedProducts'))
+    if (querySnapshot.empty) return null
+    const data = querySnapshot.docs[0].data()
+    const lastUpdate = new Date(data.lastUpdate)
+    localStorage.setItem('lastUpdate', lastUpdate.toISOString())
+    return lastUpdate
   },
 
   async updateLastUpdate(): Promise<void> {
