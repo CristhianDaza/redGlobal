@@ -203,6 +203,7 @@ export interface ButtonProps {
   customStyle?: Record<string, string>;
   disabled?: boolean;
   outlined?: boolean;
+  full?: boolean;
 }
 
 export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs';

@@ -7,6 +7,7 @@ const props = withDefaults(defineProps<ButtonProps>(), {
   iconPosition: 'right',
   disabled: false,
   outlined: false,
+  full: false,
 });
 
 const defaultStyle = {
@@ -26,6 +27,7 @@ const defaultStyle = {
       :icon-position="props.iconPosition"
       rounded
       :outlined="props.outlined"
+      :is-full="props.full"
     >
       <slot>{{ props.text }}</slot>
     </TvButton>
