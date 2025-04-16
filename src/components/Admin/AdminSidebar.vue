@@ -33,7 +33,7 @@ const currentUserName = computed(() => {
         @click="$emit('tab-change', 'menu')"
       >
         <span class="material-icons">menu</span>
-        <span>Gestión de Menú</span>
+        <span>Menú</span>
       </button>
       <button
         v-if="isAdmin"
@@ -41,7 +41,7 @@ const currentUserName = computed(() => {
         @click="$emit('tab-change', 'users')"
       >
         <span class="material-icons">group</span>
-        <span>Gestión de Usuarios</span>
+        <span>Usuarios</span>
       </button>
       <button
         v-if="isAdmin"
@@ -50,6 +50,14 @@ const currentUserName = computed(() => {
       >
         <span class="material-icons">category</span>
         <span>Categorías</span>
+      </button>
+      <button
+        v-if="isAdmin"
+        :class="['nav-item', { active: activeTab === 'catalogs' }]"
+        @click="$emit('tab-change', 'catalogs')"
+      >
+        <span class="material-icons">menu_book</span>
+        <span>Catálogos</span>
       </button>
       <button
         :class="['nav-item', { active: activeTab === 'quotes' }]"

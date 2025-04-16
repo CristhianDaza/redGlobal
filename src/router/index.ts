@@ -64,7 +64,7 @@ router.beforeEach((to, _from, next) => {
   if (to.name === 'admin') {
     const tab = to.query.tab
     const allowedTabsForClient = ['quotes']
-    const allTabs = ['menu', 'users', 'cards', 'quotes']
+    const allTabs = ['menu', 'users', 'cards', 'quotes', 'catalogs']
 
     if (tab && !allTabs.includes(tab as string)) {
       return next({ name: 'admin', query: { tab: 'quotes' } })

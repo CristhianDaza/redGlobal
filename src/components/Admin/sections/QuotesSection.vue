@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Quote } from '@/types/common.d'
-import { defineProps, defineEmits, defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from 'vue'
 import { getRelativeTime } from '@/utils'
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));

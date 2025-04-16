@@ -9,6 +9,7 @@ import { useMenuAdmin } from '@/composable/admin/';
 import { useCategoryAdmin } from '@/composable/admin/';
 import { useQuoteAdmin } from '@/composable/admin/';
 import { useUserAdmin } from '@/composable/admin/';
+import { useCatalogAdmin } from '@/composable/admin/';
 
 export {
   useFilters,
@@ -22,5 +23,6 @@ export {
   useMenuAdmin,
   useCategoryAdmin,
   useQuoteAdmin,
-  useUserAdmin
+  useUserAdmin,
+  useCatalogAdmin,
 };

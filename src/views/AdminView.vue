@@ -2,13 +2,14 @@
 import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store';
-import { useMenuAdmin, useUserAdmin, useQuoteAdmin, useCategoryAdmin } from '@/composable';
-import { UserFormData } from "@/types/common";
+import { useMenuAdmin, useUserAdmin, useQuoteAdmin, useCategoryAdmin, useCatalogAdmin } from '@/composable';
+import { UserFormData, tabs } from "@/types/common";
 
 const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('../components/Admin/MenuItemForm.vue'));
 const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => import('../components/Admin/UserForm.vue'));
 const RgConfirmModal = defineAsyncComponent(/* webpackChunkName: "rgConfirmModal" */() => import('../components/UI/RgConfirmModal.vue'));
 const CategoryCardForm = defineAsyncComponent(/* webpackChunkName: "categoryCardForm" */() => import('../components/Admin/CategoryCardForm.vue'));
+const CatalogForm = defineAsyncComponent(/* webpackChunkName: "catalogForm" */() => import('../components/Admin/CatalogForm.vue'));
 
 const AdminSidebar = defineAsyncComponent(/* webpackChunkName: "adminSidebar" */() => import('@/components/Admin/AdminSidebar.vue'));
 const MenuSection = defineAsyncComponent(/* webpackChunkName: "menuSection" */() => import('@/components/Admin/sections/MenuSection.vue'));
@@ -17,17 +18,18 @@ const UsersSection = defineAsyncComponent(/* webpackChunkName: "usersSection" */
 const QuotesSection = defineAsyncComponent(/* webpackChunkName: "quotesSection" */() => import('@/components/Admin/sections/QuotesSection.vue'));
 const CategoriesSection = defineAsyncComponent(/* webpackChunkName: "categoriesSection" */() => import('@/components/Admin/sections/CategoriesSection.vue'));
 const QuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "quoteDetailsModal" */() => import('@/components/Admin/QuoteDetailsModal.vue'));
+const CatalogsSection = defineAsyncComponent(/* webpackChunkName: "catalogsSection" */() => import('@/components/Admin/sections/CatalogsSection.vue'));
 
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const isAuthenticated = computed(() => authStore.isAuthenticated());
 
-const activeTab = ref<'menu' | 'users' | 'quotes' | 'cards'>('quotes');
+const activeTab = ref<tabs>('quotes');
 
-const handleTabChange = (tab: string) => {
+const handleTabChange = (tab: tabs) => {
   router.push({ query: { tab } });
-  activeTab.value = tab as 'menu' | 'users' | 'quotes' | 'cards';
+  activeTab.value = tab;
 };
 
 const currentUser = computed(():UserFormData | undefined => {
@@ -95,10 +97,22 @@ const {
   deleteCategoryCard
 } = useCategoryAdmin();
 
-const showDeleteConfirm = ref(false);
-const itemToDelete = ref<{ id: string; type: 'menu' | 'user' | 'quote' | 'card' } | undefined>(undefined);
+const {
+  isLoadingCatalog,
+  showCatalogModal,
+  editingCatalog,
+  catalogs,
+  loadCatalogs,
+  handleAddCatalog,
+  handleEditCatalog,
+  handleSaveCatalog,
+  deleteCatalog
+} = useCatalogAdmin();
 
-const handleDeleteClick = (id: string, type: 'menu' | 'user' | 'quote' | 'card') => {
+const showDeleteConfirm = ref(false);
+const itemToDelete = ref<{ id: string; type: tabs } | undefined>(undefined);
+
+const handleDeleteClick = (id: string, type: tabs) => {
   itemToDelete.value = { id, type };
   showDeleteConfirm.value = true;
 };
@@ -110,14 +124,17 @@ const handleConfirmDelete = async () => {
       case 'menu':
         await deleteMenuItem(itemToDelete.value.id);
         break;
-      case 'user':
+      case 'users':
         await deleteUser(itemToDelete.value.id);
         break;
-      case 'quote':
+      case 'quotes':
         await deleteQuote(itemToDelete.value.id);
         break;
-      case 'card':
+      case 'cards':
         await deleteCategoryCard(itemToDelete.value.id);
+        break;
+      case 'catalogs':
+        await deleteCatalog(itemToDelete.value.id);
         break;
     }
   } catch (error) {
@@ -148,6 +165,7 @@ const loadingData = computed(() => {
     case 'users': return userLoading.value;
     case 'quotes': return quoteLoading.value;
     case 'cards': return isLoadingCard.value;
+    case 'catalogs': return isLoadingCatalog.value;
     default: return false;
   }
 });
@@ -158,7 +176,8 @@ onMounted(async () => {
       loadMenu(),
       loadUsers(),
       loadQuotes(),
-      loadCategoryCards()
+      loadCategoryCards(),
+      loadCatalogs()
     ]);
   } catch (error) {
     console.error('Error loading initial data:', error);
@@ -167,27 +186,55 @@ onMounted(async () => {
 
 watch(activeTab, async (newTab) => {
   try {
-    if (newTab === 'menu') {
-      await loadMenu();
-      await router.push({ query: { tab: 'menu' } });
-    } else if (newTab === 'users') {
-      await loadUsers();
-      await router.push({ query: { tab: 'users' } });
-    } else if (newTab === 'quotes') {
-      await loadQuotes();
-      await router.push({ query: { tab: 'quotes' } });
-    } else if (newTab === 'cards') {
-      await loadCategoryCards();
-      await router.push({ query: { tab: 'cards' } });
+    switch (newTab) {
+      case 'menu':
+        await loadMenu();
+        await router.push({ query: { tab: 'menu' } });
+        break;
+      case 'users':
+        await loadUsers();
+        await router.push({ query: { tab: 'users' } });
+        break;
+      case 'quotes':
+        await loadQuotes();
+        await router.push({ query: { tab: 'quotes' } });
+        break;
+      case 'cards':
+        await loadCategoryCards();
+        await router.push({ query: { tab: 'cards' } });
+        break;
+      case 'catalogs':
+        await loadCatalogs();
+        await router.push({ query: { tab: 'catalogs' } });
+        break;
+      default:
+        await router.push({ name: 'admin' });
+        break;
     }
   } catch (error) {
     console.error('Error loading data for tab:', newTab, error);
   }
 });
 
+const deleteMessagesMap: Record<string, string> = {
+  menu: 'este item del menú',
+  user: 'este usuario',
+  quote: 'esta cotización',
+  card: 'esta categoría',
+  product: 'este producto',
+  catalog: 'este catálogo',
+  default: 'este elemento'
+}
+
+const deleteMessage = computed(() => {
+  const type = itemToDelete?.value?.type || 'default'
+  const label = deleteMessagesMap[type] || deleteMessagesMap.default
+  return `¿Estás seguro de que deseas eliminar ${label}?`
+})
+
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && ['menu', 'users', 'quotes', 'cards'].includes(newTab as string)) {
-    activeTab.value = newTab as 'menu' | 'users' | 'quotes' | 'cards';
+  if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs'].includes(newTab as tabs)) {
+    activeTab.value = newTab as tabs;
   }
 });
 </script>
@@ -211,6 +258,7 @@ watch(() => route.query.tab, (newTab) => {
         @add-menu="handleAddMenuItem"
         @add-user="handleAddUser"
         @add-card="handleAddCard"
+        @add-catalog="handleAddCatalog"
       />
 
       <div class="main-content">
@@ -234,7 +282,7 @@ watch(() => route.query.tab, (newTab) => {
             :active="activeUsers"
             :inactive="inactiveUsers"
             @edit="handleEditUser"
-            @delete="id => handleDeleteClick(id, 'user')"
+            @delete="id => handleDeleteClick(id, 'users')"
           />
 
           <QuotesSection
@@ -246,14 +294,21 @@ watch(() => route.query.tab, (newTab) => {
             :canDeleteQuote="canDeleteQuote"
             @view="handleViewQuote"
             @complete="handleCompleteQuote"
-            @delete="id => handleDeleteClick(id, 'quote')"
+            @delete="id => handleDeleteClick(id, 'quotes')"
           />
 
           <CategoriesSection
             v-else-if="activeTab === 'cards'"
             :cards="categoryCards"
             @edit="handleEditCard"
-            @delete="id => handleDeleteClick(id, 'card')"
+            @delete="id => handleDeleteClick(id, 'cards')"
+          />
+
+          <CatalogsSection
+            v-if="activeTab === 'catalogs'"
+            :items="catalogs"
+            @edit="handleEditCatalog"
+            @delete="id => handleDeleteClick(id, 'catalogs')"
           />
         </div>
 
@@ -284,10 +339,18 @@ watch(() => route.query.tab, (newTab) => {
         <RgConfirmModal
           :isOpen="showDeleteConfirm"
           title="Confirmar eliminación"
-          :message="`¿Estás seguro de que deseas eliminar ${itemToDelete?.type === 'menu' ? 'este item del menú' : itemToDelete?.type === 'user' ? 'este usuario' : 'esta cotización'}?`"
+          :message="deleteMessage"
           :isLoading="loadingData"
           @confirm="handleConfirmDelete"
           @close="handleCancelDelete"
+        />
+
+        <CatalogForm
+          :isOpen="showCatalogModal"
+          :catalog="editingCatalog"
+          :loading="isLoadingCatalog"
+          @save="handleSaveCatalog"
+          @close="showCatalogModal = false"
         />
 
         <QuoteDetailsModal

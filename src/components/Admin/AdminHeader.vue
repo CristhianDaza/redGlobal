@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, defineAsyncComponent, computed } from 'vue'
+import type { tabs } from '@/types/common.d'
+import { defineAsyncComponent, computed } from 'vue'
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
 
 const props = defineProps<{
-  activeTab: 'menu' | 'users' | 'cards' | 'quotes'
+  activeTab: tabs
   isAdmin: boolean
 }>()
 
@@ -11,12 +12,14 @@ const emit = defineEmits<{
   (e: 'add-menu'): void
   (e: 'add-user'): void
   (e: 'add-card'): void
+  (e: 'add-catalog'): void
 }>()
 
 const handleAdd = () => {
   if (props.activeTab === 'menu') emit('add-menu')
   else if (props.activeTab === 'users') emit('add-user')
   else if (props.activeTab === 'cards') emit('add-card')
+  else if (props.activeTab === 'catalogs') emit('add-catalog')
 }
 
 const activeTabHeader = computed(():string => {
@@ -25,6 +28,7 @@ const activeTabHeader = computed(():string => {
     users: 'Usuarios',
     cards: 'Categorías',
     quotes: 'Cotizaciones',
+    catalogs: 'Catálogos',
   };
   return headers[props.activeTab];
 });
@@ -36,6 +40,7 @@ const activeTabText = computed(():string => {
     users: 'Crear un Usuario',
     cards: 'Agregar una Categoría',
     quotes: '',
+    catalogs: 'Agregar un Catálogo',
   }
   return text[props.activeTab];
 })

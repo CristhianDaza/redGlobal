@@ -18,7 +18,7 @@ defineEmits<{
       <div class="stat-card">
         <span class="material-icons">menu</span>
         <div class="stat-info">
-          <h3>Items en Menú</h3>
+          <h3>Total Menús</h3>
           <p>{{ items.length }}</p>
         </div>
       </div>

@@ -204,3 +204,5 @@ export interface ButtonProps {
   disabled?: boolean;
   outlined?: boolean;
 }
+
+export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs';
