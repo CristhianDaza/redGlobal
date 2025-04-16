@@ -186,3 +186,10 @@ export interface QuoteAdmin {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Catalog {
+  id: string;
+  title: string
+  imageUrl: string;
+  toRoute: string;
+}
