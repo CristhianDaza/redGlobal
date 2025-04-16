@@ -1,7 +1,7 @@
 import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard } from '@/types/common.d'
 import { Catalog, UserRole } from '@/types/common.d'
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where } from 'firebase/firestore'
-import { getAuth, createUserWithEmailAndPassword, deleteUser } from 'firebase/auth'
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import { db } from '@/config'
 
 export const firebaseService = {
@@ -118,36 +118,14 @@ export const firebaseService = {
 
   async deleteUser(id: string): Promise<void> {
     try {
-      const usersQuery = await getDocs(
-        query(collection(db, 'users'))
-      )
-
+      const usersQuery = await getDocs(query(collection(db, 'users')))
       const userDoc = usersQuery.docs.find(doc => doc.id === id)
-
       if (!userDoc) {
         throw new Error('Usuario no encontrado')
       }
-      const userData = userDoc.data()
-
-      try {
-        const auth = getAuth()
-        const currentUser = auth.currentUser
-
-        if (currentUser && currentUser.uid !== userData.id) {
-          try {
-            await deleteUser(currentUser)
-          } catch (authError) {
-            throw new Error('Error al eliminar el usuario de Auth')
-          }
-        } else {
-          throw new Error('No se puede eliminar el usuario actual')
-        }
-      } catch (authError) {
-        throw new Error('Error al acceder a Auth')
-      }
       await deleteDoc(doc(db, 'users', id))
     } catch (error) {
-      console.error('Error deleting user:', error)
+      console.error('Error eliminando el usuario:', error)
       throw error
     }
   },

@@ -1,20 +1,12 @@
 <script setup lang="ts">
+import type { ButtonProps } from '@/types/common.d'
 import TvButton from '@todovue/tvbutton';
-
-interface ButtonProps {
-  text?: string;
-  icon?: string;
-  iconPosition?: 'left' | 'right';
-  type?: 'default' | 'icon';
-  onClick?: (event: MouseEvent) => void;
-  customStyle?: Record<string, string>;
-  disabled?: boolean;
-}
 
 const props = withDefaults(defineProps<ButtonProps>(), {
   type: 'default',
   iconPosition: 'right',
-  disabled: false
+  disabled: false,
+  outlined: false,
 });
 
 const defaultStyle = {
@@ -33,6 +25,7 @@ const defaultStyle = {
       :disabled="props.disabled"
       :icon-position="props.iconPosition"
       rounded
+      :outlined="props.outlined"
     >
       <slot>{{ props.text }}</slot>
     </TvButton>

@@ -1,6 +1,6 @@
 import type { QuoteAdmin } from '@/types/common.d'
 import { ref, computed } from 'vue';
-import { useQuoteStore } from '@/store';
+import { useQuoteStore, useAuthStore } from '@/store';
 
 const quoteStatus = {
   PENDING: 'pending',
@@ -8,8 +8,9 @@ const quoteStatus = {
   CANCELLED: 'cancelled'
 };
 
-export function useQuoteAdmin() {
+export function useQuoteAdmin(isAdmin: boolean) {
   const quoteStore = useQuoteStore();
+  const authStore = useAuthStore();
   const isLoading = ref(false);
   const showQuoteDetailsModal = ref(false);
   const selectedQuote = ref<QuoteAdmin | null>(null);
@@ -19,8 +20,13 @@ export function useQuoteAdmin() {
   };
 
   const filteredQuotes = computed(() => {
-    return quoteStore.quotes;
-  });
+    const userEmail = authStore.user?.email
+    if (isAdmin) {
+      return quoteStore.quotes
+    }
+    return quoteStore.quotes.filter(quote => quote.userEmail === userEmail)
+  })
+
 
   const totalQuotes = computed(() => filteredQuotes.value.length);
   const pendingQuotes = computed(() =>
@@ -63,9 +69,16 @@ export function useQuoteAdmin() {
       isLoading.value = false;
     }
   };
+
+
   const canDeleteQuote = (quote: QuoteAdmin): boolean => {
-    return quote.status === quoteStatus.PENDING;
-  };
+    const isCreator = quote.userEmail === authStore.user?.email
+    const isPending = quote.status === quoteStatus.PENDING
+    const isCompleted = quote.status === quoteStatus.COMPLETED
+
+    return (isCreator && isPending) || (isAdmin && isCompleted)
+  }
+
 
   return {
     isLoading,

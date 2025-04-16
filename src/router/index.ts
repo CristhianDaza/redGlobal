@@ -53,15 +53,29 @@ const router = createRouter({
 });
 
 router.beforeEach((to, _from, next) => {
-  const authStore = useAuthStore();
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const isAuthenticated = authStore.isAuthenticated();
+  const authStore = useAuthStore()
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const isAuthenticated = authStore.isAuthenticated()
 
   if (requiresAuth && !isAuthenticated) {
-    next('/');
-  } else {
-    next();
+    return next('/')
   }
-});
+
+  if (to.name === 'admin') {
+    const tab = to.query.tab
+    const allowedTabsForClient = ['quotes']
+    const allTabs = ['menu', 'users', 'cards', 'quotes']
+
+    if (tab && !allTabs.includes(tab as string)) {
+      return next({ name: 'admin', query: { tab: 'quotes' } })
+    }
+
+    if (!authStore.isAdmin && tab && !allowedTabsForClient.includes(tab as string)) {
+      return next({ name: 'admin', query: { tab: 'quotes' } })
+    }
+  }
+  next()
+})
+
 
 export default router;

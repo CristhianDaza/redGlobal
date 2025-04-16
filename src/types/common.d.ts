@@ -193,3 +193,14 @@ export interface Catalog {
   imageUrl: string;
   toRoute: string;
 }
+
+export interface ButtonProps {
+  text?: string;
+  icon?: string;
+  iconPosition?: 'left' | 'right';
+  type?: 'default' | 'icon';
+  onClick?: (event: MouseEvent) => void;
+  customStyle?: Record<string, string>;
+  disabled?: boolean;
+  outlined?: boolean;
+}
