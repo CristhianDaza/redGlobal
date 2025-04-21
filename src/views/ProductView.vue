@@ -67,8 +67,8 @@ const openZoom = (image: string) => {
 }
 const closeZoom = () => {
   zoomAnimState.value = 'closing';
+  isZoomed.value = false;
   setTimeout(() => {
-    isZoomed.value = false;
     zoomedImage.value = '';
     zoomRotation.value = 0;
     zoomAnimState.value = '';
@@ -126,12 +126,12 @@ const onImgMouseMove = (e: MouseEvent) => {
     y: Math.max(-maxOffset.y, Math.min(maxOffset.y, next.y))
   };
 }
-function onImgMouseUp() {
+const onImgMouseUp = () => {
   dragStart.value = null;
   window.removeEventListener('mousemove', onImgMouseMove);
   window.removeEventListener('mouseup', onImgMouseUp);
 }
-function getMaxOffset() {
+const getMaxOffset = () => {
   const scale = zoomScale.value;
   if (scale <= 1) return { x: 0, y: 0 };
   const vw = window.innerWidth * 0.9;
