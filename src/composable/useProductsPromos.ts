@@ -9,6 +9,7 @@ import {
   formatText,
   constructTotalProductsPromos
 } from '@/utils';
+import noImage from '@/assets/images/no-image.jpg';
 
 export function useProductsPromos() {
   const isLoadingProductsPromosComposable = ref<boolean>(true);
@@ -44,7 +45,7 @@ export function useProductsPromos() {
       discount: null,
       id: product?.skuPadre || '',
       images: constructImagesPromos(product?.hijos, product?.imagenesPadre),
-      mainImage: product?.imagenesPadre.length > 0 ? product?.imagenesPadre?.[0] : '@/assets/images/no-image.jpg',
+      mainImage: product?.imagenesPadre.length > 0 ? product?.imagenesPadre?.[0] : noImage,
       material: formatText(product?.material),
       name: `${formatText(product?.nombrePadre, true)}${product?.capacidad !== '' ? ` - ${product?.capacidad}` : ''}`,
       packaging: constructPackagingPromos(product?.paquete),

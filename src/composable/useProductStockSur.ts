@@ -12,6 +12,7 @@ import {
   constructTotalProductsStockSur,
   formatText,
 } from '@/utils';
+import noImage from '@/assets/images/no-image.jpg';
 
 export function useProductStockSur() {
   const isLoadingProductsStockSurComposable = ref<boolean>(true);
@@ -39,7 +40,7 @@ export function useProductStockSur() {
       description: product?.description,
       id: product?.code,
       images: images,
-      mainImage: images[0]?.urlImage[0] || '@/assets/images/no-image.jpg',
+      mainImage: images[0]?.urlImage[0] || noImage,
       name: formatText(cleanText(product?.name), true),
       packaging: constructPackingStockSur(product?.packing),
       printing: constructPrintingStockSur(product?.icons),

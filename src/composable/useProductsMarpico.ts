@@ -13,6 +13,7 @@ import {
   getDiscountsMarpico,
   constructImagesMarpico,
 } from '@/utils';
+import noImage from '@/assets/images/no-image.jpg';
 
 export function useProductsMarpico() {
   const isLoadingProductsMarpicoComposable = ref<boolean>(true);
@@ -41,7 +42,7 @@ export function useProductsMarpico() {
       id: product?.familia || '',
       images: constructImagesMarpico(product?.materiales) || [],
       labels: constructLabelsMarpico(product),
-      mainImage: product?.imagen === '' ? '@/assets/images/no-image.jpg' : product?.imagen,
+      mainImage: product?.imagen === '' ? noImage : product?.imagen,
       material: formatText(product?.material),
       name: formatText(product?.descripcion_comercial),
       packaging: constructPackagingMarpico(product),

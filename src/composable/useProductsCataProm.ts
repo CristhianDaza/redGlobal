@@ -8,6 +8,7 @@ import {
   getStockByProductCataProm,
   getProductByIdCataProm
 } from '@/api';
+import noImage from '@/assets/images/no-image.jpg';
 
 export function useProductsCataProm() {
   const isLoadingProductsCataPromComposable = ref<boolean>(true);
@@ -51,7 +52,7 @@ export function useProductsCataProm() {
       description: constructDescriptionCataProm(product?.descripcionProducto),
       id: product?.referencia || '',
       mainImage: product?.imageUrl === ''
-        ? '@/assets/images/no-image.jpg'
+        ? noImage
         : `https://catalogospromocionales.com${product?.imageUrl}`,
       name: formatText(product?.nombre),
     };

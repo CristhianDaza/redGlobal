@@ -2,6 +2,7 @@ import type { MarpicoMaterial } from '@/types/marpico.d';
 import type { PromosProductChild } from '@/types/promos.d';
 import type { ImagesRedGlobal } from '@/types/common.d';
 import { StockSurVariant } from '@/types/stocksur.d';
+import noImage from '@/assets/images/no-image.jpg';
 
 export const constructImagesPromos = (
   children: PromosProductChild[],
@@ -36,7 +37,7 @@ export const constructImagesStockSur = (variants: StockSurVariant[] | undefined)
   if (!variants || !Array.isArray(variants)) return []
 
   return variants.map(variant => ({
-    urlImage: [variant.picture?.original || '@/assets/images/no-image.jpg'],
+    urlImage: [variant.picture?.original || noImage],
     color: variant.color?.name || '',
     id: variant.id
   }));
@@ -46,7 +47,7 @@ export const constructImagesMarpico = (materials: MarpicoMaterial[]): ImagesRedG
   const images: ImagesRedGlobal[] = []
   materials.forEach(material => {
     images.push({
-      urlImage: material.imagenes || ['@/assets/images/no-image.jpg'],
+      urlImage: material.imagenes || [noImage],
       color: material.color_nombre,
       id: material.codigo
     })
