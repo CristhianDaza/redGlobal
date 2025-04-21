@@ -53,6 +53,7 @@ const tooltipPos = ref({ x: 0, y: 0 });
 const dragOffset = ref({ x: 0, y: 0 });
 const dragStart = ref<{ x: number, y: number } | null>(null);
 const dragOrigin = ref({ x: 0, y: 0 });
+const rotateTransition = ref(false);
 
 function openZoom(image: string) {
   zoomedImage.value = image;
@@ -79,10 +80,14 @@ function handleEscape(e: KeyboardEvent) {
   if (e.key === 'Escape') closeZoom();
 }
 function rotateLeft() {
+  rotateTransition.value = true;
   zoomRotation.value = (zoomRotation.value - 90 + 360) % 360;
+  setTimeout(() => { rotateTransition.value = false; }, 260); // igual a la duración de la transición
 }
 function rotateRight() {
+  rotateTransition.value = true;
   zoomRotation.value = (zoomRotation.value + 90) % 360;
+  setTimeout(() => { rotateTransition.value = false; }, 260);
 }
 function resetRotation() {
   zoomRotation.value = 0;
@@ -547,6 +552,7 @@ function hideTooltip() {
           v-if="zoomedImage"
           :src="zoomedImage"
           class="zoomed-img"
+          :class="{ 'with-rotate-transition': rotateTransition }"
           :style="{
             transform: `rotate(${zoomRotation}deg) scale(${zoomScale}) translate(${dragOffset.x}px, ${dragOffset.y}px)` ,
             cursor: zoomScale > 1 ? (dragStart ? 'grabbing' : 'grab') : 'zoom-out'
@@ -1175,10 +1181,14 @@ function hideTooltip() {
   background: #fff;
   object-fit: contain;
   animation: zoomIn 0.23s;
+  /* Solo animación para box-shadow, NO para transform por default */
   transition: box-shadow 0.25s;
   user-select: none;
   will-change: transform;
   -webkit-user-drag: none;
+}
+.with-rotate-transition {
+  transition: transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s;
 }
 
 .zoom-toolbar {
@@ -1244,7 +1254,6 @@ function hideTooltip() {
 
 .zoom-close {
   background: #fff;
-  border: none;
   border-radius: 50%;
   width: 44px;
   height: 44px;
