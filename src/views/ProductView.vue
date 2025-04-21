@@ -314,7 +314,35 @@ const formatLabelName = (name: string) => {
 
 function showTooltip(text: string, evt: MouseEvent) {
   tooltip.value = text;
-  tooltipPos.value = { x: evt.clientX, y: evt.clientY };
+  // Esperar al siguiente tick para asegurar que el tooltip esté en el DOM
+  setTimeout(() => {
+    const tooltipEl = document.querySelector('.zoom-tooltip') as HTMLElement;
+    let x = evt.clientX;
+    let y = evt.clientY;
+    if (tooltipEl) {
+      const padding = 12;
+      const rect = tooltipEl.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      // Si se sale por la derecha
+      if (x + rect.width + padding > vw) {
+        x = vw - rect.width - padding;
+      }
+      // Si se sale por abajo
+      if (y + rect.height + padding > vh) {
+        y = vh - rect.height - padding;
+      }
+      // Si se sale por la izquierda
+      if (x < padding) {
+        x = padding;
+      }
+      // Si se sale por arriba
+      if (y < padding) {
+        y = padding;
+      }
+    }
+    tooltipPos.value = { x, y };
+  }, 0);
 }
 function hideTooltip() {
   tooltip.value = '';
