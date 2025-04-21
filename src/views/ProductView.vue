@@ -333,7 +333,7 @@ const formatLabelName = (name: string) => {
                   <div class="color-cell">
                     <span
                       class="color-dot"
-                      :style="{ backgroundColor: formatColor(entry.colorName) }"
+                      :style="{ backgroundColor: formatColor(entry.color) }"
                     ></span>
                     {{ entry.colorName }}
                   </div>
