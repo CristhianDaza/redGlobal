@@ -54,8 +54,11 @@ const dragOffset = ref({ x: 0, y: 0 });
 const dragStart = ref<{ x: number, y: number } | null>(null);
 const dragOrigin = ref({ x: 0, y: 0 });
 const rotateTransition = ref(false);
+const touchStartX = ref<number|null>(null);
+const swipeThreshold = 50;
+const imageTransition = ref(''); // 'left' | 'right' | ''
 
-function openZoom(image: string) {
+const openZoom = (image: string) => {
   zoomedImage.value = image;
   isZoomed.value = true;
   zoomRotation.value = 0;
@@ -63,7 +66,7 @@ function openZoom(image: string) {
   setTimeout(() => { zoomAnimState.value = ''; }, 200);
   document.body.style.overflow = 'hidden';
 }
-function closeZoom() {
+const closeZoom = () => {
   zoomAnimState.value = 'closing';
   setTimeout(() => {
     isZoomed.value = false;
@@ -73,38 +76,36 @@ function closeZoom() {
     document.body.style.overflow = '';
   }, 200);
 }
-function handleOverlayClick(e: MouseEvent) {
+const handleOverlayClick = (e: MouseEvent) => {
   if (e.target === e.currentTarget) closeZoom();
 }
-function handleEscape(e: KeyboardEvent) {
-  if (e.key === 'Escape') closeZoom();
-}
-function rotateLeft() {
+
+const rotateLeft = () => {
   rotateTransition.value = true;
   zoomRotation.value = (zoomRotation.value - 90 + 360) % 360;
   setTimeout(() => { rotateTransition.value = false; }, 260); // igual a la duración de la transición
 }
-function rotateRight() {
+const rotateRight = () => {
   rotateTransition.value = true;
   zoomRotation.value = (zoomRotation.value + 90) % 360;
   setTimeout(() => { rotateTransition.value = false; }, 260);
 }
-function resetRotation() {
+const resetRotation = () => {
   zoomRotation.value = 0;
 }
-function handleWheelZoom(e: WheelEvent) {
+const handleWheelZoom = (e: WheelEvent) => {
   if (!isZoomed.value) return;
   e.preventDefault();
   let next = zoomScale.value - e.deltaY * 0.0015;
   next = Math.max(minZoom, Math.min(maxZoom, next));
   zoomScale.value = parseFloat(next.toFixed(2));
 }
-function resetZoom() {
+const resetZoom = () => {
   zoomScale.value = 1;
 }
 watch(isZoomed, val => { if (!val) zoomScale.value = 1; });
 
-function onImgMouseDown(e: MouseEvent) {
+const onImgMouseDown = (e: MouseEvent) => {
   if (zoomScale.value <= 1) return;
   e.preventDefault();
   dragStart.value = { x: e.clientX, y: e.clientY };
@@ -112,7 +113,7 @@ function onImgMouseDown(e: MouseEvent) {
   window.addEventListener('mousemove', onImgMouseMove);
   window.addEventListener('mouseup', onImgMouseUp);
 }
-function onImgMouseMove(e: MouseEvent) {
+const onImgMouseMove = (e: MouseEvent) => {
   if (!dragStart.value) return;
   const dx = e.clientX - dragStart.value.x;
   const dy = e.clientY - dragStart.value.y;
@@ -120,7 +121,6 @@ function onImgMouseMove(e: MouseEvent) {
     x: dragOrigin.value.x + dx,
     y: dragOrigin.value.y + dy
   };
-  // Limitar el arrastre según el zoom
   const maxOffset = getMaxOffset();
   dragOffset.value = {
     x: Math.max(-maxOffset.x, Math.min(maxOffset.x, next.x)),
@@ -143,10 +143,76 @@ function getMaxOffset() {
   const maxY = ((vh * (scale - 1)) / 2);
   return { x: maxX, y: maxY };
 }
-// Reset posición al restaurar zoom/cerrar modal
+
 watch([zoomScale, isZoomed], ([z, open]) => {
   if (z === 1 || !open) dragOffset.value = { x: 0, y: 0 };
 });
+
+const zoomPrevImage = (dir = 'right') => {
+  if (!zoomedImage.value) return;
+  const idx = uniqueImages.value.indexOf(zoomedImage.value);
+  if (idx > 0) {
+    imageTransition.value = dir;
+    // Cambia imagen en el siguiente frame para que Vue procese la transición correctamente
+    requestAnimationFrame(() => {
+      setZoomedImageByIndex(idx - 1);
+      imageTransition.value = '';
+    });
+  }
+}
+const zoomNextImage = (dir = 'left') => {
+  if (!zoomedImage.value) return;
+  const idx = uniqueImages.value.indexOf(zoomedImage.value);
+  if (idx < uniqueImages.value.length - 1) {
+    imageTransition.value = dir;
+    requestAnimationFrame(() => {
+      setZoomedImageByIndex(idx + 1);
+      imageTransition.value = '';
+    });
+  }
+}
+const setZoomedImageByIndex = (idx: number) => {
+  zoomedImage.value = uniqueImages.value[idx];
+  zoomRotation.value = 0;
+  zoomScale.value = 1;
+  dragOffset.value = { x: 0, y: 0 };
+}
+const handleZoomKeydown = (e: KeyboardEvent) => {
+  if (!isZoomed.value) return;
+  if (e.key === 'ArrowLeft') {
+    zoomPrevImage();
+    e.preventDefault();
+  } else if (e.key === 'ArrowRight') {
+    zoomNextImage();
+    e.preventDefault();
+  } else if (e.key === 'Escape') {
+    closeZoom();
+    e.preventDefault();
+  }
+}
+watch(isZoomed, (val) => {
+  if (val) window.addEventListener('keydown', handleZoomKeydown);
+  else window.removeEventListener('keydown', handleZoomKeydown);
+});
+
+const onImgTouchStart = (e: TouchEvent) => {
+  if (e.touches.length === 1) {
+    touchStartX.value = e.touches[0].clientX;
+  }
+}
+const onImgTouchMove = (e: TouchEvent) => {
+  if (touchStartX.value !== null) e.preventDefault();
+}
+const onImgTouchEnd = (e: TouchEvent) => {
+  if (touchStartX.value === null) return;
+  const touchEndX = e.changedTouches[0].clientX;
+  const dx = touchEndX - touchStartX.value;
+  if (Math.abs(dx) > swipeThreshold) {
+    if (dx < 0) zoomNextImage('left'); // swipe izquierda
+    else zoomPrevImage('right'); // swipe derecha
+  }
+  touchStartX.value = null;
+}
 
 const isPriceLoading = computed(() => {
   return authStore.isAuthenticated() && userStore.isLoadingUsers;
@@ -492,7 +558,7 @@ function hideTooltip() {
       @close="showQuoteModal = false"
     />
     <!-- Modal Zoom -->
-    <transition name="zoom-modal-fade">
+    <transition :name="imageTransition === 'left' ? 'zoom-img-slide-left' : imageTransition === 'right' ? 'zoom-img-slide-right' : 'zoom-img-fade'">
       <div
         v-if="isZoomed"
         class="zoom-modal"
@@ -502,6 +568,26 @@ function hideTooltip() {
         }"
         @click="handleOverlayClick"
       >
+        <!-- Botones navegación imágenes -->
+        <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-left"
+          :disabled="uniqueImages.indexOf(zoomedImage) <= 0"
+          @click="zoomPrevImage"
+          @mouseenter="showTooltip('Imagen anterior', $event)"
+          @mouseleave="hideTooltip"
+          @mousemove="showTooltip('Imagen anterior', $event)"
+          aria-label="Imagen anterior"
+          tabindex="0"
+        >‹</button>
+        <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-right"
+          :disabled="uniqueImages.indexOf(zoomedImage) >= uniqueImages.length - 1"
+          @click="zoomNextImage"
+          @mouseenter="showTooltip('Imagen siguiente', $event)"
+          @mouseleave="hideTooltip"
+          @mousemove="showTooltip('Imagen siguiente', $event)"
+          aria-label="Imagen siguiente"
+          tabindex="0"
+          v-bind="$attrs"
+        >›</button>
         <div class="zoom-toolbar">
           <button class="zoom-close"
             @click="closeZoom"
@@ -548,20 +634,27 @@ function hideTooltip() {
         <div class="zoom-indicator">
           <span>{{ zoomRotation }}° | {{ (zoomScale * 100).toFixed(0) }}%</span>
         </div>
-        <img
-          v-if="zoomedImage"
-          :src="zoomedImage"
-          class="zoomed-img"
-          :class="{ 'with-rotate-transition': rotateTransition }"
-          :style="{
-            transform: `rotate(${zoomRotation}deg) scale(${zoomScale}) translate(${dragOffset.x}px, ${dragOffset.y}px)` ,
-            cursor: zoomScale > 1 ? (dragStart ? 'grabbing' : 'grab') : 'zoom-out'
-          }"
-          draggable="false"
-          alt="Imagen ampliada"
-          @wheel.prevent="handleWheelZoom"
-          @mousedown="onImgMouseDown"
-        />
+        <transition :name="imageTransition === 'left' ? 'zoom-img-slide-left' : imageTransition === 'right' ? 'zoom-img-slide-right' : 'zoom-img-fade'"
+        >
+          <img
+            v-if="zoomedImage"
+            :key="zoomedImage"
+            :src="zoomedImage"
+            class="zoomed-img"
+            :class="{ 'with-rotate-transition': rotateTransition }"
+            :style="{
+              transform: `rotate(${zoomRotation}deg) scale(${zoomScale}) translate(${dragOffset.x}px, ${dragOffset.y}px)` ,
+              cursor: zoomScale > 1 ? (dragStart ? 'grabbing' : 'grab') : 'zoom-out'
+            }"
+            draggable="false"
+            alt="Imagen ampliada"
+            @wheel.prevent="handleWheelZoom"
+            @mousedown="onImgMouseDown"
+            @touchstart="onImgTouchStart"
+            @touchmove="onImgTouchMove"
+            @touchend="onImgTouchEnd"
+          />
+        </transition>
         <div v-if="tooltip" class="zoom-tooltip" :style="{ left: tooltipPos.x + 12 + 'px', top: tooltipPos.y + 12 + 'px' }">
           {{ tooltip }}
         </div>
@@ -601,7 +694,6 @@ function hideTooltip() {
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 500px;
-  margin: 0 auto;
   position: relative;
 }
 
@@ -1207,12 +1299,13 @@ function hideTooltip() {
   height: 44px;
   font-size: 1.7rem;
   color: var(--primary-color);
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, color 0.2s, opacity 0.2s;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  opacity: 0.92;
 }
 .zoom-reset:disabled {
   opacity: 0.5;
@@ -1280,5 +1373,74 @@ function hideTooltip() {
 }
 .zoom-modal-fade-enter-from, .zoom-modal-fade-leave-to {
   opacity: 0;
+}
+/* --- Botones navegación imagen zoom --- */
+.zoom-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 11;
+  background: rgba(255,255,255,0.94);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 2.3rem;
+  color: var(--primary-color);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  opacity: 0.92;
+  line-height: 1;
+  padding: 0;
+}
+.zoom-nav > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.zoom-nav:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.zoom-nav-left {
+  left: 2vw;
+}
+.zoom-nav-right {
+  right: 2vw;
+}
+
+/* --- Animaciones de transición de imagen zoom --- */
+.zoom-img-fade-enter-active, .zoom-img-fade-leave-active {
+  transition: opacity 0.22s cubic-bezier(.4,2,.4,1);
+}
+.zoom-img-fade-enter-from, .zoom-img-fade-leave-to {
+  opacity: 0;
+}
+.zoom-img-slide-left-enter-active, .zoom-img-slide-left-leave-active {
+  transition: opacity 0.22s, transform 0.22s cubic-bezier(.4,2,.4,1);
+}
+.zoom-img-slide-left-enter-from {
+  opacity: 0;
+  transform: translateX(60px) scale(1);
+}
+.zoom-img-slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-60px) scale(1);
+}
+.zoom-img-slide-right-enter-active, .zoom-img-slide-right-leave-active {
+  transition: opacity 0.22s, transform 0.22s cubic-bezier(.4,2,.4,1);
+}
+.zoom-img-slide-right-enter-from {
+  opacity: 0;
+  transform: translateX(-60px) scale(1);
+}
+.zoom-img-slide-right-leave-to {
+  opacity: 0;
+  transform: translateX(60px) scale(1);
 }
 </style>
