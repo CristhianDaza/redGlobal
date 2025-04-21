@@ -43,15 +43,18 @@ const showPricesWithIva = ref(false);
 const showQuoteModal = ref(false);
 const isZoomed = ref(false);
 const zoomedImage = ref('');
+const zoomRotation = ref(0);
 
 function openZoom(image: string) {
   zoomedImage.value = image;
   isZoomed.value = true;
+  zoomRotation.value = 0;
   document.body.style.overflow = 'hidden';
 }
 function closeZoom() {
   isZoomed.value = false;
   zoomedImage.value = '';
+  zoomRotation.value = 0;
   document.body.style.overflow = '';
 }
 function handleOverlayClick(e: MouseEvent) {
@@ -59,6 +62,12 @@ function handleOverlayClick(e: MouseEvent) {
 }
 function handleEscape(e: KeyboardEvent) {
   if (e.key === 'Escape') closeZoom();
+}
+function rotateLeft() {
+  zoomRotation.value = (zoomRotation.value - 90 + 360) % 360;
+}
+function rotateRight() {
+  zoomRotation.value = (zoomRotation.value + 90) % 360;
 }
 watch(isZoomed, (val) => {
   if (val) window.addEventListener('keydown', handleEscape);
@@ -402,8 +411,12 @@ const formatLabelName = (name: string) => {
     />
     <!-- Modal Zoom -->
     <div v-if="isZoomed" class="zoom-modal" @click="handleOverlayClick">
-      <button class="zoom-close" @click="closeZoom" aria-label="Cerrar">✕</button>
-      <img :src="zoomedImage" class="zoomed-img" :alt="product?.name" />
+      <div class="zoom-toolbar">
+        <button class="zoom-close" @click="closeZoom" aria-label="Cerrar">✕</button>
+        <button class="zoom-rotate" @click.stop="rotateLeft" aria-label="Girar izquierda">⟲</button>
+        <button class="zoom-rotate" @click.stop="rotateRight" aria-label="Girar derecha">⟳</button>
+      </div>
+      <img :src="zoomedImage" class="zoomed-img" :alt="product?.name" :style="{ transform: `rotate(${zoomRotation}deg)` }" />
     </div>
   </div>
 </template>
@@ -806,7 +819,10 @@ const formatLabelName = (name: string) => {
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .color-button:hover::after {
@@ -1000,23 +1016,15 @@ const formatLabelName = (name: string) => {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-.zoomed-img {
-  max-width: 90vw;
-  max-height: 80vh;
-  border-radius: 16px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
-  background: #fff;
-  object-fit: contain;
-  animation: zoomIn 0.2s;
-}
-@keyframes zoomIn {
-  from { transform: scale(0.7); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-.zoom-close {
+.zoom-toolbar {
   position: absolute;
   top: 2.5rem;
   right: 2.5rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 2;
+}
+.zoom-close {
   background: rgba(255,255,255,0.85);
   border: none;
   border-radius: 50%;
@@ -1026,14 +1034,46 @@ const formatLabelName = (name: string) => {
   color: var(--primary-color);
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 .zoom-close:hover {
   background: #fff;
+  color: #d32f2f;
+}
+.zoom-rotate {
+  background: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.7rem;
   color: var(--primary-color);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.zoom-rotate:hover {
+  background: #fff;
+  color: #d32f2f;
+}
+.zoomed-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  background: #fff;
+  object-fit: contain;
+  animation: zoomIn 0.2s;
+  transition: transform 0.25s cubic-bezier(.4,2,.4,1);
+}
+@keyframes zoomIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 </style>
