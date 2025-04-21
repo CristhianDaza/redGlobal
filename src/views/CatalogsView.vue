@@ -7,7 +7,9 @@ const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => im
 const { catalogs, loadCatalogs, isLoadingCatalog } = useCatalogAdmin()
 
 onMounted(() => {
-  loadCatalogs()
+  if (!catalogs.value || catalogs.value.length === 0) {
+    loadCatalogs()
+  }
 })
 </script>
 

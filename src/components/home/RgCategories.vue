@@ -7,7 +7,9 @@ const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => im
 const categoryStore = useCategoryStore();
 
 onMounted(async () => {
-  await categoryStore.getCategoryCards();
+  if (!categoryStore.categoryCards || categoryStore.categoryCards.length === 0) {
+    await categoryStore.getCategoryCards();
+  }
 });
 
 const activeCategories = computed(() => {

@@ -21,7 +21,9 @@ const pageSize = ref(Number(route.query.size) || 16);
 
 onMounted(async () => {
   isLoading.value = true;
-  await storeProducts.getAllProducts();
+  if (!storeProducts.products) {
+    await storeProducts.getAllProducts();
+  }
   if (searchQuery.value) {
     storeProducts.filterProducts(searchQuery.value);
   }

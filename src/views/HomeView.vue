@@ -10,11 +10,13 @@ const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import
 const store = useProductsStore();
 
 onMounted(async () => {
-  await store.getAllProducts();
+  if (!store.products || store.products.length === 0) {
+    await store.getAllProducts();
+  }
 });
 
 const popularProducts = computed(() => {
-  if (!store.products) return [];
+  if (!store.products || store.products.length === 0) return [];
 
   const shuffled = [...store.products];
 

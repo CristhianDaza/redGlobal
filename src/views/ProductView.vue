@@ -55,7 +55,7 @@ const loadProduct = async () => {
     if (authStore.isAuthenticated() && !userStore.users.length) {
       await userStore.getUsers();
     }
-    if (!productsStore.products) {
+    if (!productsStore.products || productsStore.products.length === 0) {
       await productsStore.getAllProducts();
     }
     const found = productsStore.products?.find(p => p.id === route.params.id);
@@ -70,7 +70,12 @@ const loadProduct = async () => {
   }
 };
 
-onMounted(loadProduct);
+onMounted(async () => {
+  if (!productsStore.products || productsStore.products.length === 0) {
+    await productsStore.getAllProducts();
+  }
+  loadProduct();
+});
 
 watch(() => route.params.id, loadProduct);
 

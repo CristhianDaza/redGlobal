@@ -35,11 +35,12 @@ onMounted(() => {
     if (currentUser && !executed) {
       executed = true;
       const isRoleAdmin = currentUser.role === 'admin';
-
-      await Promise.all([
-        storeProducts.getAllProducts(isRoleAdmin),
-        menuStore.getMenu()
-      ]);
+      if (!storeProducts.products || storeProducts.products.length === 0) {
+        await storeProducts.getAllProducts(isRoleAdmin);
+      }
+      if (!menuStore.menu || menuStore.menu.length === 0) {
+        await menuStore.getMenu();
+      }
       if (authStore.isAuthenticated()) {
         await userStore.getUsers();
         updateCustomColors();
@@ -62,6 +63,7 @@ onMounted(() => {
   });
 
   userStore.$subscribe(() => {
+    console.log('Cargando usuarios...');
     updateCustomColors();
   });
 });

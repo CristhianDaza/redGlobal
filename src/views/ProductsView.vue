@@ -185,7 +185,7 @@ const handleCategorySelect = (category: string) => {
 };
 
 onMounted(async () => {
-  if (!productsStore.products) {
+  if (!productsStore.products || productsStore.products.length === 0) {
     await productsStore.getAllProducts();
   }
 });
