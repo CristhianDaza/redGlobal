@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '@/types/common.d';
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, computed } from 'vue';
 import { formatNumber } from '@/utils';
 
 const RgImage = defineAsyncComponent(/* webpackChunkName: "rgImage" */() => import('@/components/UI/RgImage.vue'));
 
-defineProps<{
-  productsView: ProductsRedGlobal;
-}>();
+const { productsView } = defineProps<{ productsView: ProductsRedGlobal }>();
+
+const stockClass = computed(() => {
+  const val = productsView.totalProducts;
+  if (val < 0) return 'stock-negative';
+  if (val === 0) return 'stock-zero';
+  if (val > 0 && val <= 10) return 'stock-low';
+  if (val > 10) return 'stock-ok';
+  return '';
+});
 
 </script>
 
@@ -25,9 +32,9 @@ defineProps<{
       <p class="product-category" v-if="productsView.category?.length">{{ productsView.category?.[0]}}</p>
       <h3 class="product-name">{{ productsView.name }}</h3>
       <p class="product-code">{{ productsView.id }}</p>
-      <div class="product-stock" v-if="productsView.totalProducts">
+      <div class="product-stock" v-if="productsView.totalProducts !== undefined">
         <p class="stock-label">Unidades disponibles:</p>
-        <p class="stock-amount">{{ formatNumber(productsView.totalProducts)}} und</p>
+        <p class="stock-amount" :class="stockClass">{{ formatNumber(productsView.totalProducts)}}</p>
       </div>
     </div>
   </div>
@@ -126,5 +133,22 @@ defineProps<{
   font-size: 0.9rem;
   font-weight: 600;
   color: #4CAF50;
+  transition: color 0.2s;
+}
+
+.stock-negative {
+  color: #c62828; /* Rojo oscuro, alerta fuerte */
+}
+
+.stock-zero {
+  color: #ffb3b3; /* Rojo pastel, suave pero visible */
+}
+
+.stock-low {
+  color: #f9a825; /* Amarillo oscuro/naranja, advertencia */
+}
+
+.stock-ok {
+  color: #388e3c; /* Verde más sobrio, profesional */
 }
 </style>
