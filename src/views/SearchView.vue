@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '@/types/common.d'
+import { useHead } from '@vueuse/head';
 import { computed, defineAsyncComponent, ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter, LocationQuery } from 'vue-router';
 import { useProductsStore } from '@/store/';
@@ -122,6 +123,22 @@ const productsToShow = computed<ProductsRedGlobal[]>(() => {
   return products.map(product => ({
     ...product,
   }));
+});
+
+useHead({
+  title: 'Buscar productos – Red Global Promocionales',
+  meta: [
+    { name: 'description', content: 'Busca productos promocionales y regalos corporativos en nuestro catálogo. Resultados filtrados y paginados.' },
+    { name: 'robots', content: 'index, follow' },
+    { property: 'og:title', content: 'Buscar productos – Red Global Promocionales' },
+    { property: 'og:description', content: 'Busca productos promocionales y regalos corporativos en nuestro catálogo. Resultados filtrados y paginados.' },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:locale', content: 'es_CO' },
+    { property: 'og:url', content: 'https://redglobalpromocionales.com/search' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://redglobalpromocionales.com/search' }
+  ]
 });
 
 watch(

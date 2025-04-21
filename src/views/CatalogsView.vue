@@ -1,10 +1,27 @@
-<script lang="ts" setup>
+<script setup lang="ts">
+import { useHead } from '@vueuse/head';
 import { defineAsyncComponent, onMounted } from 'vue'
 import { useCatalogAdmin } from '@/composable'
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 
 const { catalogs, loadCatalogs, isLoadingCatalog } = useCatalogAdmin()
+
+useHead({
+  title: 'Catálogos – Red Global Promocionales',
+  meta: [
+    { name: 'description', content: 'Descarga nuestros catálogos de regalos corporativos y productos promocionales. Gran variedad para tu empresa.' },
+    { name: 'robots', content: 'index, follow' },
+    { property: 'og:title', content: 'Catálogos – Red Global Promocionales' },
+    { property: 'og:description', content: 'Descarga nuestros catálogos de regalos corporativos y productos promocionales. Gran variedad para tu empresa.' },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:locale', content: 'es_CO' },
+    { property: 'og:url', content: 'https://redglobalpromocionales.com/catalogos' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://redglobalpromocionales.com/catalogos' }
+  ]
+})
 
 onMounted(() => {
   if (!catalogs.value || catalogs.value.length === 0) {

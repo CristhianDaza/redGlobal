@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useHead } from '@vueuse/head';
 import { onMounted, defineAsyncComponent } from 'vue';
 import { useRouter } from 'vue-router';
 import { useProductsStore } from '@/store';
@@ -183,6 +184,22 @@ const handleCategorySelect = (category: string) => {
     query: { category }
   });
 };
+
+useHead({
+  title: 'Productos – Red Global Promocionales',
+  meta: [
+    { name: 'description', content: 'Explora todos nuestros productos promocionales y regalos corporativos. Encuentra la mejor opción para tu empresa.' },
+    { name: 'robots', content: 'index, follow' },
+    { property: 'og:title', content: 'Productos – Red Global Promocionales' },
+    { property: 'og:description', content: 'Explora todos nuestros productos promocionales y regalos corporativos. Encuentra la mejor opción para tu empresa.' },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:locale', content: 'es_CO' },
+    { property: 'og:url', content: 'https://redglobalpromocionales.com/products' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://redglobalpromocionales.com/products' }
+  ]
+});
 
 onMounted(async () => {
   if (!productsStore.products || productsStore.products.length === 0) {

@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store';
 import { useMenuAdmin, useUserAdmin, useQuoteAdmin, useCategoryAdmin, useCatalogAdmin } from '@/composable';
 import { UserFormData, tabs } from "@/types/common";
+import { useHead } from '@vueuse/head';
 
 const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('../components/Admin/MenuItemForm.vue'));
 const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => import('../components/Admin/UserForm.vue'));
@@ -232,11 +233,36 @@ const deleteMessage = computed(() => {
   return `¿Estás seguro de que deseas eliminar ${label}?`
 })
 
+const activeTabTitle = {
+  menu: 'Menú',
+  users: 'Usuarios',
+  quotes: 'Cotizaciones',
+  cards: 'Categorías',
+  catalogs: 'Catálogos'
+}
+
+  useHead({
+    title: computed(() => `${activeTabTitle[route.query.tab as tabs]} Admin – Red Global Promocionales` || 'Admin – Red Global Promocionales'),
+    meta: [
+      { name: 'description', content: 'Panel de administración para gestionar menú, usuarios, cotizaciones, categorías y catálogos.' },
+      { name: 'robots', content: 'noindex, nofollow' },
+      { property: 'og:title', content: 'Admin – Red Global Promocionales' },
+      { property: 'og:description', content: 'Panel de administración para gestionar menú, usuarios, cotizaciones, categorías y catálogos.' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: 'es_CO' },
+      { property: 'og:url', content: 'https://redglobalpromocionales.com/admin' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://redglobalpromocionales.com/admin' }
+  ]
+});
+
 watch(() => route.query.tab, (newTab) => {
   if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs'].includes(newTab as tabs)) {
     activeTab.value = newTab as tabs;
   }
 });
+
 </script>
 
 <template>

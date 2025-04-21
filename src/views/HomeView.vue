@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useHead } from '@vueuse/head';
 import { onMounted, computed, defineAsyncComponent } from 'vue';
 import { useProductsStore } from '@/store';
 
@@ -28,6 +29,21 @@ const popularProducts = computed(() => {
   return shuffled.slice(0, 12);
 });
 
+useHead({
+  title: 'Inicio – Red Global Promocionales',
+  meta: [
+    { name: 'description', content: 'Regalos corporativos y productos promocionales personalizados. Encuentra la mejor variedad para tu empresa.' },
+    { name: 'robots', content: 'index, follow' },
+    { property: 'og:title', content: 'Inicio – Red Global Promocionales' },
+    { property: 'og:description', content: 'Regalos corporativos y productos promocionales personalizados. Encuentra la mejor variedad para tu empresa.' },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:locale', content: 'es_CO' },
+    { property: 'og:url', content: 'https://redglobalpromocionales.com/' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://redglobalpromocionales.com/' }
+  ]
+});
 </script>
 
 <template>

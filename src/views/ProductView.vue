@@ -4,6 +4,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
 import { formatColor, formatNumber, getRelativeTime } from '@/utils'
+import { useHead } from '@vueuse/head';
 
 const RgImage = defineAsyncComponent(/* webpackChunkName: "rgImage" */() => import('@/components/UI/RgImage.vue'));
 const RgLoader = defineAsyncComponent(/* webpackChunkName: "rgLoader" */() => import('@/components/UI/RgLoader.vue'));
@@ -16,6 +17,23 @@ const productsStore = useProductsStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const product = ref<ProductsRedGlobal | null>(null);
+
+useHead({
+  title: computed(() => `${product.value?.id} ${product.value?.name} – Red Global Promocionales` || 'Producto – Red Global Promocionales'),
+  meta: [
+    { name: 'description', content: product.value?.description || 'Detalles del producto promocional en Red Global Promocionales.' },
+    { name: 'robots', content: 'index, follow' },
+    { property: 'og:title', content: product.value?.name || 'Producto – Red Global Promocionales' },
+    { property: 'og:description', content: product.value?.description || 'Detalles del producto promocional en Red Global Promocionales.' },
+    { property: 'og:type', content: 'product' },
+    { property: 'og:locale', content: 'es_CO' },
+    { property: 'og:url', content: `https://redglobalpromocionales.com/product/${product.value?.id}` }
+  ],
+  link: [
+    { rel: 'canonical', href: `https://redglobalpromocionales.com/product/${product.value?.id}` }
+  ]
+});
+
 const selectedImage = ref('');
 const currentImageIndex = ref(0);
 const visibleThumbnails = 6;
@@ -129,6 +147,8 @@ const getStatusClass = (status: string | null) => {
 const formatLabelName = (name: string) => {
   return name.replace(/_/g, ' ');
 };
+
+
 </script>
 
 <template>

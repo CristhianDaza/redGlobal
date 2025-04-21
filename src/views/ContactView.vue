@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useHead } from '@vueuse/head';
 import type { EmailData } from '../services/emailService';
 import { ref, defineAsyncComponent } from 'vue';
 import { emailService } from '@/services';
@@ -74,6 +75,22 @@ const handleSubmit = async () => {
     }, 500);
   }
 };
+
+useHead({
+  title: 'Contacto – Red Global Promocionales',
+  meta: [
+    { name: 'description', content: 'Contáctanos para cotizaciones y consultas sobre regalos corporativos y productos promocionales.' },
+    { name: 'robots', content: 'index, follow' },
+    { property: 'og:title', content: 'Contacto – Red Global Promocionales' },
+    { property: 'og:description', content: 'Contáctanos para cotizaciones y consultas sobre regalos corporativos y productos promocionales.' },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:locale', content: 'es_CO' },
+    { property: 'og:url', content: 'https://redglobalpromocionales.com/contacto' }
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://redglobalpromocionales.com/contacto' }
+  ]
+});
 </script>
 
 <template>
