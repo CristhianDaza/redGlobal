@@ -41,6 +41,29 @@ const selectedColor = ref('');
 const isLoading = ref(false);
 const showPricesWithIva = ref(false);
 const showQuoteModal = ref(false);
+const isZoomed = ref(false);
+const zoomedImage = ref('');
+
+function openZoom(image: string) {
+  zoomedImage.value = image;
+  isZoomed.value = true;
+  document.body.style.overflow = 'hidden';
+}
+function closeZoom() {
+  isZoomed.value = false;
+  zoomedImage.value = '';
+  document.body.style.overflow = '';
+}
+function handleOverlayClick(e: MouseEvent) {
+  if (e.target === e.currentTarget) closeZoom();
+}
+function handleEscape(e: KeyboardEvent) {
+  if (e.key === 'Escape') closeZoom();
+}
+watch(isZoomed, (val) => {
+  if (val) window.addEventListener('keydown', handleEscape);
+  else window.removeEventListener('keydown', handleEscape);
+});
 
 const isPriceLoading = computed(() => {
   return authStore.isAuthenticated() && userStore.isLoadingUsers;
@@ -147,8 +170,6 @@ const getStatusClass = (status: string | null) => {
 const formatLabelName = (name: string) => {
   return name.replace(/_/g, ' ');
 };
-
-
 </script>
 
 <template>
@@ -166,6 +187,8 @@ const formatLabelName = (name: string) => {
               width="300"
               height="300"
               class="main-image"
+              @click="openZoom(selectedImage || product?.mainImage)"
+              style="cursor: zoom-in;"
             />
           </div>
           <div class="thumbnails-container" v-if="product.images?.length">
@@ -377,6 +400,11 @@ const formatLabelName = (name: string) => {
       :product="product"
       @close="showQuoteModal = false"
     />
+    <!-- Modal Zoom -->
+    <div v-if="isZoomed" class="zoom-modal" @click="handleOverlayClick">
+      <button class="zoom-close" @click="closeZoom" aria-label="Cerrar">✕</button>
+      <img :src="zoomedImage" class="zoomed-img" :alt="product?.name" />
+    </div>
   </div>
 </template>
 
@@ -955,5 +983,57 @@ const formatLabelName = (name: string) => {
     width: 60px;
     height: 60px;
   }
+}
+
+.zoom-modal {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30,30,30,0.2);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.zoomed-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  background: #fff;
+  object-fit: contain;
+  animation: zoomIn 0.2s;
+}
+@keyframes zoomIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.zoom-close {
+  position: absolute;
+  top: 2.5rem;
+  right: 2.5rem;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 2rem;
+  color: var(--primary-color);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.zoom-close:hover {
+  background: #fff;
+  color: var(--primary-color);
 }
 </style>
