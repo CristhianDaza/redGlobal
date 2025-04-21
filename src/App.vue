@@ -38,9 +38,6 @@ onMounted(() => {
       if (!storeProducts.products || storeProducts.products.length === 0) {
         await storeProducts.getAllProducts(isRoleAdmin);
       }
-      if (!menuStore.menu || menuStore.menu.length === 0) {
-        await menuStore.getMenu();
-      }
       if (authStore.isAuthenticated()) {
         await userStore.getUsers();
         updateCustomColors();
@@ -48,6 +45,10 @@ onMounted(() => {
       stopWatch();
     } else if (!currentUser) {
       updateCustomColors();
+    }
+
+    if (!menuStore.menu || menuStore.menu.length === 0) {
+      await menuStore.getMenu();
     }
   },
     { immediate: true }
