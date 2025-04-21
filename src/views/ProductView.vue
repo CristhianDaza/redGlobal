@@ -82,7 +82,7 @@ const handleOverlayClick = (e: MouseEvent) => {
 const rotateLeft = () => {
   rotateTransition.value = true;
   zoomRotation.value = (zoomRotation.value - 90 + 360) % 360;
-  setTimeout(() => { rotateTransition.value = false; }, 260); // igual a la duración de la transición
+  setTimeout(() => { rotateTransition.value = false; }, 260);
 }
 const rotateRight = () => {
   rotateTransition.value = true;

@@ -62,14 +62,14 @@ export const useProductsStore = defineStore('products', {
         isLoadingProductsCataPromComposable,
         isSuccessProductsCataPromComposable
       } = useProductsCataProm()
-    
+
       const shouldUpdate = await firebaseService.shouldUpdate()
       this.lastUpdateProducts = await firebaseService.getLastUpdate()
       if (!shouldUpdate && !forceUpdate) {
         this.products = await firebaseService.getAllProducts()
         return;
       }
-    
+
       this.isUpdating = true;
       this.isLoadingApiPromos = isLoadingProductsPromosComposable
       this.isLoadingApiMarpico = isLoadingProductsMarpicoComposable
@@ -79,15 +79,14 @@ export const useProductsStore = defineStore('products', {
       this.isSuccessApiMarpico = isSuccessProductsMarpicoComposable
       this.isSuccessApiStockSur = isSuccessProductsStockSurComposable
       this.isSuccessApiCataProm = isSuccessProductsCataPromComposable
-    
-      // Llamamos a todas las APIs, sin que un fallo detenga las demás:
+
       const results = await Promise.allSettled([
         getProductsPromos(),
         getProductsMarpico(),
         getProductsStockSur(),
         getProductsCataProm(),
       ])
-    
+
       const productsPromos = results[0].status === 'fulfilled'
         ? results[0].value
         : (console.error('Promos API failed:', results[0].reason), []);
@@ -116,7 +115,7 @@ export const useProductsStore = defineStore('products', {
       ) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-    
+
       this.isLoadingSaveProducts = true;
       try {
         if (allProducts.length > 0) {
@@ -132,7 +131,7 @@ export const useProductsStore = defineStore('products', {
         this.isLoadingSaveProducts = false;
         this.isUpdating = false;
       }
-    },    
+    },
 
     setProductsToView(products: ProductsRedGlobal[]): void {
       this.productsToView = products
