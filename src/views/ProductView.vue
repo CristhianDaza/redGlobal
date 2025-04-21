@@ -44,18 +44,25 @@ const showQuoteModal = ref(false);
 const isZoomed = ref(false);
 const zoomedImage = ref('');
 const zoomRotation = ref(0);
+const zoomAnimState = ref('');
 
 function openZoom(image: string) {
   zoomedImage.value = image;
   isZoomed.value = true;
   zoomRotation.value = 0;
+  zoomAnimState.value = 'opening';
+  setTimeout(() => { zoomAnimState.value = ''; }, 200);
   document.body.style.overflow = 'hidden';
 }
 function closeZoom() {
-  isZoomed.value = false;
-  zoomedImage.value = '';
-  zoomRotation.value = 0;
-  document.body.style.overflow = '';
+  zoomAnimState.value = 'closing';
+  setTimeout(() => {
+    isZoomed.value = false;
+    zoomedImage.value = '';
+    zoomRotation.value = 0;
+    zoomAnimState.value = '';
+    document.body.style.overflow = '';
+  }, 200);
 }
 function handleOverlayClick(e: MouseEvent) {
   if (e.target === e.currentTarget) closeZoom();
@@ -68,6 +75,9 @@ function rotateLeft() {
 }
 function rotateRight() {
   zoomRotation.value = (zoomRotation.value + 90) % 360;
+}
+function resetRotation() {
+  zoomRotation.value = 0;
 }
 watch(isZoomed, (val) => {
   if (val) window.addEventListener('keydown', handleEscape);
@@ -410,14 +420,39 @@ const formatLabelName = (name: string) => {
       @close="showQuoteModal = false"
     />
     <!-- Modal Zoom -->
-    <div v-if="isZoomed" class="zoom-modal" @click="handleOverlayClick">
-      <div class="zoom-toolbar">
-        <button class="zoom-close" @click="closeZoom" aria-label="Cerrar">✕</button>
-        <button class="zoom-rotate" @click.stop="rotateLeft" aria-label="Girar izquierda">⟲</button>
-        <button class="zoom-rotate" @click.stop="rotateRight" aria-label="Girar derecha">⟳</button>
+    <transition name="zoom-modal-fade">
+      <div
+        v-if="isZoomed"
+        class="zoom-modal"
+        :class="{
+          'zoom-modal-opening': zoomAnimState === 'opening',
+          'zoom-modal-closing': zoomAnimState === 'closing'
+        }"
+        @click="handleOverlayClick"
+      >
+        <div class="zoom-toolbar">
+          <button class="zoom-close" @click="closeZoom" title="Cerrar">✕</button>
+          <button class="zoom-rotate" @click="rotateLeft" title="Girar a la izquierda">⟲</button>
+          <button class="zoom-rotate" @click="rotateRight" title="Girar a la derecha">⟳</button>
+          <button class="zoom-rotate zoom-reset" @click="resetRotation" :disabled="zoomRotation === 0" title="Restaurar orientación">
+            <span style="font-size:1.3rem">⤾</span>
+          </button>
+        </div>
+        <div class="zoom-indicator">
+          <span>{{ zoomRotation }}°</span>
+        </div>
+        <img
+          v-if="zoomedImage"
+          :src="zoomedImage"
+          class="zoomed-img"
+          :style="{
+            transform: `rotate(${zoomRotation}deg)`
+          }"
+          draggable="false"
+          alt="Imagen ampliada"
+        />
       </div>
-      <img :src="zoomedImage" class="zoomed-img" :alt="product?.name" :style="{ transform: `rotate(${zoomRotation}deg)` }" />
-    </div>
+    </transition>
   </div>
 </template>
 
@@ -812,7 +847,7 @@ const formatLabelName = (name: string) => {
   left: 50%;
   transform: translateX(-50%);
   padding: 4px 8px;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.85);
   color: white;
   font-size: 12px;
   border-radius: 4px;
@@ -1008,13 +1043,30 @@ const formatLabelName = (name: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(30,30,30,0.2);
-  backdrop-filter: blur(8px);
+  background: rgba(30,30,30,0.25);
+  backdrop-filter: blur(12px) brightness(0.95);
+  animation: fadeIn 0.2s;
+  transition: background 0.25s cubic-bezier(.4,2,.4,1), backdrop-filter 0.25s cubic-bezier(.4,2,.4,1);
+}
+.zoom-modal-opening {
   animation: fadeIn 0.2s;
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.zoom-modal-closing {
+  animation: fadeOut 0.2s;
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.zoomed-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 22px;
+  box-shadow: 0 12px 60px rgba(0,0,0,0.35);
+  background: #fff;
+  object-fit: contain;
+  animation: zoomIn 0.23s;
+  transition: transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s;
 }
 .zoom-toolbar {
   position: absolute;
@@ -1024,27 +1076,8 @@ const formatLabelName = (name: string) => {
   gap: 0.5rem;
   z-index: 2;
 }
-.zoom-close {
-  background: rgba(255,255,255,0.85);
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 2rem;
-  color: var(--primary-color);
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, color 0.2s;
-}
-.zoom-close:hover {
-  background: #fff;
-  color: #d32f2f;
-}
-.zoom-rotate {
-  background: rgba(255,255,255,0.85);
+.zoom-rotate, .zoom-reset {
+  background: rgba(255,255,255,0.92);
   border: none;
   border-radius: 50%;
   width: 44px;
@@ -1052,28 +1085,57 @@ const formatLabelName = (name: string) => {
   font-size: 1.7rem;
   color: var(--primary-color);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, color 0.2s, opacity 0.2s;
 }
-.zoom-rotate:hover {
-  background: #fff;
+.zoom-reset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.zoom-indicator {
+  position: absolute;
+  top: 1.1rem;
+  right: 2.5rem;
+  z-index: 3;
+  background: rgba(255,255,255,0.92);
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  padding: 0.18rem 0.85rem;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 500;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+/* Transición modal Vue */
+.zoom-modal-fade-enter-active, .zoom-modal-fade-leave-active {
+  transition: opacity 0.25s cubic-bezier(.4,2,.4,1);
+}
+.zoom-modal-fade-enter-from, .zoom-modal-fade-leave-to {
+  opacity: 0;
+}
+
+.zoom-close {
+  background: rgba(255,255,255,0.95);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 2rem;
   color: #d32f2f;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
-.zoomed-img {
-  max-width: 90vw;
-  max-height: 80vh;
-  border-radius: 16px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+.zoom-close:hover {
   background: #fff;
-  object-fit: contain;
-  animation: zoomIn 0.2s;
-  transition: transform 0.25s cubic-bezier(.4,2,.4,1);
-}
-@keyframes zoomIn {
-  from { transform: scale(0.7); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  color: var(--primary-color);
+  box-shadow: 0 4px 16px rgba(211,47,47,0.16);
 }
 </style>
