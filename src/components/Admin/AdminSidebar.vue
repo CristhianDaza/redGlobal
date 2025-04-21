@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { useAuthStore, useUserStore } from '@/store'
 
 defineProps({
@@ -10,6 +10,8 @@ defineProps({
 
 const authStore = useAuthStore()
 const userStore = useUserStore()
+
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 
 const currentUserName = computed(() => {
   const user = userStore.users.find(u => u.email === authStore.user?.email)
@@ -72,6 +74,13 @@ const currentUserName = computed(() => {
           {{ pendingQuotes }}
         </span>
       </button>
+      <RgButton
+        v-if="isAdmin"
+        @click="$emit('update-products')"
+        full
+      >
+        Actualizar Productos
+      </RgButton>
     </nav>
   </aside>
 </template>

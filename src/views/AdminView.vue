@@ -5,12 +5,13 @@ import { useAuthStore } from '@/store';
 import { useMenuAdmin, useUserAdmin, useQuoteAdmin, useCategoryAdmin, useCatalogAdmin } from '@/composable';
 import { UserFormData, tabs } from "@/types/common";
 import { useHead } from '@vueuse/head';
+import { useProductsStore } from '@/store';
 
-const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('../components/Admin/MenuItemForm.vue'));
-const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => import('../components/Admin/UserForm.vue'));
-const RgConfirmModal = defineAsyncComponent(/* webpackChunkName: "rgConfirmModal" */() => import('../components/UI/RgConfirmModal.vue'));
-const CategoryCardForm = defineAsyncComponent(/* webpackChunkName: "categoryCardForm" */() => import('../components/Admin/CategoryCardForm.vue'));
-const CatalogForm = defineAsyncComponent(/* webpackChunkName: "catalogForm" */() => import('../components/Admin/CatalogForm.vue'));
+const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('@/components/Admin/MenuItemForm.vue'));
+const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => import('@/components/Admin/UserForm.vue'));
+const RgConfirmModal = defineAsyncComponent(/* webpackChunkName: "rgConfirmModal" */() => import('@/components/UI/RgConfirmModal.vue'));
+const CategoryCardForm = defineAsyncComponent(/* webpackChunkName: "categoryCardForm" */() => import('@/components/Admin/CategoryCardForm.vue'));
+const CatalogForm = defineAsyncComponent(/* webpackChunkName: "catalogForm" */() => import('@/components/Admin/CatalogForm.vue'));
 
 const AdminSidebar = defineAsyncComponent(/* webpackChunkName: "adminSidebar" */() => import('@/components/Admin/AdminSidebar.vue'));
 const MenuSection = defineAsyncComponent(/* webpackChunkName: "menuSection" */() => import('@/components/Admin/sections/MenuSection.vue'));
@@ -24,6 +25,7 @@ const CatalogsSection = defineAsyncComponent(/* webpackChunkName: "catalogsSecti
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+const storeProducts = useProductsStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated());
 
 const activeTab = ref<tabs>('quotes');
@@ -110,45 +112,48 @@ const {
   deleteCatalog
 } = useCatalogAdmin();
 
-const showDeleteConfirm = ref(false);
-const itemToDelete = ref<{ id: string; type: tabs } | undefined>(undefined);
+const showConfirmModal = ref(false);
+const itemToConfirmModal = ref<{ id: string; type: string } | undefined>(undefined);
 
 const handleDeleteClick = (id: string, type: tabs) => {
-  itemToDelete.value = { id, type };
-  showDeleteConfirm.value = true;
+  itemToConfirmModal.value = { id, type };
+  showConfirmModal.value = true;
 };
 
-const handleConfirmDelete = async () => {
-  if (!itemToDelete.value) return;
+const handleConfirmModal = async () => {
+  if (!itemToConfirmModal.value) return;
   try {
-    switch (itemToDelete.value.type) {
+    switch (itemToConfirmModal.value.type) {
       case 'menu':
-        await deleteMenuItem(itemToDelete.value.id);
+        await deleteMenuItem(itemToConfirmModal.value.id);
         break;
       case 'users':
-        await deleteUser(itemToDelete.value.id);
+        await deleteUser(itemToConfirmModal.value.id);
         break;
       case 'quotes':
-        await deleteQuote(itemToDelete.value.id);
+        await deleteQuote(itemToConfirmModal.value.id);
         break;
       case 'cards':
-        await deleteCategoryCard(itemToDelete.value.id);
+        await deleteCategoryCard(itemToConfirmModal.value.id);
         break;
       case 'catalogs':
-        await deleteCatalog(itemToDelete.value.id);
+        await deleteCatalog(itemToConfirmModal.value.id);
+        break;
+      case 'update':
+        await storeProducts.callServices(true);
         break;
     }
   } catch (error) {
     console.error('Error deleting item:', error);
   } finally {
-    showDeleteConfirm.value = false;
-    itemToDelete.value = undefined;
+    showConfirmModal.value = false;
+    itemToConfirmModal.value = undefined;
   }
 };
 
-const handleCancelDelete = () => {
-  showDeleteConfirm.value = false;
-  itemToDelete.value = undefined;
+const handleCancelModal = () => {
+  showConfirmModal.value = false;
+  itemToConfirmModal.value = undefined;
 };
 
 const handleCloseModal = () => {
@@ -217,20 +222,40 @@ watch(activeTab, async (newTab) => {
   }
 });
 
-const deleteMessagesMap: Record<string, string> = {
-  menu: 'este item del menú',
-  user: 'este usuario',
-  quote: 'esta cotización',
-  card: 'esta categoría',
-  product: 'este producto',
-  catalog: 'este catálogo',
-  default: 'este elemento'
+const messageConfirmsMap: Record<string, string> = {
+  menu: '¿Estás seguro de que deseas eliminar este menú?',
+  users: '¿Estás seguro de que deseas eliminar este usuario?',
+  quotes: '¿Estás seguro de que deseas eliminar esta cotización?',
+  cards: '¿Estás seguro de que deseas eliminar esta categoría?',
+  products: '¿Estás seguro de que deseas eliminar este producto?',
+  catalogs: '¿Estás seguro de que deseas eliminar este catálogo?',
+  default: '¿Estás seguro de que deseas eliminar este elemento?',
+  update: '¿Estás seguro de que deseas actualizar los productos?'
 }
 
-const deleteMessage = computed(() => {
-  const type = itemToDelete?.value?.type || 'default'
-  const label = deleteMessagesMap[type] || deleteMessagesMap.default
-  return `¿Estás seguro de que deseas eliminar ${label}?`
+const titleConfirmsMap: Record<string, string> = {
+  menu: 'Eliminar Menú',
+  users: 'Eliminar Usuario',
+  quotes: 'Eliminar Cotización',
+  cards: 'Eliminar Categoría',
+  products: 'Eliminar Producto',
+  catalogs: 'Eliminar Catálogo',
+  default: 'Eliminar Elemento',
+  update: 'Actualizar Productos'
+}
+
+const messageConfirm = computed(() => {
+  const type = itemToConfirmModal?.value?.type || 'default'
+  console.log(type)
+  const label = messageConfirmsMap[type] || messageConfirmsMap.default
+  return label
+})
+
+const titleConfirm = computed(() => {
+  const type = itemToConfirmModal?.value?.type || 'default'
+  console.log(type)
+  const label = titleConfirmsMap[type] || titleConfirmsMap.default
+  return label
 })
 
 const activeTabTitle = {
@@ -241,16 +266,21 @@ const activeTabTitle = {
   catalogs: 'Catálogos'
 }
 
-  useHead({
-    title: computed(() => `${activeTabTitle[route.query.tab as tabs]} Admin – Red Global Promocionales` || 'Admin – Red Global Promocionales'),
-    meta: [
-      { name: 'description', content: 'Panel de administración para gestionar menú, usuarios, cotizaciones, categorías y catálogos.' },
-      { name: 'robots', content: 'noindex, nofollow' },
-      { property: 'og:title', content: 'Admin – Red Global Promocionales' },
-      { property: 'og:description', content: 'Panel de administración para gestionar menú, usuarios, cotizaciones, categorías y catálogos.' },
-      { property: 'og:type', content: 'website' },
-      { property: 'og:locale', content: 'es_CO' },
-      { property: 'og:url', content: 'https://redglobalpromocionales.com/admin' }
+const handleUpdateProducts = () => {
+  itemToConfirmModal.value = { id: '', type: 'update' };
+  showConfirmModal.value = true;
+};
+
+useHead({
+  title: computed(() => `${activeTabTitle[route.query.tab as tabs]} Admin – Red Global Promocionales` || 'Admin – Red Global Promocionales'),
+  meta: [
+    { name: 'description', content: 'Panel de administración para gestionar menú, usuarios, cotizaciones, categorías y catálogos.' },
+    { name: 'robots', content: 'noindex, nofollow' },
+    { property: 'og:title', content: 'Admin – Red Global Promocionales' },
+    { property: 'og:description', content: 'Panel de administración para gestionar menú, usuarios, cotizaciones, categorías y catálogos.' },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:locale', content: 'es_CO' },
+    { property: 'og:url', content: 'https://redglobalpromocionales.com/admin' }
   ],
   link: [
     { rel: 'canonical', href: 'https://redglobalpromocionales.com/admin' }
@@ -274,6 +304,7 @@ watch(() => route.query.tab, (newTab) => {
       :active-tab="activeTab"
       :is-admin="isAdmin"
       :pending-quotes="pendingQuotesToAdmin"
+      @update-products="handleUpdateProducts"
       @tab-change="handleTabChange"
     />
 
@@ -363,12 +394,12 @@ watch(() => route.query.tab, (newTab) => {
         />
 
         <RgConfirmModal
-          :isOpen="showDeleteConfirm"
-          title="Confirmar eliminación"
-          :message="deleteMessage"
+          :isOpen="showConfirmModal"
+          :title="titleConfirm"
+          :message="messageConfirm"
           :isLoading="loadingData"
-          @confirm="handleConfirmDelete"
-          @close="handleCancelDelete"
+          @confirm="handleConfirmModal"
+          @close="handleCancelModal"
         />
 
         <CatalogForm

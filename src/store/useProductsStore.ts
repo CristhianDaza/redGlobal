@@ -26,7 +26,7 @@ export const useProductsStore = defineStore('products', {
     async getAllProducts(isAdminUser = false): Promise<void> {
       try {
         if (isAdminUser) {
-          await this._callServices()
+          await this.callServices()
         } else {
           this.products = await firebaseService.getAllProducts()
           this.lastUpdateProducts = await firebaseService.getLastUpdate()
@@ -41,7 +41,7 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
-    _callServices: async function (): Promise<void> {
+    callServices: async function (forceUpdate = false): Promise<void> {
       const {
         getProductsPromos,
         isLoadingProductsPromosComposable,
@@ -65,7 +65,7 @@ export const useProductsStore = defineStore('products', {
     
       const shouldUpdate = await firebaseService.shouldUpdate()
       this.lastUpdateProducts = await firebaseService.getLastUpdate()
-      if (!shouldUpdate) {
+      if (!shouldUpdate && !forceUpdate) {
         this.products = await firebaseService.getAllProducts()
         return;
       }
