@@ -99,7 +99,7 @@ useHead({
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 280px);
+  grid-template-columns: repeat(4, 280px);
   gap: 2rem;
   padding: 1rem 0;
   justify-content: center;
