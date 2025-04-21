@@ -113,7 +113,6 @@ export function useProductsCataProm() {
         );
         finalProducts.push(...updatedProducts);
       }
-      console.log('Products Catálogo Prom:', finalProducts);
 
       isSuccessProductsCataPromComposable.value = true;
       return finalProducts;

@@ -30,7 +30,7 @@ const handleConfirm = () => {
     :title="title || 'Confirmar acción'"
     @close="handleClose"
     @confirm="handleConfirm"
-    confirmText="Eliminar"
+    confirmText="Confirmar"
     confirmClass="danger"
     :loading="isLoading"
   >

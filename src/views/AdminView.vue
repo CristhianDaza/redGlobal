@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '@/store';
-import { useMenuAdmin, useUserAdmin, useQuoteAdmin, useCategoryAdmin, useCatalogAdmin } from '@/composable';
-import { UserFormData, tabs } from "@/types/common";
-import { useHead } from '@vueuse/head';
-import { useProductsStore } from '@/store';
+import {computed, defineAsyncComponent, onMounted, ref, watch} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
+import {useAuthStore, useProductsStore} from '@/store';
+import {useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin} from '@/composable';
+import {tabs, UserFormData} from "@/types/common";
+import {useHead} from '@vueuse/head';
 
 const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('@/components/Admin/MenuItemForm.vue'));
 const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => import('@/components/Admin/UserForm.vue'));
@@ -140,6 +139,8 @@ const handleConfirmModal = async () => {
         await deleteCatalog(itemToConfirmModal.value.id);
         break;
       case 'update':
+        showConfirmModal.value = false;
+        itemToConfirmModal.value = undefined;
         await storeProducts.callServices(true);
         break;
     }
@@ -246,16 +247,12 @@ const titleConfirmsMap: Record<string, string> = {
 
 const messageConfirm = computed(() => {
   const type = itemToConfirmModal?.value?.type || 'default'
-  console.log(type)
-  const label = messageConfirmsMap[type] || messageConfirmsMap.default
-  return label
+  return messageConfirmsMap[type] || messageConfirmsMap.default
 })
 
 const titleConfirm = computed(() => {
   const type = itemToConfirmModal?.value?.type || 'default'
-  console.log(type)
-  const label = titleConfirmsMap[type] || titleConfirmsMap.default
-  return label
+  return titleConfirmsMap[type] || titleConfirmsMap.default
 })
 
 const activeTabTitle = {
