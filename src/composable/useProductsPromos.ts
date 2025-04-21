@@ -12,6 +12,7 @@ import {
 
 export function useProductsPromos() {
   const isLoadingProductsPromosComposable = ref<boolean>(true);
+  const isSuccessProductsPromosComposable = ref<boolean>(false);
 
   const getProductsPromos = async (): Promise<ProductsRedGlobal[]> => {
     try {
@@ -22,10 +23,10 @@ export function useProductsPromos() {
         getAllProductsPromos() as Promise<PromosProduct[]>,
         getStockPromos() as Promise<Stock[]>
       ]);
-
+      isSuccessProductsPromosComposable.value = true;
       return productsPromos.map(product => _normalizeProducts(product, stockPromos));
     } catch (error) {
-      console.error('Error in getProducts:', error);
+      isSuccessProductsPromosComposable.value = false;
       throw error;
     } finally {
       isLoadingProductsPromosComposable.value = false;
@@ -56,6 +57,7 @@ export function useProductsPromos() {
 
   return {
     isLoadingProductsPromosComposable,
+    isSuccessProductsPromosComposable,
     getProductsPromos
   };
 }

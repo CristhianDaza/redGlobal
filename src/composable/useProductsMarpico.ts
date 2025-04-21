@@ -16,13 +16,15 @@ import {
 
 export function useProductsMarpico() {
   const isLoadingProductsMarpicoComposable = ref<boolean>(true);
+  const isSuccessProductsMarpicoComposable = ref<boolean>(false);
 
   const getProductsMarpico = async (): Promise<ProductsRedGlobal[]> => {
     try {
       const productsMarpico = await getAllProductsMarpico() as MarpicoProduct[];
+      isSuccessProductsMarpicoComposable.value = true;
       return productsMarpico.map<ProductsRedGlobal>(product => _normalizeProducts(product));
     } catch (error) {
-      console.error('Error in getProducts:', error);
+      isSuccessProductsMarpicoComposable.value = false;
       throw error;
     } finally {
       isLoadingProductsMarpicoComposable.value = false;
@@ -52,6 +54,7 @@ export function useProductsMarpico() {
 
   return {
     isLoadingProductsMarpicoComposable,
+    isSuccessProductsMarpicoComposable,
     getProductsMarpico
   };
 }

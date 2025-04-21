@@ -1,6 +1,5 @@
 import type { StateGlobal } from '@/types/config.d'
 import type { ProductsRedGlobal } from '@/types/common.d'
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { firebaseService } from '@/services'
 import { normalizeString } from '@/utils'
@@ -11,13 +10,17 @@ export const useProductsStore = defineStore('products', {
   state: (): StateGlobal => ({
     products: null,
     isLoadingApiPromos: false,
-    isLoadingApiMarpico: ref<boolean>(false),
+    isLoadingApiMarpico: false,
     isLoadingApiStockSur: false,
     isLoadingApiCataProm: false,
     isLoadingSaveProducts: false,
     lastUpdateProducts: null,
     productsToView: [],
     isUpdating: false,
+    isSuccessApiPromos: false,
+    isSuccessApiMarpico: false,
+    isSuccessApiStockSur: false,
+    isSuccessApiCataProm: false,
   }),
   actions: {
     async getAllProducts(isAdminUser = false): Promise<void> {
@@ -39,52 +42,97 @@ export const useProductsStore = defineStore('products', {
     },
 
     _callServices: async function (): Promise<void> {
-      const { getProductsPromos, isLoadingProductsPromosComposable } = useProductsPromos()
-      const { getProductsMarpico, isLoadingProductsMarpicoComposable } = useProductsMarpico()
-      const { getProductsStockSur, isLoadingProductsStockSurComposable } = useProductStockSur()
-      const { getProductsCataProm, isLoadingProductsCataPromComposable } = useProductsCataProm()
-
+      const {
+        getProductsPromos,
+        isLoadingProductsPromosComposable,
+        isSuccessProductsPromosComposable
+      } = useProductsPromos()
+      const {
+        getProductsMarpico,
+        isLoadingProductsMarpicoComposable,
+        isSuccessProductsMarpicoComposable
+      } = useProductsMarpico()
+      const {
+        getProductsStockSur,
+        isLoadingProductsStockSurComposable,
+        isSuccessProductsStockSurComposable
+      } = useProductStockSur()
+      const {
+        getProductsCataProm,
+        isLoadingProductsCataPromComposable,
+        isSuccessProductsCataPromComposable
+      } = useProductsCataProm()
+    
       const shouldUpdate = await firebaseService.shouldUpdate()
       this.lastUpdateProducts = await firebaseService.getLastUpdate()
       if (!shouldUpdate) {
         this.products = await firebaseService.getAllProducts()
-        return
+        return;
       }
-      this.isUpdating = true
+    
+      this.isUpdating = true;
       this.isLoadingApiPromos = isLoadingProductsPromosComposable
       this.isLoadingApiMarpico = isLoadingProductsMarpicoComposable
       this.isLoadingApiStockSur = isLoadingProductsStockSurComposable
       this.isLoadingApiCataProm = isLoadingProductsCataPromComposable
-
-      const [productsPromos, productsMarpico, productsStockSur, productsCataProm] = await Promise.all([
+      this.isSuccessApiPromos = isSuccessProductsPromosComposable
+      this.isSuccessApiMarpico = isSuccessProductsMarpicoComposable
+      this.isSuccessApiStockSur = isSuccessProductsStockSurComposable
+      this.isSuccessApiCataProm = isSuccessProductsCataPromComposable
+    
+      // Llamamos a todas las APIs, sin que un fallo detenga las demás:
+      const results = await Promise.allSettled([
         getProductsPromos(),
         getProductsMarpico(),
         getProductsStockSur(),
         getProductsCataProm(),
       ])
+    
+      const productsPromos = results[0].status === 'fulfilled'
+        ? results[0].value
+        : (console.error('Promos API failed:', results[0].reason), []);
+      const productsMarpico = results[1].status === 'fulfilled'
+        ? results[1].value
+        : (console.error('Marpico API failed:', results[1].reason), []);
+      const productsStockSur = results[2].status === 'fulfilled'
+        ? results[2].value
+        : (console.error('StockSur API failed:', results[2].reason), []);
+      const productsCataProm = results[3].status === 'fulfilled'
+        ? results[3].value
+        : (console.error('CataProm API failed:', results[3].reason), []);
 
       const allProducts = [
         ...productsPromos,
         ...productsMarpico,
         ...productsStockSur,
-        ...productsCataProm,
-      ].sort((a, b) => a.name.localeCompare(b.name))
+        ...productsCataProm
+      ].sort((a, b) => a.name.localeCompare(b.name));
 
       while (
         isLoadingProductsPromosComposable.value ||
         isLoadingProductsMarpicoComposable.value ||
         isLoadingProductsStockSurComposable.value ||
         isLoadingProductsCataPromComposable.value
-        ) {
-        await new Promise(resolve => setTimeout(resolve, 100))
+      ) {
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
-
-      this.isLoadingSaveProducts = true
-      await firebaseService.saveProducts(allProducts)
-      this.$patch({ products: allProducts })
-      this.isLoadingSaveProducts = false
-      this.isUpdating = false
-    },
+    
+      this.isLoadingSaveProducts = true;
+      try {
+        if (allProducts.length > 0) {
+          await firebaseService.saveProducts(allProducts)
+          this.$patch({ products: allProducts })
+          this.$patch({ lastUpdateProducts: new Date().toISOString() })
+        } else {
+          console.warn('No se guardaron productos porque todas las APIs fallaron.')
+        }
+      } catch (saveError) {
+        console.error('Error saving products to Firebase:', saveError);
+      } finally {
+        this.isLoadingSaveProducts = false;
+        this.isUpdating = false;
+      }
+    },    
 
     setProductsToView(products: ProductsRedGlobal[]): void {
       this.productsToView = products

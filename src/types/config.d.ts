@@ -31,6 +31,10 @@ export interface StateGlobal {
   lastUpdateProducts: Date | null;
   productsToView: ProductsRedGlobal[];
   isUpdating: boolean;
+  isSuccessApiPromos: ref<boolean>;
+  isSuccessApiMarpico: ref<boolean>;
+  isSuccessApiStockSur: ref<boolean>;
+  isSuccessApiCataProm: ref<boolean>;
 }
 
 export interface Category {

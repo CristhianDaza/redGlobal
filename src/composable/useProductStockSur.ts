@@ -15,13 +15,15 @@ import {
 
 export function useProductStockSur() {
   const isLoadingProductsStockSurComposable = ref<boolean>(true);
+  const isSuccessProductsStockSurComposable = ref<boolean>(false);
 
   const getProductsStockSur = async (): Promise<ProductsRedGlobal[]> => {
     try {
       const products = await getAllProductsStockSur() as StockSurProduct[];
+      isSuccessProductsStockSurComposable.value = true;
       return products.map(product => _normalizeProducts(product));
     } catch (error) {
-      console.error('Error in getProducts:', error);
+      isSuccessProductsStockSurComposable.value = false;
       throw error;
     } finally {
       isLoadingProductsStockSurComposable.value = false;
@@ -48,6 +50,7 @@ export function useProductStockSur() {
 
   return {
     isLoadingProductsStockSurComposable,
+    isSuccessProductsStockSurComposable,
     getProductsStockSur
   };
 }

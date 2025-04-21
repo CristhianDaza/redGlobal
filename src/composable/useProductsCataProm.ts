@@ -11,6 +11,7 @@ import {
 
 export function useProductsCataProm() {
   const isLoadingProductsCataPromComposable = ref<boolean>(true);
+  const isSuccessProductsCataPromComposable = ref<boolean>(false);
 
   const chunkArray = <T>(arr: T[], chunkSize: number): T[][] => {
     const result: T[][] = [];
@@ -111,9 +112,12 @@ export function useProductsCataProm() {
         );
         finalProducts.push(...updatedProducts);
       }
+      console.log('Products Catálogo Prom:', finalProducts);
 
+      isSuccessProductsCataPromComposable.value = true;
       return finalProducts;
     } catch (error) {
+      isSuccessProductsCataPromComposable.value = false;
       console.error('Error in getProductsCataProm:', error);
       throw error;
     } finally {
@@ -123,6 +127,7 @@ export function useProductsCataProm() {
 
   return {
     isLoadingProductsCataPromComposable,
+    isSuccessProductsCataPromComposable,
     getProductsCataProm
   };
 }
