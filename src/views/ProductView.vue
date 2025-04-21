@@ -45,6 +45,14 @@ const isZoomed = ref(false);
 const zoomedImage = ref('');
 const zoomRotation = ref(0);
 const zoomAnimState = ref('');
+const zoomScale = ref(1);
+const minZoom = 1;
+const maxZoom = 3;
+const tooltip = ref('');
+const tooltipPos = ref({ x: 0, y: 0 });
+const dragOffset = ref({ x: 0, y: 0 });
+const dragStart = ref<{ x: number, y: number } | null>(null);
+const dragOrigin = ref({ x: 0, y: 0 });
 
 function openZoom(image: string) {
   zoomedImage.value = image;
@@ -79,9 +87,60 @@ function rotateRight() {
 function resetRotation() {
   zoomRotation.value = 0;
 }
-watch(isZoomed, (val) => {
-  if (val) window.addEventListener('keydown', handleEscape);
-  else window.removeEventListener('keydown', handleEscape);
+function handleWheelZoom(e: WheelEvent) {
+  if (!isZoomed.value) return;
+  e.preventDefault();
+  let next = zoomScale.value - e.deltaY * 0.0015;
+  next = Math.max(minZoom, Math.min(maxZoom, next));
+  zoomScale.value = parseFloat(next.toFixed(2));
+}
+function resetZoom() {
+  zoomScale.value = 1;
+}
+watch(isZoomed, val => { if (!val) zoomScale.value = 1; });
+
+function onImgMouseDown(e: MouseEvent) {
+  if (zoomScale.value <= 1) return;
+  e.preventDefault();
+  dragStart.value = { x: e.clientX, y: e.clientY };
+  dragOrigin.value = { ...dragOffset.value };
+  window.addEventListener('mousemove', onImgMouseMove);
+  window.addEventListener('mouseup', onImgMouseUp);
+}
+function onImgMouseMove(e: MouseEvent) {
+  if (!dragStart.value) return;
+  const dx = e.clientX - dragStart.value.x;
+  const dy = e.clientY - dragStart.value.y;
+  const next = {
+    x: dragOrigin.value.x + dx,
+    y: dragOrigin.value.y + dy
+  };
+  // Limitar el arrastre según el zoom
+  const maxOffset = getMaxOffset();
+  dragOffset.value = {
+    x: Math.max(-maxOffset.x, Math.min(maxOffset.x, next.x)),
+    y: Math.max(-maxOffset.y, Math.min(maxOffset.y, next.y))
+  };
+}
+function onImgMouseUp() {
+  dragStart.value = null;
+  window.removeEventListener('mousemove', onImgMouseMove);
+  window.removeEventListener('mouseup', onImgMouseUp);
+}
+function getMaxOffset() {
+  // Limita el arrastre para que no se salga del modal
+  const scale = zoomScale.value;
+  if (scale <= 1) return { x: 0, y: 0 };
+  // Asume el área visible es 90vw x 80vh, imagen centrada
+  const vw = window.innerWidth * 0.9;
+  const vh = window.innerHeight * 0.8;
+  const maxX = ((vw * (scale - 1)) / 2);
+  const maxY = ((vh * (scale - 1)) / 2);
+  return { x: maxX, y: maxY };
+}
+// Reset posición al restaurar zoom/cerrar modal
+watch([zoomScale, isZoomed], ([z, open]) => {
+  if (z === 1 || !open) dragOffset.value = { x: 0, y: 0 };
 });
 
 const isPriceLoading = computed(() => {
@@ -134,7 +193,7 @@ onMounted(async () => {
   if (!productsStore.products || productsStore.products.length === 0) {
     await productsStore.getAllProducts();
   }
-  loadProduct();
+  await loadProduct();
 });
 
 watch(() => route.params.id, loadProduct);
@@ -189,6 +248,14 @@ const getStatusClass = (status: string | null) => {
 const formatLabelName = (name: string) => {
   return name.replace(/_/g, ' ');
 };
+
+function showTooltip(text: string, evt: MouseEvent) {
+  tooltip.value = text;
+  tooltipPos.value = { x: evt.clientX, y: evt.clientY };
+}
+function hideTooltip() {
+  tooltip.value = '';
+}
 </script>
 
 <template>
@@ -431,26 +498,67 @@ const formatLabelName = (name: string) => {
         @click="handleOverlayClick"
       >
         <div class="zoom-toolbar">
-          <button class="zoom-close" @click="closeZoom" title="Cerrar">✕</button>
-          <button class="zoom-rotate" @click="rotateLeft" title="Girar a la izquierda">⟲</button>
-          <button class="zoom-rotate" @click="rotateRight" title="Girar a la derecha">⟳</button>
-          <button class="zoom-rotate zoom-reset" @click="resetRotation" :disabled="zoomRotation === 0" title="Restaurar orientación">
+          <button class="zoom-close"
+            @click="closeZoom"
+            @mouseenter="showTooltip('Cerrar', $event)"
+            @mouseleave="hideTooltip"
+            @mousemove="showTooltip('Cerrar', $event)"
+            title="Cerrar"
+          >✕</button>
+          <button class="zoom-rotate"
+            @click="rotateLeft"
+            @mouseenter="showTooltip('Girar a la izquierda', $event)"
+            @mouseleave="hideTooltip"
+            @mousemove="showTooltip('Girar a la izquierda', $event)"
+            title="Girar a la izquierda"
+          >⟲</button>
+          <button class="zoom-rotate"
+            @click="rotateRight"
+            @mouseenter="showTooltip('Girar a la derecha', $event)"
+            @mouseleave="hideTooltip"
+            @mousemove="showTooltip('Girar a la derecha', $event)"
+            title="Girar a la derecha"
+          >⟳</button>
+          <button class="zoom-rotate zoom-reset"
+            @click="resetRotation"
+            :disabled="zoomRotation === 0"
+            @mouseenter="showTooltip('Restaurar orientación', $event)"
+            @mouseleave="hideTooltip"
+            @mousemove="showTooltip('Restaurar orientación', $event)"
+            title="Restaurar orientación"
+          >
             <span style="font-size:1.3rem">⤾</span>
+          </button>
+          <button class="zoom-rotate zoom-reset"
+            @click="resetZoom"
+            :disabled="zoomScale === 1"
+            @mouseenter="showTooltip('Restaurar zoom', $event)"
+            @mouseleave="hideTooltip"
+            @mousemove="showTooltip('Restaurar zoom', $event)"
+            title="Restaurar zoom"
+          >
+            <span style="font-size:1.2rem">🔍</span>
           </button>
         </div>
         <div class="zoom-indicator">
-          <span>{{ zoomRotation }}°</span>
+          <span>{{ zoomRotation }}° | {{ (zoomScale * 100).toFixed(0) }}%</span>
         </div>
         <img
           v-if="zoomedImage"
           :src="zoomedImage"
           class="zoomed-img"
           :style="{
-            transform: `rotate(${zoomRotation}deg)`
+            transform: `rotate(${zoomRotation}deg) scale(${zoomScale}) translate(${dragOffset.x}px, ${dragOffset.y}px)` ,
+            cursor: zoomScale > 1 ? (dragStart ? 'grabbing' : 'grab') : 'zoom-out'
           }"
           draggable="false"
           alt="Imagen ampliada"
+          @wheel.prevent="handleWheelZoom"
+          @mousedown="onImgMouseDown"
         />
+        <div v-if="tooltip" class="zoom-tooltip" :style="{ left: tooltipPos.x + 12 + 'px', top: tooltipPos.y + 12 + 'px' }">
+          {{ tooltip }}
+        </div>
       </div>
     </transition>
   </div>
@@ -775,10 +883,11 @@ const formatLabelName = (name: string) => {
 }
 
 .quantity-table h3 {
-  color: #2c3e50;
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  font-weight: 500;
+  padding: 1rem;
+  margin: 0;
+  border-bottom: 1px solid #eee;
+  font-size: 1.1rem;
+  color: #333;
 }
 
 .quantity-table table {
@@ -1066,8 +1175,12 @@ const formatLabelName = (name: string) => {
   background: #fff;
   object-fit: contain;
   animation: zoomIn 0.23s;
-  transition: transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s;
+  transition: box-shadow 0.25s;
+  user-select: none;
+  will-change: transform;
+  -webkit-user-drag: none;
 }
+
 .zoom-toolbar {
   position: absolute;
   top: 2.5rem;
@@ -1098,28 +1211,39 @@ const formatLabelName = (name: string) => {
 .zoom-indicator {
   position: absolute;
   top: 1.1rem;
-  right: 2.5rem;
+  left: 2.5rem;
   z-index: 3;
   background: rgba(255,255,255,0.92);
   border-radius: 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
   padding: 0.18rem 0.85rem;
   font-size: 1.1rem;
   color: #333;
   font-weight: 500;
   letter-spacing: 1px;
   pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  opacity: 0.98;
+  transition: opacity 0.12s;
 }
-/* Transición modal Vue */
-.zoom-modal-fade-enter-active, .zoom-modal-fade-leave-active {
-  transition: opacity 0.25s cubic-bezier(.4,2,.4,1);
-}
-.zoom-modal-fade-enter-from, .zoom-modal-fade-leave-to {
-  opacity: 0;
+
+.zoom-tooltip {
+  position: fixed;
+  z-index: 10001;
+  background: rgba(30,30,30,0.94);
+  color: #fff;
+  font-size: 0.98rem;
+  padding: 5px 13px;
+  border-radius: 8px;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  opacity: 0.98;
+  transition: opacity 0.12s;
 }
 
 .zoom-close {
-  background: rgba(255,255,255,0.95);
+  background: #fff;
   border: none;
   border-radius: 50%;
   width: 44px;
@@ -1127,15 +1251,25 @@ const formatLabelName = (name: string) => {
   font-size: 2rem;
   color: #d32f2f;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.17);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, border 0.2s;
+  border: 2px solid #fff;
 }
 .zoom-close:hover {
-  background: #fff;
-  color: var(--primary-color);
-  box-shadow: 0 4px 16px rgba(211,47,47,0.16);
+  background: #d32f2f;
+  color: #fff;
+  border: 2px solid #d32f2f;
+  box-shadow: 0 4px 16px rgba(211,47,47,0.18);
+}
+
+/* Transición modal Vue */
+.zoom-modal-fade-enter-active, .zoom-modal-fade-leave-active {
+  transition: opacity 0.25s cubic-bezier(.4,2,.4,1);
+}
+.zoom-modal-fade-enter-from, .zoom-modal-fade-leave-to {
+  opacity: 0;
 }
 </style>
