@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineAsyncComponent } from 'vue';
+import { ref, defineAsyncComponent, watch } from 'vue';
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */ () => import('@/components/UI/RgButton.vue'));
 
@@ -39,6 +39,13 @@ const handleClose = () => {
 const handleConfirm = () => {
   emit('confirm')
 }
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+})
 </script>
 
 <template>
@@ -94,11 +101,14 @@ const handleConfirm = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.32);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  /* Blur effect */
+  backdrop-filter: blur(7px) saturate(1.2);
+  -webkit-backdrop-filter: blur(7px) saturate(1.2);
 }
 
 .modal-content {
