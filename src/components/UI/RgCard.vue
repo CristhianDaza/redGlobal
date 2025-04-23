@@ -9,6 +9,7 @@ const { productsView } = defineProps<{ productsView: ProductsRedGlobal }>();
 
 const stockClass = computed(() => {
   const val = productsView.totalProducts;
+  if (val === undefined) return '';
   if (val < 0) return 'stock-negative';
   if (val === 0) return 'stock-zero';
   if (val > 0 && val <= 10) return 'stock-low';
