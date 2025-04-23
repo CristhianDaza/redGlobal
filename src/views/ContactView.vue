@@ -154,6 +154,7 @@ useHead({
             <RgFormField
               v-model="form.company"
               name="company"
+              type="textarea"
               label="Empresa"
               placeholder="Nombre de tu empresa (opcional)"
               :errors="errors.company"
@@ -229,8 +230,6 @@ useHead({
   grid-template-columns: repeat(1, 1fr);
   gap: 1.5rem;
 }
-
-
 
 .contact-form-container {
   background: white;
