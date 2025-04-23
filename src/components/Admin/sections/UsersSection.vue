@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { User } from '@/types/common';
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
 
@@ -9,12 +9,16 @@ defineProps<{
   total: number
   active: number
   inactive: number
+  isLoading?: boolean
 }>()
 
 defineEmits<{
   (e: 'edit', user: User): void
   (e: 'delete', id: string): void
+  (e: 'toggle-status', user: User): void
 }>()
+
+const loadingUserId = ref<string | null>(null);
 </script>
 
 <template>
@@ -69,20 +73,23 @@ defineEmits<{
               icon="edit"
               type="icon"
               outlined
+              title="Editar usuario"
               @click="$emit('edit', user)"
               :customStyle="{
-              backgroundColor: '#4299e1',
-              color: '#ebf8ff',
+                backgroundColor: '#4299e1',
+                color: '#ebf8ff',
               }"
             />
             <RgButton
-              icon="remove"
+              :icon="user.active ? 'minus' : 'plus'"
               type="icon"
               outlined
-              @click="$emit('delete', user.idDoc)"
+              @click="$emit('toggle-status', user); loadingUserId = user.id"
+              :title="user.active ? 'Desactivar usuario' : 'Activar usuario'"
+              :loading="isLoading && loadingUserId === user.id"
               :customStyle="{
-              backgroundColor: '#e53e3e',
-              color: '#ebf8ff',
+                backgroundColor: user.active ? '#e53e3e' : '#4299e1',
+                color: '#ebf8ff',
               }"
             />
           </td>

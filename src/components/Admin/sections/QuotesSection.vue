@@ -82,6 +82,7 @@ defineEmits<{
               icon="menu"
               type="icon"
               outlined
+              title="Ver Cotización"
               @click="$emit('view', quote)"
               :customStyle="{
                 backgroundColor: '#4299e1',
@@ -93,6 +94,7 @@ defineEmits<{
               icon="update"
               type="icon"
               outlined
+              title="Editar Cotización"
               @click="$emit('complete', quote.id)"
               :customStyle="{
                 backgroundColor: '#368a30',
@@ -104,6 +106,7 @@ defineEmits<{
               icon="remove"
               type="icon"
               outlined
+              title="Eliminar Cotización"
               @click="$emit('delete', quote.id)"
               :customStyle="{
                 backgroundColor: '#e53e3e',

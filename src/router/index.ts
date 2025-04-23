@@ -1,5 +1,5 @@
 import { createWebHistory, createRouter, RouteRecordRaw } from 'vue-router';
-import { useAuthStore } from '@/store';
+import { useAuthStore, useUserStore } from '@/store';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -57,30 +57,26 @@ const router = createRouter({
   }
 });
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _, next) => {
   const authStore = useAuthStore()
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const isAuthenticated = authStore.isAuthenticated()
-
-  if (requiresAuth && !isAuthenticated) {
-    return next('/')
-  }
-
-  if (to.name === 'admin') {
-    const tab = to.query.tab
-    const allowedTabsForClient = ['quotes']
-    const allTabs = ['menu', 'users', 'cards', 'quotes', 'catalogs']
-
-    if (tab && !allTabs.includes(tab as string)) {
-      return next({ name: 'admin', query: { tab: 'quotes' } })
+  if (to.meta.requiresAuth) {
+    if (!authStore.isAuthenticated()) {
+      next({ name: 'login' })
+      return
     }
+    const userStore = useUserStore()
+    await userStore.getUsers()
+    const currentUser = userStore.users.find(u => u.email === authStore.user?.email)
 
-    if (!authStore.isAdmin && tab && !allowedTabsForClient.includes(tab as string)) {
-      return next({ name: 'admin', query: { tab: 'quotes' } })
+    if (!currentUser?.active) {
+      await authStore.logout()
+      next({ name: 'login' })
+      return
     }
+    next()
+  } else {
+    next()
   }
-  next()
 })
-
 
 export default router;

@@ -81,6 +81,18 @@ export function useUserAdmin() {
     }
   };
 
+  const toggleUserStatus = async (user: User) => {
+    try {
+      isLoading.value = true;
+      await userStore.updateUser(user.idDoc, { active: !user.active });
+      await loadUsers();
+    } catch (error) {
+      console.error('Error cambiando estado del usuario:', error);
+    } finally {
+      isLoading.value = false;
+    }
+  };
+  
   return {
     isLoading,
     showUserModal,
@@ -93,6 +105,7 @@ export function useUserAdmin() {
     handleSaveUser,
     handleEditUser,
     handleAddUser,
-    deleteUser
+    deleteUser,
+    toggleUserStatus
   };
 }

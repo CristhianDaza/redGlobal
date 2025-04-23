@@ -11,6 +11,8 @@ import {
 } from 'firebase/auth'
 import { useUserStore } from '@/store'
 import { NotificationService } from '@/components/Notification/NotificationService'
+import { getDocs, query, collection, where } from 'firebase/firestore'
+import { db } from '@/config'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<FirebaseUser | null>(null)
@@ -20,10 +22,33 @@ export const useAuthStore = defineStore('auth', () => {
   loading.value = true
   const router = useRouter()
 
-  onAuthStateChanged(auth, (currentUser) => {
-    user.value = currentUser
-    loading.value = false
-  })
+onAuthStateChanged(auth, async (currentUser) => {
+  if (currentUser) {
+    const userDocs = await getDocs(
+      query(collection(db, 'users'),
+      where('email', '==', currentUser.email))
+    )
+
+    if (!userDocs.empty) {
+      const userData = userDocs.docs[0].data()
+      if (!userData.active) {
+        await signOut(auth)
+        user.value = null
+        NotificationService.push({
+          title: 'Sesión cerrada',
+          description: 'Tu cuenta ha sido desactivada. Contacta al administrador.',
+          type: 'warning'
+        })
+        await router.push({ name: 'home' })
+        loading.value = false
+        return
+      }
+    }
+  }
+
+  user.value = currentUser
+  loading.value = false
+})
 
   const currentUser = auth.currentUser
   if (currentUser) {
@@ -31,31 +56,64 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = false
   }
 
-  const login = async (email: string, password: string) => {
-    try {
-      loading.value = true
-      error.value = null
-      await signInWithEmailAndPassword(auth, email, password)
-      NotificationService.push({
-        title: 'Inicio de sesión exitoso',
-        description: 'Has iniciado sesión exitosamente',
-        type: 'success'
-      })
-      await router.push({ name: 'admin' })
-      return true
-    } catch (e: any) {
-      error.value = e.message
+const login = async (email: string, password: string) => {
+  try {
+    loading.value = true
+    error.value = null
+
+    await signInWithEmailAndPassword(auth, email, password)
+
+    const userDocs = await getDocs(
+      query(collection(db, 'users'),
+      where('email', '==', email))
+    )
+
+    if (userDocs.empty) {
+      await signOut(auth)
+      error.value = 'Usuario no encontrado'
       NotificationService.push({
         title: 'Error al iniciar sesión',
-        description: 'Hubo un error al iniciar sesión. Por favor, intenta nuevamente.',
+        description: 'Usuario no encontrado en el sistema.',
         type: 'error'
       })
-      await router.push({ name: 'home' })
       return false
-    } finally {
-      loading.value = false
     }
+
+    const userData = userDocs.docs[0].data()
+
+    if (!userData.active) {
+      await signOut(auth)
+      error.value = 'Usuario inactivo'
+      NotificationService.push({
+        title: 'Acceso denegado',
+        description: 'Tu cuenta está inactiva. Contacta al administrador.',
+        type: 'error'
+      })
+      return false
+    }
+
+    // Usuario activo, permitir inicio de sesión
+    NotificationService.push({
+      title: 'Inicio de sesión exitoso',
+      description: 'Has iniciado sesión exitosamente',
+      type: 'success'
+    })
+    await router.push({ name: 'admin', query: { tab: 'quotes' } })
+    return true
+
+  } catch (e: any) {
+    error.value = e.message
+    NotificationService.push({
+      title: 'Error al iniciar sesión',
+      description: 'Credenciales incorrectas. Por favor, intenta nuevamente.',
+      type: 'error'
+    })
+    await router.push({ name: 'home' })
+    return false
+  } finally {
+    loading.value = false
   }
+}
 
   const logout = async () => {
     try {

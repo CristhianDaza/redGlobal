@@ -44,6 +44,7 @@ defineEmits<{
                 icon="share"
                 type="icon"
                 outlined
+                title="Ver Catálogo"
                 :customStyle="{
                   backgroundColor: '#335d80',
                   color: '#ebf8ff',
@@ -59,6 +60,7 @@ defineEmits<{
               icon="edit"
               type="icon"
               outlined
+              title="Editar Catálogo"
               @click="$emit('edit', item)"
               :customStyle="{
                 backgroundColor: '#4299e1',
@@ -69,6 +71,7 @@ defineEmits<{
               icon="remove"
               type="icon"
               outlined
+              title="Eliminar Catálogo"
               @click="$emit('delete', item.id)"
               :customStyle="{
                 backgroundColor: '#e53e3e',

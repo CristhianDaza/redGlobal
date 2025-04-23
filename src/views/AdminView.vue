@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {computed, defineAsyncComponent, onMounted, ref, watch} from 'vue';
-import {useRoute, useRouter} from 'vue-router';
-import {useAuthStore, useProductsStore} from '@/store';
-import {useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin} from '@/composable';
-import {tabs, UserFormData} from "@/types/common";
-import {useHead} from '@vueuse/head';
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore, useProductsStore, useUserStore } from '@/store';
+import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin } from '@/composable';
+import { tabs, UserFormData, User } from "@/types/common";
+import { useHead } from '@vueuse/head';
 
 const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('@/components/Admin/MenuItemForm.vue'));
 const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => import('@/components/Admin/UserForm.vue'));
@@ -25,6 +25,7 @@ const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const storeProducts = useProductsStore();
+const userStore = useUserStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated());
 
 const activeTab = ref<tabs>('quotes');
@@ -155,6 +156,16 @@ const handleConfirmModal = async () => {
 const handleCancelModal = () => {
   showConfirmModal.value = false;
   itemToConfirmModal.value = undefined;
+};
+
+const handleToggleUserStatus = async (user: User) => {
+  try {
+    const newStatus = !user.active;
+    await userStore.updateUser(user.idDoc, { active: newStatus });
+    await loadUsers();
+  } catch (error) {
+    console.error('Error al cambiar el estado del usuario:', error);
+  }
 };
 
 const handleCloseModal = () => {
@@ -337,6 +348,7 @@ watch(() => route.query.tab, (newTab) => {
             :inactive="inactiveUsers"
             @edit="handleEditUser"
             @delete="id => handleDeleteClick(id, 'users')"
+            @toggle-status="handleToggleUserStatus"
           />
 
           <QuotesSection

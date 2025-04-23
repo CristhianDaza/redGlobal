@@ -45,6 +45,7 @@ defineEmits<{
                 type="icon"
                 outlined
                 @click="$emit('edit', item)"
+                title="Editar Menú"
                 :customStyle="{
                   backgroundColor: '#4299e1',
                   color: '#ebf8ff',
@@ -54,6 +55,7 @@ defineEmits<{
                 icon="remove"
                 type="icon"
                 outlined
+                title="Eliminar Menú"
                 @click="$emit('delete', item.id)"
                 :customStyle="{
                   backgroundColor: '#e53e3e',

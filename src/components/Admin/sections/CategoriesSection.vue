@@ -66,6 +66,7 @@ defineEmits<{
                 type="icon"
                 outlined
                 @click="$emit('edit', card)"
+                title="Editar Categoría"
                 :customStyle="{
                   backgroundColor: '#4299e1',
                   color: '#ebf8ff',
@@ -75,6 +76,7 @@ defineEmits<{
                 icon="remove"
                 type="icon"
                 outlined
+                title="Eliminar Categoría"
                 @click="$emit('delete', card.id)"
                 :customStyle="{
                   backgroundColor: '#e53e3e',
