@@ -1,0 +1,152 @@
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: #f8fafc;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-card .material-icons {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.stat-info h3 {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0 0 0.25rem;
+}
+
+.stat-info p {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.text-center {
+    text-align: center;
+}
+
+
+.menu-table,
+.cards-table {
+    margin-top: 2rem;
+    overflow-x: auto;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.menu-table table,
+.cards-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.menu-table th,
+.menu-table td,
+.cards-table th,
+.cards-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.menu-table tbody tr:last-child td,
+.cards-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.menu-table tbody tr:hover,
+.cards-table tbody tr:hover {
+    background-color: #f7fafc;
+}
+
+.menu-table th,
+.cards-table th {
+    font-weight: 600;
+    color: #4a5568;
+    background: #f8fafc;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+}
+
+.menu-table td,
+.cards-table td {
+    color: #2d3748;
+}
+
+.menu-table .actions,
+.cards-table .actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.quote-badge {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 9999px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    min-width: 1.5rem;
+    text-align: center;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    position: relative;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #4a5568;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.nav-item:hover {
+    background: #f7fafc;
+    color: #2d3748;
+}
+
+.nav-item.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.nav-item .material-icons {
+    font-size: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .admin-sidebar {
+        display: none;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
