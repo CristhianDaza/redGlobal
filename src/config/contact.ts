@@ -1,11 +1,11 @@
 import type { ContactInfo } from '@/types/config';
 
 export const contactCards: ContactInfo[] = [
-  {
-    icon: 'location_on',
-    title: 'Ubicación',
-    lines: ['Calle 123 #45-67', 'Bogotá, Colombia']
-  },
+  // {
+  //   icon: 'location_on',
+  //   title: 'Ubicación',
+  //   lines: ['Calle 123 #45-67', 'Bogotá, Colombia']
+  // },
   {
     icon: 'phone',
     title: 'Teléfono',
@@ -14,7 +14,7 @@ export const contactCards: ContactInfo[] = [
   {
     icon: 'email',
     title: 'Email',
-    lines: ['servicioalcliente@redglobalpromo.com.co', 'ventas@redglobal.com']
+    lines: ['servicioalcliente@redglobalpromo.com.co', 'comercial@redglobalpromo.com.co']
   },
   {
     icon: 'schedule',
