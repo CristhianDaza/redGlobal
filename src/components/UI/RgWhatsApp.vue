@@ -1,11 +1,7 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
-const phoneNumber = '+573208354041';
-const defaultMessage = 'Hola, vengo de la página web y me gustaría saber más sobre sus productos.';
-const whatsAppLink = computed(() => {
-  const normalizedPhone = phoneNumber.replace(/\D/g, '');
-  return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(defaultMessage)}`;
-});
+import { useWhatsApp } from '@/composable';
+
+const { whatsAppLink } = useWhatsApp();
 </script>
 
 <template>

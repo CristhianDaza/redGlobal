@@ -11,6 +11,8 @@ import { useQuoteAdmin } from '@/composable/admin/';
 import { useUserAdmin } from '@/composable/admin/';
 import { useCatalogAdmin } from '@/composable/admin/';
 
+import { useWhatsApp } from '@/composable/useWhatsApp';
+
 export {
   useFilters,
   useProductStockSur,
@@ -25,4 +27,6 @@ export {
   useQuoteAdmin,
   useUserAdmin,
   useCatalogAdmin,
+
+  useWhatsApp,
 };

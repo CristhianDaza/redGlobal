@@ -4,8 +4,10 @@ import { computed, defineAsyncComponent, ref } from 'vue';
 import TvButton from '@todovue/tvbutton';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useMenuStore, useQuoteStore, useUserStore } from '@/store';
+import { useWhatsApp } from '@/composable';
 import { NotificationService } from '../Notification/NotificationService';
 import mainLogo from '@/assets/images/main-logo.png'
+import { transformColPhone, CONSTANTS } from '@/utils'
 
 const RgAutocomplete = defineAsyncComponent(/* webpackChunkName: "rgAutocomplete" */ () => import('@/components/UI/RgAutocomplete.vue'));
 const RgLoginModal = defineAsyncComponent(/* webpackChunkName: "rgLoginModal" */ () => import('@/components/UI/RgLoginModal.vue'));
@@ -20,6 +22,7 @@ const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
 const showQuoteCart = ref(false);
+const { whatsAppLink } = useWhatsApp();
 
 const handleLogout = async () => {
   try {
@@ -132,11 +135,8 @@ const handleKeydown = (event: KeyboardEvent) => {
         </template>
       </div>
       <div class="navbar-actions">
-        <a
-          href="https://api.whatsapp.com/send?phone=573208354041&text=Hola,%20vengo%20de%20la%20p%C3%A1gina%20web%20y%20me%20gustar%C3%ADa%20saber%20m%C3%A1s%20sobre%20sus%20productos"
-          target="_blank"
-        >
-          <p><span class="material-icons">phone</span> (+57) 320 835 4041</p>
+        <a :href="whatsAppLink" target="_blank">
+          <p><span class="material-icons">phone</span> {{ transformColPhone(CONSTANTS.NUMBER_WHATSAPP) }}</p>
         </a>
       </div>
     </div>
