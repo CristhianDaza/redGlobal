@@ -184,12 +184,14 @@ onUnmounted(() => {
     </div>
   </div>
   <div class="navbar-brand">
-    <template v-if="isLoadingLogo">
-      <div class="logo-skeleton"></div>
-    </template>
-    <router-link to="/">
-      <img v-if="currentUserLogo" :src="currentUserLogo" alt="Logo" class="logo">
-    </router-link>
+    <div>
+      <template v-if="isLoadingLogo">
+        <div class="logo-skeleton"></div>
+      </template>
+      <router-link to="/">
+        <img v-if="currentUserLogo" :src="currentUserLogo" alt="Logo" class="logo">
+      </router-link>
+    </div>
     <div class="search-container">
       <RgAutocomplete
         v-model="searchQuery"
@@ -218,7 +220,7 @@ onUnmounted(() => {
         @click="showQuoteCart = true"
       >
         <span class="material-icons">request_quote</span>
-        <span>Cotizaciones</span>
+        <p>Cotizaciones</p>
         <span v-if="quoteStore.totalItems > 0" class="quote-badge">{{ quoteStore.totalItems }}</span>
       </button>
 
@@ -228,7 +230,7 @@ onUnmounted(() => {
         class="admin-link"
       >
         <span class="material-icons">admin_panel_settings</span>
-        Admin
+        <p>Admin</p>
       </router-link>
 
       <p @click="authStore.isAuthenticated() ? handleLogout() : toggleLoginModal()" style="cursor: pointer;">
@@ -236,9 +238,9 @@ onUnmounted(() => {
         {{ userButtonText }}
       </p>
     </div>
-    <RgLoginModal v-if="showLoginModal" :is-open="showLoginModal" @close="toggleLoginModal" />
-    <QuoteCart :is-open="showQuoteCart" @close="showQuoteCart = false" />
   </div>
+  <RgLoginModal v-if="showLoginModal" :is-open="showLoginModal" @close="toggleLoginModal" />
+  <QuoteCart :is-open="showQuoteCart" @close="showQuoteCart = false" />
 </template>
 
 <style scoped>
@@ -251,7 +253,7 @@ onUnmounted(() => {
 
 .navbar-container {
   margin: 0 2rem;
-  padding: .5rem;
+  padding: 1rem 0;
   display: flex;
   justify-content: space-between;
   gap: 2rem;
@@ -574,8 +576,8 @@ onUnmounted(() => {
 .menu-toggle {
   background: none;
   border: none;
-  font-size: 24px;
   cursor: pointer;
+  height: 24px;
 }
 
 .sidebar-overlay {
@@ -657,13 +659,19 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .navbar-brand {
     gap: 0.5rem;
-    padding: 1rem;
+    padding: 0;
     justify-content: center;
+    flex-direction: column;
 
     .search-container {
       order: 3;
       min-width: 100%;
       margin-top: 1rem;
+      padding: 0;
+    }
+    .auth-buttons {
+      margin-top: .5rem;
+      display: flex;
     }
 
     p {
