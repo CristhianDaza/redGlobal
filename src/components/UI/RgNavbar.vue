@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '@/types/common.d';
-import { computed, defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, ref, onMounted, onUnmounted } from 'vue';
 import TvButton from '@todovue/tvbutton';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useMenuStore, useQuoteStore, useUserStore } from '@/store';
@@ -18,11 +18,15 @@ const menuStore = useMenuStore();
 const authStore = useAuthStore()
 const userStore = useUserStore();
 const quoteStore = useQuoteStore();
+const { whatsAppLink } = useWhatsApp();
+
+const sidebarOpen = ref(false);
+const windowWidth = ref(window.innerWidth);
+const isMobile = ref(window.innerWidth < 878);
 const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
 const showQuoteCart = ref(false);
-const { whatsAppLink } = useWhatsApp();
 
 const handleLogout = async () => {
   try {
@@ -115,11 +119,31 @@ const handleKeydown = (event: KeyboardEvent) => {
     handleSearch();
   }
 };
+
+window.addEventListener('resize', () => {
+  windowWidth.value = window.innerWidth;
+});
+
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 878;
+};
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+});
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+});
+
 </script>
 
 <template>
   <nav class="navbar">
     <div class="navbar-container">
+      <button v-if="isMobile" class="menu-toggle" @click="sidebarOpen = true">
+        <span class="material-icons">menu</span>
+      </button>
+
       <div class="navbar-menu">
         <template v-if="!menuStore.isLoading">
           <router-link :to="path" v-for="({id, title, path}) in menuStore.getMenuItems" :key="id">
@@ -141,7 +165,24 @@ const handleKeydown = (event: KeyboardEvent) => {
       </div>
     </div>
   </nav>
-
+  <div v-if="sidebarOpen" class="sidebar-overlay" @click.self="sidebarOpen = false">
+    <div class="sidebar">
+      <button class="close-btn" @click="sidebarOpen = false">
+        <span class="material-icons">close</span>
+      </button>
+      <nav class="sidebar-menu">
+        <router-link
+          v-for="({id, title, path}) in menuStore.getMenuItems"
+          :key="id"
+          :to="path"
+          class="menu-item"
+          @click="sidebarOpen = false"
+        >
+          {{ title }}
+        </router-link>
+      </nav>
+    </div>
+  </div>
   <div class="navbar-brand">
     <template v-if="isLoadingLogo">
       <div class="logo-skeleton"></div>
@@ -530,6 +571,89 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
+.menu-toggle {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+.sidebar {
+  width: 260px;
+  max-width: 80%;
+  background: #fff;
+  height: 100%;
+  padding: 1.5rem 1rem;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transform: translateX(-100%);
+  animation: slideIn 0.3s ease-out forwards;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0);       }
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0,0,0,0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.close-btn:hover {
+  background: rgba(0,0,0,0.15);
+}
+.close-btn .material-icons {
+  font-size: 20px;
+  color: #333;
+}
+
+.sidebar-menu {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.menu-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: #333;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.menu-item:hover {
+  background: var(--primary-color, #007ad9);
+  color: #fff;
+}
+
 @media (max-width: 768px) {
   .navbar-brand {
     gap: 0.5rem;
@@ -542,13 +666,15 @@ const handleKeydown = (event: KeyboardEvent) => {
       margin-top: 1rem;
     }
 
-    .logo {
-      height: 32px;
-    }
-
     p {
       font-size: 12px;
     }
+  }
+}
+
+@media (max-width: 878px) {
+  .navbar-menu {
+    display: none;
   }
 }
 </style>
