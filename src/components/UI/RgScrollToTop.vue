@@ -93,4 +93,19 @@ onUnmounted(() => {
   60% {
     transform: translateY(-3px);
   }
-}</style>
+}
+
+@media (max-width: 768px) {
+  .scroll-to-top {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-to-top {
+    bottom: 0.8rem;
+    right: 0.8rem;
+  }
+}
+</style>
