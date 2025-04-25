@@ -62,10 +62,6 @@ const stockClass = computed(() => {
   color: var(--primary-color);
 }
 
-.product:hover .product-image-container img {
-  transform: scale(1.1);
-}
-
 .product-image-container {
   width: 100%;
   height: 280px;
@@ -76,15 +72,6 @@ const stockClass = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.product-image-container img {
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  transition: transform 0.5s ease;
 }
 
 .product-content {
