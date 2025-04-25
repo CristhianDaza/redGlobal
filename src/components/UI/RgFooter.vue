@@ -10,6 +10,8 @@ const { menu } = storeToRefs(menuStore);
 const authStore = useAuthStore();
 const userStore = useUserStore();
 
+const versionApp = import.meta.env.VITE_VERSION_APP;
+
 const isLoadingLogo = computed(() => {
   return authStore.isAuthenticated() && userStore.isLoadingUsers;
 });
@@ -82,12 +84,12 @@ const services = [
             </li>
           </ul>
         </nav>
-
         <div class="logo">
           <template v-if="isLoadingLogo">
             <div class="logo-skeleton"></div>
           </template>
           <img v-else :src="currentUserLogo" alt="Logo" />
+          <span class="version-app">v{{ versionApp }}</span>
         </div>
       </div>
     </div>
@@ -98,6 +100,15 @@ const services = [
 </template>
 
 <style scoped>
+.version-app {
+  font-size: 11px;
+  position: absolute;
+  bottom: 0;
+  color: gray;
+  cursor: default;
+  user-select: none;
+}
+
 .footer {
   background-color: #f8f8f8;
   padding: 4rem 0 1rem;
@@ -182,6 +193,7 @@ const services = [
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  position: relative;
 
   img {
     height: 40px;
