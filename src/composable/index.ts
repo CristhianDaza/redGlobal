@@ -12,6 +12,7 @@ import { useUserAdmin } from '@/composable/admin/';
 import { useCatalogAdmin } from '@/composable/admin/';
 
 import { useWhatsApp } from '@/composable/useWhatsApp';
+import { useIsMobile } from '@/composable/useIsMobile';
 
 export {
   useFilters,
@@ -29,4 +30,5 @@ export {
   useCatalogAdmin,
 
   useWhatsApp,
+  useIsMobile
 };

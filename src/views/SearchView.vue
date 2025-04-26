@@ -4,6 +4,7 @@ import { useHead } from '@vueuse/head';
 import { computed, defineAsyncComponent, ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter, LocationQuery } from 'vue-router';
 import { useProductsStore } from '@/store/';
+import { useIsMobile } from "@/composable";
 
 const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('@/components/UI/RgCard.vue'));
 const RgEmptyState = defineAsyncComponent(/* webpackChunkName: "rgEmptyState" */() => import('@/components/UI/RgEmptyState.vue'));
@@ -13,6 +14,7 @@ const RgLoader = defineAsyncComponent(/* webpackChunkName: "rgLoader" */() => im
 const route = useRoute();
 const router = useRouter();
 const storeProducts = useProductsStore();
+const { isSize610, isSize320 } = useIsMobile();
 
 const isLoading = ref(true);
 
@@ -47,32 +49,29 @@ const productsLength = computed(() => storeProducts.getProductsToView?.length ||
 const totalPages = computed(() => Math.ceil(productsLength.value / pageSize.value));
 
 const getPageNumbers = computed(() => {
-  const totalNumbers = 10;
-  const numbers: number[] = [];
+  const totalNumbers = isSize320.value
+    ? 3
+    : (isSize610.value ? 5 : 10);
 
-  if (totalPages.value <= totalNumbers) {
-    for (let i = 1; i <= totalPages.value; i++) {
-      numbers.push(i);
-    }
+  const pages: number[] = [];
+  const total = totalPages.value;
+  const current = currentPage.value;
+  const half = Math.floor(totalNumbers / 2);
+
+  if (total <= totalNumbers) {
+    for (let i = 1; i <= total; i++) pages.push(i);
+  } else if (current <= half + 1) {
+    for (let i = 1; i <= totalNumbers; i++) pages.push(i);
+  } else if (current >= total - half) {
+    for (let i = total - totalNumbers + 1; i <= total; i++) pages.push(i)
   } else {
-    if (currentPage.value <= 6) {
-      for (let i = 1; i <= 10; i++) {
-        numbers.push(i);
-      }
-    }
-    else if (currentPage.value > totalPages.value - 6) {
-      for (let i = totalPages.value - 9; i <= totalPages.value; i++) {
-        numbers.push(i);
-      }
-    }
-    else {
-      for (let i = currentPage.value - 4; i <= currentPage.value + 5; i++) {
-        numbers.push(i);
-      }
+    const start = current - half
+    for (let i = 0; i < totalNumbers; i++) {
+      pages.push(start + i)
     }
   }
 
-  return numbers;
+  return pages
 });
 
 const handlePageSizeChange = (event: Event) => {

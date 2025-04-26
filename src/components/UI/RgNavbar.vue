@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '@/types/common.d';
-import { computed, defineAsyncComponent, ref, onMounted, onUnmounted } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import TvButton from '@todovue/tvbutton';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useMenuStore, useQuoteStore, useUserStore } from '@/store';
-import { useWhatsApp } from '@/composable';
+import { useWhatsApp, useIsMobile } from '@/composable';
 import { NotificationService } from '../Notification/NotificationService';
 import mainLogo from '@/assets/images/main-logo.png'
 import { transformColPhone, CONSTANTS } from '@/utils'
@@ -19,11 +19,10 @@ const authStore = useAuthStore()
 const userStore = useUserStore();
 const quoteStore = useQuoteStore();
 const { whatsAppLink } = useWhatsApp();
+const { isSize878, isSize320 } = useIsMobile();
 
 const sidebarOpen = ref(false);
 const windowWidth = ref(window.innerWidth);
-const isMobile = ref(window.innerWidth < 878);
-const isSmallScreen = ref(window.innerWidth > 375);
 const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
@@ -124,26 +123,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 window.addEventListener('resize', () => {
   windowWidth.value = window.innerWidth;
 });
-
-const handleResize = () => {
-  isMobile.value = window.innerWidth < 878;
-  isSmallScreen.value = window.innerWidth > 375;
-};
-
-onMounted(() => {
-  window.addEventListener('resize', handleResize);
-
-});
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
-});
-
 </script>
 
 <template>
   <nav class="navbar">
     <div class="navbar-container">
-      <button v-if="isMobile" class="menu-toggle" @click="sidebarOpen = true">
+      <button v-if="isSize878" class="menu-toggle" @click="sidebarOpen = true">
         <span class="material-icons">menu</span>
       </button>
 
@@ -223,7 +208,7 @@ onUnmounted(() => {
         @click="showQuoteCart = true"
       >
         <span class="material-icons">request_quote</span>
-        <p v-if="isSmallScreen">Cotizaciones</p>
+        <span class="auth-button" v-if="!isSize320">Cotizaciones</span>
         <span v-if="quoteStore.totalItems > 0" class="quote-badge">{{ quoteStore.totalItems }}</span>
       </button>
 
@@ -233,12 +218,12 @@ onUnmounted(() => {
         class="admin-link"
       >
         <span class="material-icons">admin_panel_settings</span>
-        <p v-if="isSmallScreen">Admin</p>
+        <span class="auth-button" v-if="!isSize320">Admin</span>
       </router-link>
 
       <p @click="authStore.isAuthenticated() ? handleLogout() : toggleLoginModal()" style="cursor: pointer;">
         <span class="material-icons">{{ userIcon }}</span>
-        <span v-if="isSmallScreen">{{ userButtonText }}</span>
+        <span v-if="!isSize320">{{ userButtonText }}</span>
       </p>
     </div>
   </div>
@@ -674,10 +659,6 @@ onUnmounted(() => {
     .auth-buttons {
       margin-top: .5rem;
       display: flex;
-    }
-
-    p {
-      font-size: 12px;
     }
   }
 }
