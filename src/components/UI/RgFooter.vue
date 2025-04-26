@@ -196,7 +196,7 @@ const services = [
   position: relative;
 
   img {
-    height: 40px;
+    height: 60px;
     width: auto;
   }
 
@@ -241,6 +241,10 @@ const services = [
 }
 
 @media (max-width: 768px) {
+  .footer {
+    padding: 2rem 0;
+  }
+
   .footer-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -249,6 +253,9 @@ const services = [
   .logo {
     order: -1;
     margin-bottom: 1rem;
+    img {
+      height: 70px;
+    }
   }
 
   .company-info, .services, .category {
@@ -268,6 +275,28 @@ const services = [
         margin: 0;
       }
     }
+  }
+
+  .version-app {
+    bottom: -590px;
+  }
+}
+
+@media (max-width: 320px) {
+  .version-app {
+    bottom: -880px;
+  }
+}
+
+@media (max-width: 376px) {
+  .version-app {
+    bottom: -100px;
+  }
+}
+
+@media (max-width: 426px) {
+  .version-app {
+    bottom: -780px;
   }
 }
 </style>
