@@ -25,8 +25,8 @@ const stockClass = computed(() => {
       <RgImage
         :src="productsView.mainImage"
         :alt="productsView.name"
-        width="100"
-        height="100"
+        width="auto"
+        height="auto"
       />
     </div>
     <div class="product-content">
@@ -64,18 +64,17 @@ const stockClass = computed(() => {
 
 .product-image-container {
   width: 100%;
-  height: 280px;
+  height: 300px;
   overflow: hidden;
   background: #fff;
   border-bottom: 1px solid #eee;
-  padding: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .product-content {
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .product-category {
