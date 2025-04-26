@@ -23,6 +23,7 @@ const { whatsAppLink } = useWhatsApp();
 const sidebarOpen = ref(false);
 const windowWidth = ref(window.innerWidth);
 const isMobile = ref(window.innerWidth < 878);
+const isSmallScreen = ref(window.innerWidth > 375);
 const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
@@ -126,10 +127,12 @@ window.addEventListener('resize', () => {
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 878;
+  isSmallScreen.value = window.innerWidth > 375;
 };
 
 onMounted(() => {
   window.addEventListener('resize', handleResize);
+
 });
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
@@ -220,7 +223,7 @@ onUnmounted(() => {
         @click="showQuoteCart = true"
       >
         <span class="material-icons">request_quote</span>
-        <p>Cotizaciones</p>
+        <p v-if="isSmallScreen">Cotizaciones</p>
         <span v-if="quoteStore.totalItems > 0" class="quote-badge">{{ quoteStore.totalItems }}</span>
       </button>
 
@@ -230,12 +233,12 @@ onUnmounted(() => {
         class="admin-link"
       >
         <span class="material-icons">admin_panel_settings</span>
-        <p>Admin</p>
+        <p v-if="isSmallScreen">Admin</p>
       </router-link>
 
       <p @click="authStore.isAuthenticated() ? handleLogout() : toggleLoginModal()" style="cursor: pointer;">
         <span class="material-icons">{{ userIcon }}</span>
-        {{ userButtonText }}
+        <span v-if="isSmallScreen">{{ userButtonText }}</span>
       </p>
     </div>
   </div>
@@ -658,7 +661,7 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .navbar-brand {
     gap: 0.5rem;
-    padding: 0;
+    padding: 2rem 0;
     justify-content: center;
     flex-direction: column;
 
