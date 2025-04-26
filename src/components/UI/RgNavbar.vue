@@ -652,8 +652,7 @@ onUnmounted(() => {
   transition: background 0.2s, color 0.2s;
 }
 .menu-item:hover {
-  background: var(--primary-color, #007ad9);
-  color: #fff;
+  background: rgba( var(--primary-color), 0.9);
 }
 
 @media (max-width: 768px) {
