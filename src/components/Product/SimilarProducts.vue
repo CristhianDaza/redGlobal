@@ -105,7 +105,7 @@ watch(
     <h3>Productos Similares</h3>
     <div class="carousel-container">
       <button
-        class="nav-button prev"
+        class="nav-button prev desktop-nav-button"
         :disabled="!canScrollPrev"
         @click="scrollPrev"
       >
@@ -134,6 +134,25 @@ watch(
       </div>
 
       <button
+        class="nav-button next desktop-nav-button"
+        :disabled="!canScrollNext"
+        @click="scrollNext"
+      >
+        ›
+      </button>
+    </div>
+
+    <!-- Botones de navegación móviles abajo de los productos -->
+    <div class="mobile-nav-buttons">
+      <button
+        class="nav-button prev"
+        :disabled="!canScrollPrev"
+        @click="scrollPrev"
+      >
+        ‹
+      </button>
+
+      <button
         class="nav-button next"
         :disabled="!canScrollNext"
         @click="scrollNext"
@@ -141,6 +160,7 @@ watch(
         ›
       </button>
     </div>
+
     <div class="pagination-indicator">
       <div class="dots">
         <span
@@ -234,9 +254,26 @@ watch(
   cursor: not-allowed;
 }
 
+/* Botones de navegación móviles */
+.mobile-nav-buttons {
+  display: none;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
 @media (max-width: 768px) {
   .products-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Ocultar botones de navegación laterales y mostrar los de abajo en móvil */
+  .desktop-nav-button {
+    display: none;
+  }
+
+  .mobile-nav-buttons {
+    display: flex;
   }
 }
 

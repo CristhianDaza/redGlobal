@@ -51,8 +51,6 @@ onMounted(() => {
       ref="imgRef"
       :src="imageSource"
       :alt="alt || ''"
-      :width="width"
-      :height="height"
       @error="handleError"
       @load="handleLoad"
     />
@@ -70,10 +68,11 @@ onMounted(() => {
 
 .image-container img {
   display: block;
-  width: 100%;
+  max-width: 100%; /* Evita que la imagen se expanda más allá de su tamaño original */
   object-fit: contain;
   transition: opacity 0.3s ease-in-out;
   background-color: #fff;
+  height: auto; /* Asegura que la altura se ajuste proporcionalmente */
 }
 
 .image-container.is-loading img {

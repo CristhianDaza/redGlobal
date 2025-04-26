@@ -483,7 +483,6 @@ const hideTooltip = () => {
                       width="100"
                       height="100"
                       class="label-image"
-                      display="block"
                     />
                     <div class="label-tooltip">{{ formatLabelName(label.name) }}</div>
                   </div>
@@ -549,10 +548,11 @@ const hideTooltip = () => {
                 <td v-if="authStore.isAuthenticated()">
                   <div v-if="isPriceLoading" class="price-skeleton"></div>
                   <template v-else>
-                    {{ showPricesWithIva
-                      ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))} con IVA`
-                      : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))} + IVA`
-                    }}
+                    <span class="price-text">{{ showPricesWithIva
+                      ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
+                      : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
+                    }}</span>
+                    <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
                   </template>
                 </td>
               </tr>
@@ -703,13 +703,15 @@ const hideTooltip = () => {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 500px;
+  width: 100%;
+  max-width: 500px;
   position: relative;
+  aspect-ratio: 1 / 1;
 }
 
 .main-image {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
 }
@@ -720,13 +722,35 @@ const hideTooltip = () => {
   justify-content: center;
   gap: 0.5rem;
   margin-top: 1rem;
+  width: 100%;
+  max-width: 500px;
 }
 
 .thumbnails {
   display: flex;
   gap: 0.5rem;
-  overflow: hidden;
+  overflow-x: auto;
   padding: 0.5rem 0;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .thumbnails-container {
+    padding: 0;
+  }
+
+  .thumbnails {
+    justify-content: center;
+    padding: 0.25rem 0;
+  }
+
+  .thumbnail-button {
+    width: 50px;
+    height: 50px;
+  }
 }
 
 .nav-button {
@@ -889,6 +913,19 @@ const hideTooltip = () => {
   background-color: #f7fafc;
   border-left: 3px solid #4299e1;
   padding: 1rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  }
+
+  @media (max-width: 480px) {
+  .detail-item.description {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .detail-item.description .value {
+    line-height: 1.5;
+  }
 }
 
 .categories {
@@ -917,6 +954,27 @@ const hideTooltip = () => {
   flex-wrap: wrap;
   gap: 1.5rem;
   justify-content: center;
+  padding: 0.5rem;
+}
+
+@media (max-width: 360px) {
+  .detail-list {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .labels-grid {
+    gap: 1rem;
+  }
+
+  .label-container {
+    padding: 0.3rem;
+  }
+
+  .zoom-rotate, .zoom-reset, .zoom-close {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
 }
 
 .label-container {
@@ -1034,6 +1092,15 @@ const hideTooltip = () => {
   margin-top: 1rem;
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
+  max-width: 500px;
+  padding: 0 0.5rem;
+}
+
+@media (max-width: 400px) {
+  .color-selector {
+    gap: 0.4rem;
+  }
 }
 
 .color-button {
@@ -1101,12 +1168,37 @@ const hideTooltip = () => {
 
 .table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Mejora scroll en iOS */
+  scrollbar-width: thin;
+  max-width: 100%;
 }
 
 .product-table {
   width: 100%;
+  min-width: 600px; /* Asegura que la tabla no se comprima demasiado */
   border-collapse: collapse;
   text-align: left;
+  overflow: scroll;
+}
+
+@media (max-width: 480px) {
+  .table-container {
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .product-table th,
+  .product-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-section {
+    margin-top: 1rem;
+    border-radius: 6px;
+  }
 }
 
 .product-table th,
@@ -1190,6 +1282,7 @@ const hideTooltip = () => {
 @media (max-width: 1024px) {
   .product-main {
     grid-template-columns: 1fr;
+    gap: 2rem;
   }
 
   .main-image-container {
@@ -1197,23 +1290,72 @@ const hideTooltip = () => {
     margin: 0 auto;
   }
 
+  .product-gallery {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
   .table-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }
 
 @media (max-width: 768px) {
+  .product-view {
+    padding: 1rem 0;
+  }
+
+  .product-main {
+    gap: 1.5rem;
+  }
+
   .detail-row {
     flex-direction: column;
   }
 
   .detail-key {
     width: 100%;
+    margin-bottom: 0.25rem;
   }
 
-  .thumbnails {
-    overflow-x: auto;
+  .product-name {
+    font-size: 1.5rem;
+  }
+
+  .thumbnails-container {
+    padding: 0 0.5rem;
+  }
+
+  .product-table th,
+  .product-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .zoom-toolbar {
+    top: 1.5rem;
+    right: 1.5rem;
+    gap: 0.25rem;
+  }
+
+  .zoom-rotate, .zoom-reset, .zoom-close {
+    width: 36px;
+    height: 36px;
+    font-size: 1.4rem;
+  }
+
+  .zoom-indicator {
+    font-size: 0.9rem;
+    top: 0.75rem;
+    left: 1.5rem;
   }
 }
 
@@ -1224,6 +1366,29 @@ const hideTooltip = () => {
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;
+}
+
+.price-text {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.price-iva {
+  font-size: 0.85rem;
+  color: #666;
+  display: inline-block;
+  margin-left: 0.25rem;
+}
+
+@media (max-width: 480px) {
+  .price-text, .price-iva {
+    display: block;
+  }
+
+  .price-iva {
+    margin-left: 0;
+    font-size: 0.8rem;
+  }
 }
 
 .quote-section {
@@ -1243,13 +1408,83 @@ const hideTooltip = () => {
   }
 
   .thumbnail-button {
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
   }
 
   .label-image {
     width: 60px;
     height: 60px;
+  }
+
+  .product-name {
+    font-size: 1.25rem;
+  }
+
+  .color-button {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .color-selector {
+    gap: 0.4rem;
+  }
+
+  .zoom-nav {
+    display: none;
+  }
+
+  .zoom-toolbar {
+    top: auto;
+    right: auto;
+    bottom: 1.5rem;
+    left: 0;
+    right: 0;
+    justify-content: center;
+  }
+
+  .zoom-indicator {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 5rem;
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+  }
+
+  .price-toggle :deep(.tv-btn) {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+  }
+
+  .table-header {
+    padding: 0.75rem;
+  }
+
+  .detail-list {
+    padding: 0.5rem 1rem;
+  }
+
+  .description {
+    padding: 0.75rem;
+  }
+
+  .product-info {
+    padding: 0.5rem;
+  }
+
+  .product-gallery {
+    margin-bottom: 1rem;
+  }
+
+  .main-image-container {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Solucionar el desfase de descripción en móviles */
+  .details-grid {
+    gap: 0.5rem;
   }
 }
 
@@ -1287,6 +1522,15 @@ const hideTooltip = () => {
   user-select: none;
   will-change: transform;
   -webkit-user-drag: none;
+  touch-action: none; /* Mejora interacción táctil */
+}
+
+@media (max-width: 600px) {
+  .zoomed-img {
+    max-width: 98vw;
+    max-height: 70vh;
+    border-radius: 12px;
+  }
 }
 .with-rotate-transition {
   transition: transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s;
