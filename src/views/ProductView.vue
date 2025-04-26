@@ -514,50 +514,50 @@ const hideTooltip = () => {
         <div class="container-table-quantity">
           <table class="product-table">
             <thead>
-            <tr>
-              <th>Color</th>
-              <th>Cantidades<br />disponible</th>
-              <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
-              <th v-if="hasAnyTracking">Estado</th>
-              <th v-if="hasAnyTracking">Última<br />Actualización</th>
-              <th v-if="authStore.isAuthenticated()">Precio</th>
-            </tr>
+              <tr>
+                <th>Color</th>
+                <th>Cantidades<br />disponible</th>
+                <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
+                <th v-if="hasAnyTracking">Estado</th>
+                <th v-if="hasAnyTracking">Última<br />Actualización</th>
+                <th v-if="authStore.isAuthenticated()">Precio</th>
+              </tr>
             </thead>
             <tbody>
-            <tr v-for="entry in product.tableQuantity" :key="entry.colorName">
-              <td>
-                <div class="color-cell">
+              <tr v-for="entry in product.tableQuantity" :key="entry.colorName">
+                <td>
+                  <div class="color-cell">
                     <span
-                        class="color-dot"
-                        :style="{ backgroundColor: formatColor(entry.color) }"
-                    ></span>
-                  {{ entry.colorName }}
-                </div>
-              </td>
-              <td>{{ formatNumber(entry.quantity) }}</td>
-              <td v-if="hasAnyTracking">{{ entry.inTracking ? formatNumber(entry.inTracking) : '-' }}</td>
-              <td v-if="hasAnyTracking">
-                <div v-if="entry.inTracking" class="tracking-info">
+                      class="color-dot"
+                      :style="{ backgroundColor: formatColor(entry.color) }"
+                      ></span>
+                    {{ entry.colorName }}
+                  </div>
+                </td>
+                <td>{{ formatNumber(entry.quantity) }}</td>
+                <td v-if="hasAnyTracking">{{ entry.inTracking ? formatNumber(entry.inTracking) : '-' }}</td>
+                <td v-if="hasAnyTracking">
+                  <div v-if="entry.inTracking" class="tracking-info">
                     <span :class="['status-badge', getStatusClass(entry.statusTracking ?? null)]">
                       {{ entry.statusTracking || 'N/A' }}
                     </span>
-                </div>
-                <span v-else>-</span>
-              </td>
-              <td v-if="hasAnyTracking">
-                {{ entry.lastUpdateTracking ? getRelativeTime(entry.lastUpdateTracking) : '-' }}
-              </td>
-              <td v-if="authStore.isAuthenticated()">
-                <div v-if="isPriceLoading" class="price-skeleton"></div>
-                <template v-else>
+                  </div>
+                  <span v-else>-</span>
+                </td>
+                <td v-if="hasAnyTracking">
+                  {{ entry.lastUpdateTracking ? getRelativeTime(entry.lastUpdateTracking) : '-' }}
+                </td>
+                <td v-if="authStore.isAuthenticated()">
+                  <div v-if="isPriceLoading" class="price-skeleton"></div>
+                  <template v-else>
                     <span class="price-text">{{ showPricesWithIva
                         ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
                         : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
-                      }}</span>
-                  <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
-                </template>
-              </td>
-            </tr>
+                    }}</span>
+                    <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
+                  </template>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -745,6 +745,20 @@ const hideTooltip = () => {
   flex-grow: 1;
   max-width: 100%;
   justify-content: flex-start;
+}
+
+.thumbnail.zoom-out {
+  animation: zoomOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.3) translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .nav-button {
@@ -948,6 +962,44 @@ const hideTooltip = () => {
 .label-image:hover {
   transform: scale(1.05);
 }
+.quantity-table {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.quantity-table h3 {
+  padding: 1rem;
+  margin: 0;
+  border-bottom: 1px solid #eee;
+  font-size: 1.1rem;
+  color: #333;
+}
+.quantity-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+.quantity-table th {
+  text-align: left;
+  padding: 0.75rem;
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 0.95rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+.quantity-table td {
+  padding: 1rem 0.75rem;
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+.quantity-table td:first-child {
+  font-weight: 600;
+  color: #48bb78;
+}
+.quantity-table td:last-child {
+  color: #718096;
+}
+
 .label-tooltip {
   position: absolute;
   top: -40px;
@@ -1390,7 +1442,6 @@ const hideTooltip = () => {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-
 .zoom-modal {
   position: fixed;
   z-index: 10000;
@@ -1409,11 +1460,6 @@ const hideTooltip = () => {
 .zoom-modal-closing {
   animation: fadeOut 0.2s;
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 @keyframes fadeOut {
   from { opacity: 1; }
   to { opacity: 0; }
@@ -1430,18 +1476,58 @@ const hideTooltip = () => {
   user-select: none;
   will-change: transform;
   -webkit-user-drag: none;
-  touch-action: none;
-}
-
-@media (max-width: 600px) {
-  .zoomed-img {
-    max-width: 98vw;
-    max-height: 70vh;
-    border-radius: 12px;
-  }
 }
 .with-rotate-transition {
   transition: transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s;
+}
+
+.zoom-toolbar {
+  position: absolute;
+  top: 2.5rem;
+  right: 2.5rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 2;
+}
+.zoom-rotate, .zoom-reset {
+  background: rgba(255,255,255,0.92);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.7rem;
+  color: var(--primary-color);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  opacity: 0.92;
+  line-height: 1;
+  padding: 0;
+}
+.zoom-reset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.zoom-indicator {
+  position: absolute;
+  top: 1.1rem;
+  left: 2.5rem;
+  z-index: 3;
+  background: rgba(255,255,255,0.92);
+  border-radius: 18px;
+  padding: 0.18rem 0.85rem;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 500;
+  letter-spacing: 1px;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  opacity: 0.98;
+  transition: opacity 0.12s;
 }
 
 .zoom-tooltip {
@@ -1455,7 +1541,7 @@ const hideTooltip = () => {
   pointer-events: none;
   white-space: nowrap;
   box-shadow: 0 2px 10px rgba(0,0,0,0.18);
-  opacity: 0; /* Empieza oculto */
+  opacity: 0.98;
   transition: opacity 0.12s;
 }
 
@@ -1473,8 +1559,6 @@ const hideTooltip = () => {
   justify-content: center;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, border 0.2s;
   border: 2px solid #fff;
-  line-height: 1;
-  padding: 0;
 }
 .zoom-close:hover {
   background: #d32f2f;
@@ -1497,23 +1581,31 @@ const hideTooltip = () => {
   color: var(--primary-color);
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
   display: flex;
-  align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s, opacity 0.2s;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
   opacity: 0.92;
   line-height: 1;
   padding: 0;
 }
 
+.zoom-nav > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
 .zoom-nav:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-  background: rgba(230, 230, 230, 0.8);
 }
+
 .zoom-nav-left {
   left: 2vw;
 }
+
 .zoom-nav-right {
   right: 2vw;
 }
