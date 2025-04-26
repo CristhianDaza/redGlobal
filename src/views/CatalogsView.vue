@@ -65,10 +65,7 @@ onMounted(() => {
 
 <style scoped>
 .catalog-page {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 1rem;
-  font-family: sans-serif;
 }
 
 .page-title {
@@ -86,7 +83,7 @@ onMounted(() => {
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
 }
 
@@ -106,7 +103,7 @@ onMounted(() => {
 
 .catalog-image {
   width: 100%;
-  height: 300px;
+  height: 350px;
   object-fit: cover;
   display: block;
 }
