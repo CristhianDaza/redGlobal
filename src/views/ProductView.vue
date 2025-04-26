@@ -4,6 +4,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
 import { formatColor, formatNumber, getRelativeTime } from '@/utils'
+import { useIsMobile } from '@/composable';
 import { useHead } from '@vueuse/head';
 
 const RgImage = defineAsyncComponent(/* webpackChunkName: "rgImage" */() => import('@/components/UI/RgImage.vue'));
@@ -17,6 +18,8 @@ const productsStore = useProductsStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const product = ref<ProductsRedGlobal | null>(null);
+
+const { isSize483 } = useIsMobile()
 
 useHead({
   title: computed(() => `${product.value?.id} ${product.value?.name} – Red Global Promocionales` || 'Producto – Red Global Promocionales'),
@@ -38,7 +41,7 @@ const selectedImage = ref('');
 const currentImageIndex = ref(0);
 const visibleThumbnails = 6;
 const selectedColor = ref('');
-const isLoading = ref(false);
+const isLoading = ref(true);
 const showPricesWithIva = ref(false);
 const showQuoteModal = ref(false);
 const isZoomed = ref(false);
@@ -58,6 +61,7 @@ const touchStartX = ref<number|null>(null);
 const swipeThreshold = 50;
 
 const openZoom = (image: string) => {
+  if (isSize483.value) return
   zoomedImage.value = image;
   isZoomed.value = true;
   zoomRotation.value = 0;
@@ -347,7 +351,7 @@ const hideTooltip = () => {
 <template>
   <div class="product-view">
     <RgLoader v-if="isLoading" />
-    <div v-else-if="product" class="product-container">
+    <div v-else class="product-container">
       <div class="product-main">
         <div class="product-gallery">
           <div class="main-image-container">
@@ -483,7 +487,6 @@ const hideTooltip = () => {
                       width="100"
                       height="100"
                       class="label-image"
-                      display="block"
                     />
                     <div class="label-tooltip">{{ formatLabelName(label.name) }}</div>
                   </div>
@@ -511,6 +514,8 @@ const hideTooltip = () => {
               {{ showPricesWithIva ? 'Mostrar precios sin IVA' : 'Mostrar precios con IVA' }}
             </RgButton>
           </div>
+        </div>
+        <div class="container-table-quantity">
           <table class="product-table">
             <thead>
               <tr>
@@ -529,7 +534,7 @@ const hideTooltip = () => {
                     <span
                       class="color-dot"
                       :style="{ backgroundColor: formatColor(entry.color) }"
-                    ></span>
+                      ></span>
                     {{ entry.colorName }}
                   </div>
                 </td>
@@ -549,127 +554,127 @@ const hideTooltip = () => {
                 <td v-if="authStore.isAuthenticated()">
                   <div v-if="isPriceLoading" class="price-skeleton"></div>
                   <template v-else>
-                    {{ showPricesWithIva
-                      ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))} con IVA`
-                      : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))} + IVA`
-                    }}
+                    <span class="price-text">{{ showPricesWithIva
+                        ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
+                        : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
+                    }}</span>
+                    <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
                   </template>
                 </td>
               </tr>
             </tbody>
           </table>
-
-          <SimilarProducts v-if="product" :current-product="product" />
         </div>
+        <SimilarProducts v-if="product" :current-product="product" />
       </div>
-    </div>
 
-    <QuoteModal
-      v-if="product"
-      :is-open="showQuoteModal"
-      :product="product"
-      @close="showQuoteModal = false"
-    />
-    <transition name="zoom-img-fade" mode="out-in">
-      <div
-        v-if="isZoomed"
-        class="zoom-modal"
-        :class="{
+      <QuoteModal
+          v-if="product"
+          :is-open="showQuoteModal"
+          :product="product"
+          @close="showQuoteModal = false"
+      />
+      <transition name="zoom-img-fade" mode="out-in">
+        <div
+            v-if="isZoomed"
+            class="zoom-modal"
+            :class="{
           'zoom-modal-opening': zoomAnimState === 'opening',
           'zoom-modal-closing': zoomAnimState === 'closing'
         }"
-        @click="handleOverlayClick"
-      >
-        <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-left"
-          :disabled="uniqueImages.indexOf(zoomedImage) <= 0"
-          @click="zoomPrevImage"
-          @mouseenter="showTooltip('Imagen anterior', $event)"
-          @mouseleave="hideTooltip"
-          @mousemove="showTooltip('Imagen anterior', $event)"
-          aria-label="Imagen anterior"
-          tabindex="0"
-        >‹</button>
-        <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-right"
-          :disabled="uniqueImages.indexOf(zoomedImage) >= uniqueImages.length - 1"
-          @click="zoomNextImage"
-          @mouseenter="showTooltip('Imagen siguiente', $event)"
-          @mouseleave="hideTooltip"
-          @mousemove="showTooltip('Imagen siguiente', $event)"
-          aria-label="Imagen siguiente"
-          tabindex="0"
-          v-bind="$attrs"
-        >›</button>
-        <div class="zoom-toolbar">
-          <button class="zoom-close"
-            @click="closeZoom"
-            @mouseenter="showTooltip('Cerrar', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Cerrar', $event)"
-            title="Cerrar"
-          >✕</button>
-          <button class="zoom-rotate"
-            @click="rotateLeft"
-            @mouseenter="showTooltip('Girar a la izquierda', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Girar a la izquierda', $event)"
-            title="Girar a la izquierda"
-          >⟲</button>
-          <button class="zoom-rotate"
-            @click="rotateRight"
-            @mouseenter="showTooltip('Girar a la derecha', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Girar a la derecha', $event)"
-            title="Girar a la derecha"
-          >⟳</button>
-          <button class="zoom-rotate zoom-reset"
-            @click="resetRotation"
-            :disabled="zoomRotation === 0"
-            @mouseenter="showTooltip('Restaurar orientación', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Restaurar orientación', $event)"
-            title="Restaurar orientación"
-          >
-            <span style="font-size:1.3rem">⤾</span>
-          </button>
-          <button class="zoom-rotate zoom-reset"
-            @click="resetZoom"
-            :disabled="zoomScale === 1"
-            @mouseenter="showTooltip('Restaurar zoom', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Restaurar zoom', $event)"
-            title="Restaurar zoom"
-          >
-            <span style="font-size:1.2rem">🔍</span>
-          </button>
-        </div>
-        <div class="zoom-indicator">
-          <span>{{ zoomRotation }}° | {{ (zoomScale * 100).toFixed(0) }}%</span>
-        </div>
-        <transition name="zoom-img-fade" mode="out-in">
-          <img
-            v-if="zoomedImage"
-            :key="zoomedImage"
-            :src="zoomedImage"
-            class="zoomed-img"
-            :class="{ 'with-rotate-transition': rotateTransition }"
-            :style="{
+            @click="handleOverlayClick"
+        >
+          <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-left"
+                  :disabled="uniqueImages.indexOf(zoomedImage) <= 0"
+                  @click="zoomPrevImage"
+                  @mouseenter="showTooltip('Imagen anterior', $event)"
+                  @mouseleave="hideTooltip"
+                  @mousemove="showTooltip('Imagen anterior', $event)"
+                  aria-label="Imagen anterior"
+                  tabindex="0"
+          >‹</button>
+          <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-right"
+                  :disabled="uniqueImages.indexOf(zoomedImage) >= uniqueImages.length - 1"
+                  @click="zoomNextImage"
+                  @mouseenter="showTooltip('Imagen siguiente', $event)"
+                  @mouseleave="hideTooltip"
+                  @mousemove="showTooltip('Imagen siguiente', $event)"
+                  aria-label="Imagen siguiente"
+                  tabindex="0"
+                  v-bind="$attrs"
+          >›</button>
+          <div class="zoom-toolbar">
+            <button class="zoom-close"
+                    @click="closeZoom"
+                    @mouseenter="showTooltip('Cerrar', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Cerrar', $event)"
+                    title="Cerrar"
+            >✕</button>
+            <button class="zoom-rotate"
+                    @click="rotateLeft"
+                    @mouseenter="showTooltip('Girar a la izquierda', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Girar a la izquierda', $event)"
+                    title="Girar a la izquierda"
+            >⟲</button>
+            <button class="zoom-rotate"
+                    @click="rotateRight"
+                    @mouseenter="showTooltip('Girar a la derecha', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Girar a la derecha', $event)"
+                    title="Girar a la derecha"
+            >⟳</button>
+            <button class="zoom-rotate zoom-reset"
+                    @click="resetRotation"
+                    :disabled="zoomRotation === 0"
+                    @mouseenter="showTooltip('Restaurar orientación', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Restaurar orientación', $event)"
+                    title="Restaurar orientación"
+            >
+              <span style="font-size:1.3rem">⤾</span>
+            </button>
+            <button class="zoom-rotate zoom-reset"
+                    @click="resetZoom"
+                    :disabled="zoomScale === 1"
+                    @mouseenter="showTooltip('Restaurar zoom', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Restaurar zoom', $event)"
+                    title="Restaurar zoom"
+            >
+              <span style="font-size:1.2rem">🔍</span>
+            </button>
+          </div>
+          <div class="zoom-indicator">
+            <span>{{ zoomRotation }}° | {{ (zoomScale * 100).toFixed(0) }}%</span>
+          </div>
+          <transition name="zoom-img-fade" mode="out-in">
+            <img
+                v-if="zoomedImage"
+                :key="zoomedImage"
+                :src="zoomedImage"
+                class="zoomed-img"
+                :class="{ 'with-rotate-transition': rotateTransition }"
+                :style="{
               transform: `rotate(${zoomRotation}deg) scale(${zoomScale}) translate(${dragOffset.x}px, ${dragOffset.y}px)` ,
               cursor: zoomScale > 1 ? (dragStart ? 'grabbing' : 'grab') : 'zoom-out'
             }"
-            draggable="false"
-            alt="Imagen ampliada"
-            @wheel.prevent="handleWheelZoom"
-            @mousedown="onImgMouseDown"
-            @touchstart="onImgTouchStart"
-            @touchmove="onImgTouchMove"
-            @touchend="onImgTouchEnd"
-          />
-        </transition>
-        <div v-if="tooltip" class="zoom-tooltip" :style="{ left: tooltipPos.x + 12 + 'px', top: tooltipPos.y + 12 + 'px' }">
-          {{ tooltip }}
+                draggable="false"
+                alt="Imagen ampliada"
+                @wheel.prevent="handleWheelZoom"
+                @mousedown="onImgMouseDown"
+                @touchstart="onImgTouchStart"
+                @touchmove="onImgTouchMove"
+                @touchend="onImgTouchEnd"
+            />
+          </transition>
+          <div v-if="tooltip" class="zoom-tooltip" :style="{ left: tooltipPos.x + 12 + 'px', top: tooltipPos.y + 12 + 'px' }">
+            {{ tooltip }}
+          </div>
         </div>
-      </div>
-    </transition>
+      </transition>
+    </div>
   </div>
 </template>
 
@@ -685,6 +690,7 @@ const hideTooltip = () => {
   padding: 0 1rem;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .product-main {
@@ -692,10 +698,17 @@ const hideTooltip = () => {
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
   margin-bottom: .5rem;
+  width: 100%;
 }
 
 .product-gallery {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .main-image-container {
@@ -703,15 +716,16 @@ const hideTooltip = () => {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 500px;
+  width: 100%;
   position: relative;
 }
 
 .main-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
+  cursor: zoom-in;
 }
 
 .thumbnails-container {
@@ -720,13 +734,35 @@ const hideTooltip = () => {
   justify-content: center;
   gap: 0.5rem;
   margin-top: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .thumbnails {
   display: flex;
   gap: 0.5rem;
-  overflow: hidden;
+  overflow-x: auto;
   padding: 0.5rem 0;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  flex-grow: 1;
+  max-width: 100%;
+  justify-content: flex-start;
+}
+
+.thumbnail.zoom-out {
+  animation: zoomOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.3) translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .nav-button {
@@ -742,6 +778,7 @@ const hideTooltip = () => {
   font-size: 20px;
   color: #666;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .nav-button:hover:not(:disabled) {
@@ -782,21 +819,6 @@ const hideTooltip = () => {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.thumbnail.zoom-out {
-  animation: zoomOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes zoomIn {
-  from {
-    opacity: 0;
-    transform: scale(0.3) translateY(100px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
 @keyframes zoomOut {
   0% {
     transform: scale(1);
@@ -814,6 +836,8 @@ const hideTooltip = () => {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .product-name {
@@ -821,6 +845,7 @@ const hideTooltip = () => {
   color: #2c3e50;
   margin-bottom: 0.25rem;
   font-weight: 600;
+  word-break: break-word;
 }
 
 .product-id {
@@ -836,19 +861,11 @@ const hideTooltip = () => {
   margin-bottom: 1rem;
 }
 
-.product-details h3 {
-  color: #2c3e50;
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  font-weight: 500;
-  border-bottom: 1px solid #e9ecef;
-  padding-bottom: 0.5rem;
-}
-
 .details-grid {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  padding: 0 1rem;
 }
 
 .detail-list {
@@ -874,21 +891,26 @@ const hideTooltip = () => {
 
 .detail-key {
   width: 180px;
+  flex-shrink: 0;
   color: #4a5568;
   font-size: 0.95rem;
   font-weight: 500;
 }
 
 .detail-value {
-  flex: 1;
+  flex-grow: 1;
   color: #2d3748;
   font-size: 0.95rem;
+  word-break: break-word;
 }
 
 .description {
   background-color: #f7fafc;
   border-left: 3px solid #4299e1;
   padding: 1rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.6;
 }
 
 .categories {
@@ -917,8 +939,8 @@ const hideTooltip = () => {
   flex-wrap: wrap;
   gap: 1.5rem;
   justify-content: center;
+  padding: 0.5rem;
 }
-
 .label-container {
   position: relative;
   display: inline-block;
@@ -928,12 +950,10 @@ const hideTooltip = () => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .label-container:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
-
 .label-image {
   border-radius: 6px;
   display: block;
@@ -942,9 +962,45 @@ const hideTooltip = () => {
   object-fit: contain;
   transition: transform 0.2s ease;
 }
-
 .label-image:hover {
   transform: scale(1.05);
+}
+.quantity-table {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.quantity-table h3 {
+  padding: 1rem;
+  margin: 0;
+  border-bottom: 1px solid #eee;
+  font-size: 1.1rem;
+  color: #333;
+}
+.quantity-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+.quantity-table th {
+  text-align: left;
+  padding: 0.75rem;
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 0.95rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+.quantity-table td {
+  padding: 1rem 0.75rem;
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+.quantity-table td:first-child {
+  font-weight: 600;
+  color: #48bb78;
+}
+.quantity-table td:last-child {
+  color: #718096;
 }
 
 .label-tooltip {
@@ -966,7 +1022,6 @@ const hideTooltip = () => {
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-
 .label-tooltip::after {
   content: '';
   position: absolute;
@@ -977,55 +1032,10 @@ const hideTooltip = () => {
   height: 8px;
   background-color: rgba(0, 0, 0, 0.85);
 }
-
 .label-image:hover + .label-tooltip {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(-5px);
-}
-
-.quantity-table {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.quantity-table h3 {
-  padding: 1rem;
-  margin: 0;
-  border-bottom: 1px solid #eee;
-  font-size: 1.1rem;
-  color: #333;
-}
-
-.quantity-table table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-}
-
-.quantity-table th {
-  text-align: left;
-  padding: 0.75rem;
-  font-weight: 500;
-  color: #4a5568;
-  font-size: 0.95rem;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.quantity-table td {
-  padding: 1rem 0.75rem;
-  color: #2d3748;
-  font-size: 0.95rem;
-}
-
-.quantity-table td:first-child {
-  font-weight: 600;
-  color: #48bb78;
-}
-
-.quantity-table td:last-child {
-  color: #718096;
 }
 
 .color-selector {
@@ -1034,6 +1044,9 @@ const hideTooltip = () => {
   margin-top: 1rem;
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
+  padding: 0 0.5rem;
+  box-sizing: border-box;
 }
 
 .color-button {
@@ -1076,10 +1089,14 @@ const hideTooltip = () => {
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-
 .color-button:hover::after {
   opacity: 1;
   visibility: visible;
+}
+
+.container-table-quantity {
+  width: 100%;
+  overflow-x: auto;
 }
 
 .table-section {
@@ -1088,7 +1105,6 @@ const hideTooltip = () => {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
 }
 
 .table-section h3 {
@@ -1101,6 +1117,10 @@ const hideTooltip = () => {
 
 .table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  max-width: 100%;
+  width: 100%;
 }
 
 .product-table {
@@ -1113,6 +1133,7 @@ const hideTooltip = () => {
 .product-table td {
   padding: 1rem;
   border-bottom: 1px solid #eee;
+  white-space: nowrap;
 }
 
 .product-table th {
@@ -1133,6 +1154,7 @@ const hideTooltip = () => {
   border-radius: 50%;
   border: 2px solid #fff;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .tracking-info {
@@ -1140,7 +1162,6 @@ const hideTooltip = () => {
   align-items: center;
   gap: 0.5rem;
 }
-
 .status-badge {
   padding: 4px 8px;
   border-radius: 4px;
@@ -1152,9 +1173,12 @@ const hideTooltip = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
   padding: 1rem;
   background-color: #f8f9fa;
   border-bottom: 1px solid #eee;
+  min-width: 100%;
 }
 
 .total-info,
@@ -1162,6 +1186,7 @@ const hideTooltip = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-basis: auto;
 }
 
 .total-label,
@@ -1185,35 +1210,193 @@ const hideTooltip = () => {
   display: flex;
   justify-content: flex-end;
   padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1024px) {
   .product-main {
     grid-template-columns: 1fr;
+    gap: 2rem;
   }
 
-  .main-image-container {
-    max-width: 500px;
-    margin: 0 auto;
-  }
-
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  .table-header {
+    align-items: flex-start;
   }
 }
 
 @media (max-width: 768px) {
+  .product-view {
+    padding: 1rem 0;
+  }
+
+  .product-container {
+    padding: 0 0.5rem;
+  }
+
+  .product-main {
+    gap: 1.5rem;
+  }
+
   .detail-row {
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .detail-key {
     width: 100%;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
   }
 
-  .thumbnails {
-    overflow-x: auto;
+  .product-name {
+    font-size: 1.5rem;
+  }
+
+  .thumbnails-container {
+    padding: 0 0.5rem;
+  }
+
+  .product-table th,
+  .product-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+    white-space: normal;
+  }
+  .product-table th:first-child,
+  .product-table td:first-child {
+    min-width: 120px;
+  }
+
+  .zoom-toolbar {
+    top: 1.5rem;
+    right: 1.5rem;
+    gap: 0.25rem;
+  }
+
+  .zoom-rotate, .zoom-reset, .zoom-close {
+    width: 36px;
+    height: 36px;
+    font-size: 1.4rem;
+  }
+
+  .zoom-indicator {
+    font-size: 0.9rem;
+    top: 0.75rem;
+    left: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-container {
+    padding: 0 0.25rem;
+  }
+
+  .thumbnail-button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .label-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .product-name {
+    font-size: 1.25rem;
+  }
+
+  .color-button {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .color-selector {
+    gap: 0.4rem;
+  }
+
+  .table-header {
+    padding: 0.75rem;
+  }
+  .total-value { font-size: 1rem; }
+  .total-label, .update-label, .update-value { font-size: 0.85rem; }
+
+  .price-toggle :deep(.tv-btn) {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+  }
+
+  .detail-list {
+    padding: 0.5rem 1rem;
+  }
+
+  .description {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .product-info {
+    padding: 0.5rem;
+  }
+
+  .product-gallery {
+    margin-bottom: 1rem;
+  }
+
+  .main-image-container {
+    margin-bottom: 0.5rem;
+  }
+
+  .details-grid {
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .zoom-nav {
+    width: 36px;
+    height: 36px;
+    font-size: 1.8rem;
+  }
+  .zoom-nav-left { left: 1vw; }
+  .zoom-nav-right { right: 1vw; }
+
+  .zoom-toolbar {
+    top: auto;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    right: auto;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.25rem;
+    border-radius: 20px;
+  }
+  .zoom-rotate, .zoom-reset, .zoom-close {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+
+  .zoom-indicator {
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: auto;
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+    font-size: 0.85rem;
+  }
+
+  .price-text, .price-iva {
+    display: block;
+    text-align: right;
+  }
+
+  .price-iva {
+    margin-left: 0;
+    font-size: 0.8rem;
   }
 }
 
@@ -1224,35 +1407,44 @@ const hideTooltip = () => {
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;
+  margin: auto;
+}
+@media (max-width: 480px) {
+  .price-skeleton {
+    width: 80px;
+    margin: 0 0 0 auto;
+  }
+}
+
+.price-text {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.price-iva {
+  font-size: 0.85rem;
+  color: #666;
+  display: inline-block;
+  margin-left: 0.25rem;
 }
 
 .quote-section {
   margin-top: 1.5rem;
   display: flex;
   justify-content: flex-start;
+  padding: 0 1.5rem;
+}
+@media (max-width: 768px) {
+  .quote-section {
+    padding: 0;
+    margin-top: 1rem;
+  }
 }
 
 @keyframes loading {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-
-@media (max-width: 480px) {
-  .product-container {
-    padding: 0.5rem;
-  }
-
-  .thumbnail-button {
-    width: 50px;
-    height: 50px;
-  }
-
-  .label-image {
-    width: 60px;
-    height: 60px;
-  }
-}
-
 .zoom-modal {
   position: fixed;
   z-index: 10000;
@@ -1399,6 +1591,7 @@ const hideTooltip = () => {
   line-height: 1;
   padding: 0;
 }
+
 .zoom-nav > * {
   display: flex;
   align-items: center;
@@ -1406,13 +1599,16 @@ const hideTooltip = () => {
   width: 100%;
   height: 100%;
 }
+
 .zoom-nav:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
 .zoom-nav-left {
   left: 2vw;
 }
+
 .zoom-nav-right {
   right: 2vw;
 }

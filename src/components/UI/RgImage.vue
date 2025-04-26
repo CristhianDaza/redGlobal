@@ -51,10 +51,10 @@ onMounted(() => {
       ref="imgRef"
       :src="imageSource"
       :alt="alt || ''"
-      :width="width"
-      :height="height"
       @error="handleError"
       @load="handleLoad"
+      :width="width"
+      :height="height"
     />
     <div v-if="isLoading" class="loading-placeholder" />
   </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import {ref, onMounted, onUnmounted} from 'vue';
 
 const showButton = ref(false);
 const scrollThreshold = 300;
@@ -9,7 +9,7 @@ const checkScroll = () => {
 };
 
 const scrollToTop = () => {
-  window.scrollTo({
+  document.documentElement.scrollTo({
     top: 0,
     behavior: 'smooth'
   });
@@ -93,4 +93,19 @@ onUnmounted(() => {
   60% {
     transform: translateY(-3px);
   }
-}</style>
+}
+
+@media (max-width: 768px) {
+  .scroll-to-top {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-to-top {
+    bottom: 0.8rem;
+    right: 0.8rem;
+  }
+}
+</style>

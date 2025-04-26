@@ -154,11 +154,14 @@ onMounted(() => {
   .hero {
     grid-template-columns: 1fr;
     text-align: center;
-    padding: 2rem 1rem;
+    padding: 0 1rem;
+    margin: 0;
   }
 
   .hero-content {
     align-items: center;
+    padding: 0;
+    min-height: 360px;
   }
 
   .hero-title {

@@ -25,8 +25,8 @@ const stockClass = computed(() => {
       <RgImage
         :src="productsView.mainImage"
         :alt="productsView.name"
-        width="100"
-        height="100"
+        width="auto"
+        height="auto"
       />
     </div>
     <div class="product-content">
@@ -62,33 +62,19 @@ const stockClass = computed(() => {
   color: var(--primary-color);
 }
 
-.product:hover .product-image-container img {
-  transform: scale(1.1);
-}
-
 .product-image-container {
   width: 100%;
-  height: 280px;
+  height: 300px;
   overflow: hidden;
   background: #fff;
   border-bottom: 1px solid #eee;
-  padding: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.product-image-container img {
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  transition: transform 0.5s ease;
-}
-
 .product-content {
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .product-category {

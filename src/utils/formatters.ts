@@ -252,3 +252,17 @@ export const constructCategoryCataProm = (
   const matchedCategory = categories.find(category => category.id === product.idCategoria);
   return matchedCategory ? [matchedCategory.nombre] : [];
 };
+
+export const transformColPhone = (phone: string, normalized = false): string => {
+  const cleaned = phone.replace(/[^\d+]/g, '');
+  const country = cleaned.slice(0, 3);
+  const subscriber = cleaned.slice(3);
+  if (normalized) {
+    return (country + subscriber).replace(/\D/g, ''); // "573312517140"
+  }
+
+  const p1 = subscriber.slice(0, 3);
+  const p2 = subscriber.slice(3, 6);
+  const p3 = subscriber.slice(6);
+  return `(${country}) ${p1} ${p2} ${p3}`;
+}

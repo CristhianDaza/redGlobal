@@ -4,8 +4,10 @@ import { computed, defineAsyncComponent, ref } from 'vue';
 import TvButton from '@todovue/tvbutton';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useMenuStore, useQuoteStore, useUserStore } from '@/store';
+import { useWhatsApp, useIsMobile } from '@/composable';
 import { NotificationService } from '../Notification/NotificationService';
 import mainLogo from '@/assets/images/main-logo.png'
+import { transformColPhone, CONSTANTS } from '@/utils'
 
 const RgAutocomplete = defineAsyncComponent(/* webpackChunkName: "rgAutocomplete" */ () => import('@/components/UI/RgAutocomplete.vue'));
 const RgLoginModal = defineAsyncComponent(/* webpackChunkName: "rgLoginModal" */ () => import('@/components/UI/RgLoginModal.vue'));
@@ -16,6 +18,11 @@ const menuStore = useMenuStore();
 const authStore = useAuthStore()
 const userStore = useUserStore();
 const quoteStore = useQuoteStore();
+const { whatsAppLink } = useWhatsApp();
+const { isSize878, isSize320 } = useIsMobile();
+
+const sidebarOpen = ref(false);
+const windowWidth = ref(window.innerWidth);
 const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
@@ -112,11 +119,19 @@ const handleKeydown = (event: KeyboardEvent) => {
     handleSearch();
   }
 };
+
+window.addEventListener('resize', () => {
+  windowWidth.value = window.innerWidth;
+});
 </script>
 
 <template>
   <nav class="navbar">
     <div class="navbar-container">
+      <button v-if="isSize878" class="menu-toggle" @click="sidebarOpen = true">
+        <span class="material-icons">menu</span>
+      </button>
+
       <div class="navbar-menu">
         <template v-if="!menuStore.isLoading">
           <router-link :to="path" v-for="({id, title, path}) in menuStore.getMenuItems" :key="id">
@@ -132,23 +147,39 @@ const handleKeydown = (event: KeyboardEvent) => {
         </template>
       </div>
       <div class="navbar-actions">
-        <a
-          href="https://api.whatsapp.com/send?phone=573208354041&text=Hola,%20vengo%20de%20la%20p%C3%A1gina%20web%20y%20me%20gustar%C3%ADa%20saber%20m%C3%A1s%20sobre%20sus%20productos"
-          target="_blank"
-        >
-          <p><span class="material-icons">phone</span> (+57) 320 835 4041</p>
+        <a :href="whatsAppLink" target="_blank">
+          <p><span class="material-icons">phone</span> {{ transformColPhone(CONSTANTS.NUMBER_WHATSAPP) }}</p>
         </a>
       </div>
     </div>
   </nav>
-
+  <div v-if="sidebarOpen" class="sidebar-overlay" @click.self="sidebarOpen = false">
+    <div class="sidebar">
+      <button class="close-btn" @click="sidebarOpen = false">
+        <span class="material-icons">close</span>
+      </button>
+      <nav class="sidebar-menu">
+        <router-link
+          v-for="({id, title, path}) in menuStore.getMenuItems"
+          :key="id"
+          :to="path"
+          class="menu-item"
+          @click="sidebarOpen = false"
+        >
+          {{ title }}
+        </router-link>
+      </nav>
+    </div>
+  </div>
   <div class="navbar-brand">
-    <template v-if="isLoadingLogo">
-      <div class="logo-skeleton"></div>
-    </template>
-    <router-link to="/">
-      <img v-if="currentUserLogo" :src="currentUserLogo" alt="Logo" class="logo">
-    </router-link>
+    <div>
+      <template v-if="isLoadingLogo">
+        <div class="logo-skeleton"></div>
+      </template>
+      <router-link to="/">
+        <img v-if="currentUserLogo" :src="currentUserLogo" alt="Logo" class="logo">
+      </router-link>
+    </div>
     <div class="search-container">
       <RgAutocomplete
         v-model="searchQuery"
@@ -177,7 +208,7 @@ const handleKeydown = (event: KeyboardEvent) => {
         @click="showQuoteCart = true"
       >
         <span class="material-icons">request_quote</span>
-        <span>Cotizaciones</span>
+        <span class="auth-button" v-if="!isSize320">Cotizaciones</span>
         <span v-if="quoteStore.totalItems > 0" class="quote-badge">{{ quoteStore.totalItems }}</span>
       </button>
 
@@ -187,17 +218,17 @@ const handleKeydown = (event: KeyboardEvent) => {
         class="admin-link"
       >
         <span class="material-icons">admin_panel_settings</span>
-        Admin
+        <span class="auth-button" v-if="!isSize320">Admin</span>
       </router-link>
 
       <p @click="authStore.isAuthenticated() ? handleLogout() : toggleLoginModal()" style="cursor: pointer;">
         <span class="material-icons">{{ userIcon }}</span>
-        {{ userButtonText }}
+        <span v-if="!isSize320">{{ userButtonText }}</span>
       </p>
     </div>
-    <RgLoginModal v-if="showLoginModal" :is-open="showLoginModal" @close="toggleLoginModal" />
-    <QuoteCart :is-open="showQuoteCart" @close="showQuoteCart = false" />
   </div>
+  <RgLoginModal v-if="showLoginModal" :is-open="showLoginModal" @close="toggleLoginModal" />
+  <QuoteCart :is-open="showQuoteCart" @close="showQuoteCart = false" />
 </template>
 
 <style scoped>
@@ -210,7 +241,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 .navbar-container {
   margin: 0 2rem;
-  padding: .5rem;
+  padding: 1rem 0;
   display: flex;
   justify-content: space-between;
   gap: 2rem;
@@ -530,25 +561,111 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
+.menu-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  height: 24px;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+.sidebar {
+  width: 260px;
+  max-width: 80%;
+  background: #fff;
+  height: 100%;
+  padding: 1.5rem 1rem;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transform: translateX(-100%);
+  animation: slideIn 0.3s ease-out forwards;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0);       }
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0,0,0,0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.close-btn:hover {
+  background: rgba(0,0,0,0.15);
+}
+.close-btn .material-icons {
+  font-size: 20px;
+  color: #333;
+}
+
+.sidebar-menu {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.menu-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: #333;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.menu-item:hover {
+  background: rgba( var(--primary-color), 0.9);
+}
+
 @media (max-width: 768px) {
   .navbar-brand {
     gap: 0.5rem;
-    padding: 1rem;
+    padding: 2rem 0;
     justify-content: center;
+    flex-direction: column;
 
     .search-container {
       order: 3;
       min-width: 100%;
       margin-top: 1rem;
+      padding: 0;
     }
+    .auth-buttons {
+      margin-top: .5rem;
+      display: flex;
+    }
+  }
+}
 
-    .logo {
-      height: 32px;
-    }
-
-    p {
-      font-size: 12px;
-    }
+@media (max-width: 878px) {
+  .navbar-menu {
+    display: none;
   }
 }
 </style>

@@ -2,10 +2,13 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useMenuStore, useAuthStore, useUserStore } from '@/store';
+import { useWhatsApp } from '@/composable';
+import { CONSTANTS, transformColPhone } from '@/utils';
 import mainLogo from '@/assets/images/main-logo.png'
 
 const menuStore = useMenuStore();
 const { menu } = storeToRefs(menuStore);
+const { whatsAppLink } = useWhatsApp();
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
@@ -36,7 +39,7 @@ const currentUserLogo = computed((): string | undefined => {
 const contactInfo = {
   address: 'Somos una compañía que cuenta con más de 25 años de experiencia en el mercado Publicitario; impulsamos y proyectamos las marcas de nuestros clientes para que tengan un gran impacto; contamos con un equipo de trabajo competitivo, humano e innovador. Poseemos red de distribución a nivel nacional e internacional, manejamos costos competitivos y nos caracterizamos siempre por la calidad, cumplimiento y confiabilidad.',
   email: 'servicioalcliente@redglobalpromo.com.co',
-  phone1: '(+57) 320 835 4041',
+  phone1: transformColPhone(CONSTANTS.NUMBER_WHATSAPP),
   phone2: '601 236 0535'
 };
 
@@ -57,10 +60,7 @@ const services = [
           <p>{{ contactInfo.address }}</p>
           <div class="contact-details">
             <p><span class="material-icons">email</span>{{ contactInfo.email }}</p>
-            <a
-                href="https://api.whatsapp.com/send?phone=573208354041&text=Hola,%20vengo%20de%20la%20p%C3%A1gina%20web%20y%20me%20gustar%C3%ADa%20saber%20m%C3%A1s%20sobre%20sus%20productos"
-                target="_blank"
-            >
+            <a :href="whatsAppLink" target="_blank">
               <p><span class="material-icons">phone</span>{{ contactInfo.phone1 }}</p>
             </a>
             <p><span class="material-icons">phone</span>{{ contactInfo.phone2 }}</p>
@@ -196,7 +196,7 @@ const services = [
   position: relative;
 
   img {
-    height: 40px;
+    height: 60px;
     width: auto;
   }
 
@@ -241,6 +241,10 @@ const services = [
 }
 
 @media (max-width: 768px) {
+  .footer {
+    padding: 2rem 0;
+  }
+
   .footer-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -249,6 +253,9 @@ const services = [
   .logo {
     order: -1;
     margin-bottom: 1rem;
+    img {
+      height: 70px;
+    }
   }
 
   .company-info, .services, .category {
@@ -268,6 +275,28 @@ const services = [
         margin: 0;
       }
     }
+  }
+
+  .version-app {
+    bottom: -590px;
+  }
+}
+
+@media (max-width: 320px) {
+  .version-app {
+    bottom: -880px;
+  }
+}
+
+@media (max-width: 376px) {
+  .version-app {
+    bottom: -100px;
+  }
+}
+
+@media (max-width: 426px) {
+  .version-app {
+    bottom: -780px;
   }
 }
 </style>
