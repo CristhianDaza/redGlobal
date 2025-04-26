@@ -510,57 +510,58 @@ const hideTooltip = () => {
               {{ showPricesWithIva ? 'Mostrar precios sin IVA' : 'Mostrar precios con IVA' }}
             </RgButton>
           </div>
+        </div>
+        <div class="container-table-quantity">
           <table class="product-table">
             <thead>
-              <tr>
-                <th>Color</th>
-                <th>Cantidades<br />disponible</th>
-                <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
-                <th v-if="hasAnyTracking">Estado</th>
-                <th v-if="hasAnyTracking">Última<br />Actualización</th>
-                <th v-if="authStore.isAuthenticated()">Precio</th>
-              </tr>
+            <tr>
+              <th>Color</th>
+              <th>Cantidades<br />disponible</th>
+              <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
+              <th v-if="hasAnyTracking">Estado</th>
+              <th v-if="hasAnyTracking">Última<br />Actualización</th>
+              <th v-if="authStore.isAuthenticated()">Precio</th>
+            </tr>
             </thead>
             <tbody>
-              <tr v-for="entry in product.tableQuantity" :key="entry.colorName">
-                <td>
-                  <div class="color-cell">
+            <tr v-for="entry in product.tableQuantity" :key="entry.colorName">
+              <td>
+                <div class="color-cell">
                     <span
-                      class="color-dot"
-                      :style="{ backgroundColor: formatColor(entry.color) }"
+                        class="color-dot"
+                        :style="{ backgroundColor: formatColor(entry.color) }"
                     ></span>
-                    {{ entry.colorName }}
-                  </div>
-                </td>
-                <td>{{ formatNumber(entry.quantity) }}</td>
-                <td v-if="hasAnyTracking">{{ entry.inTracking ? formatNumber(entry.inTracking) : '-' }}</td>
-                <td v-if="hasAnyTracking">
-                  <div v-if="entry.inTracking" class="tracking-info">
+                  {{ entry.colorName }}
+                </div>
+              </td>
+              <td>{{ formatNumber(entry.quantity) }}</td>
+              <td v-if="hasAnyTracking">{{ entry.inTracking ? formatNumber(entry.inTracking) : '-' }}</td>
+              <td v-if="hasAnyTracking">
+                <div v-if="entry.inTracking" class="tracking-info">
                     <span :class="['status-badge', getStatusClass(entry.statusTracking ?? null)]">
                       {{ entry.statusTracking || 'N/A' }}
                     </span>
-                  </div>
-                  <span v-else>-</span>
-                </td>
-                <td v-if="hasAnyTracking">
-                  {{ entry.lastUpdateTracking ? getRelativeTime(entry.lastUpdateTracking) : '-' }}
-                </td>
-                <td v-if="authStore.isAuthenticated()">
-                  <div v-if="isPriceLoading" class="price-skeleton"></div>
-                  <template v-else>
+                </div>
+                <span v-else>-</span>
+              </td>
+              <td v-if="hasAnyTracking">
+                {{ entry.lastUpdateTracking ? getRelativeTime(entry.lastUpdateTracking) : '-' }}
+              </td>
+              <td v-if="authStore.isAuthenticated()">
+                <div v-if="isPriceLoading" class="price-skeleton"></div>
+                <template v-else>
                     <span class="price-text">{{ showPricesWithIva
-                      ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
-                      : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
-                    }}</span>
-                    <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
-                  </template>
-                </td>
-              </tr>
+                        ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
+                        : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
+                      }}</span>
+                  <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
+                </template>
+              </td>
+            </tr>
             </tbody>
           </table>
-
-          <SimilarProducts v-if="product" :current-product="product" />
         </div>
+        <SimilarProducts v-if="product" :current-product="product" />
       </div>
     </div>
 
@@ -685,6 +686,7 @@ const hideTooltip = () => {
   padding: 0 1rem;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .product-main {
@@ -692,10 +694,17 @@ const hideTooltip = () => {
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
   margin-bottom: .5rem;
+  width: 100%;
 }
 
 .product-gallery {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .main-image-container {
@@ -704,16 +713,15 @@ const hideTooltip = () => {
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 500px;
   position: relative;
-  aspect-ratio: 1 / 1;
 }
 
 .main-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
+  cursor: zoom-in;
 }
 
 .thumbnails-container {
@@ -723,7 +731,7 @@ const hideTooltip = () => {
   gap: 0.5rem;
   margin-top: 1rem;
   width: 100%;
-  max-width: 500px;
+  box-sizing: border-box;
 }
 
 .thumbnails {
@@ -734,23 +742,9 @@ const hideTooltip = () => {
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  width: 100%;
-}
-
-@media (max-width: 480px) {
-  .thumbnails-container {
-    padding: 0;
-  }
-
-  .thumbnails {
-    justify-content: center;
-    padding: 0.25rem 0;
-  }
-
-  .thumbnail-button {
-    width: 50px;
-    height: 50px;
-  }
+  flex-grow: 1;
+  max-width: 100%;
+  justify-content: flex-start;
 }
 
 .nav-button {
@@ -766,6 +760,7 @@ const hideTooltip = () => {
   font-size: 20px;
   color: #666;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .nav-button:hover:not(:disabled) {
@@ -801,24 +796,10 @@ const hideTooltip = () => {
 
 .thumbnail {
   width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.thumbnail.zoom-out {
-  animation: zoomOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes zoomIn {
-  from {
-    opacity: 0;
-    transform: scale(0.3) translateY(100px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
 }
 
 @keyframes zoomOut {
@@ -838,6 +819,8 @@ const hideTooltip = () => {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .product-name {
@@ -845,6 +828,7 @@ const hideTooltip = () => {
   color: #2c3e50;
   margin-bottom: 0.25rem;
   font-weight: 600;
+  word-break: break-word;
 }
 
 .product-id {
@@ -860,19 +844,11 @@ const hideTooltip = () => {
   margin-bottom: 1rem;
 }
 
-.product-details h3 {
-  color: #2c3e50;
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-  font-weight: 500;
-  border-bottom: 1px solid #e9ecef;
-  padding-bottom: 0.5rem;
-}
-
 .details-grid {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  padding: 0 1rem;
 }
 
 .detail-list {
@@ -898,15 +874,17 @@ const hideTooltip = () => {
 
 .detail-key {
   width: 180px;
+  flex-shrink: 0;
   color: #4a5568;
   font-size: 0.95rem;
   font-weight: 500;
 }
 
 .detail-value {
-  flex: 1;
+  flex-grow: 1;
   color: #2d3748;
   font-size: 0.95rem;
+  word-break: break-word;
 }
 
 .description {
@@ -915,17 +893,7 @@ const hideTooltip = () => {
   padding: 1rem;
   word-break: break-word;
   overflow-wrap: break-word;
-  }
-
-  @media (max-width: 480px) {
-  .detail-item.description {
-    padding: 0.75rem;
-    font-size: 0.95rem;
-  }
-
-  .detail-item.description .value {
-    line-height: 1.5;
-  }
+  line-height: 1.6;
 }
 
 .categories {
@@ -956,27 +924,6 @@ const hideTooltip = () => {
   justify-content: center;
   padding: 0.5rem;
 }
-
-@media (max-width: 360px) {
-  .detail-list {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .labels-grid {
-    gap: 1rem;
-  }
-
-  .label-container {
-    padding: 0.3rem;
-  }
-
-  .zoom-rotate, .zoom-reset, .zoom-close {
-    width: 32px;
-    height: 32px;
-    font-size: 1.2rem;
-  }
-}
-
 .label-container {
   position: relative;
   display: inline-block;
@@ -986,12 +933,10 @@ const hideTooltip = () => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .label-container:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
-
 .label-image {
   border-radius: 6px;
   display: block;
@@ -1000,11 +945,9 @@ const hideTooltip = () => {
   object-fit: contain;
   transition: transform 0.2s ease;
 }
-
 .label-image:hover {
   transform: scale(1.05);
 }
-
 .label-tooltip {
   position: absolute;
   top: -40px;
@@ -1024,7 +967,6 @@ const hideTooltip = () => {
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-
 .label-tooltip::after {
   content: '';
   position: absolute;
@@ -1035,55 +977,10 @@ const hideTooltip = () => {
   height: 8px;
   background-color: rgba(0, 0, 0, 0.85);
 }
-
 .label-image:hover + .label-tooltip {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(-5px);
-}
-
-.quantity-table {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.quantity-table h3 {
-  padding: 1rem;
-  margin: 0;
-  border-bottom: 1px solid #eee;
-  font-size: 1.1rem;
-  color: #333;
-}
-
-.quantity-table table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-}
-
-.quantity-table th {
-  text-align: left;
-  padding: 0.75rem;
-  font-weight: 500;
-  color: #4a5568;
-  font-size: 0.95rem;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.quantity-table td {
-  padding: 1rem 0.75rem;
-  color: #2d3748;
-  font-size: 0.95rem;
-}
-
-.quantity-table td:first-child {
-  font-weight: 600;
-  color: #48bb78;
-}
-
-.quantity-table td:last-child {
-  color: #718096;
 }
 
 .color-selector {
@@ -1093,14 +990,8 @@ const hideTooltip = () => {
   flex-wrap: wrap;
   justify-content: center;
   width: 100%;
-  max-width: 500px;
   padding: 0 0.5rem;
-}
-
-@media (max-width: 400px) {
-  .color-selector {
-    gap: 0.4rem;
-  }
+  box-sizing: border-box;
 }
 
 .color-button {
@@ -1143,10 +1034,14 @@ const hideTooltip = () => {
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-
 .color-button:hover::after {
   opacity: 1;
   visibility: visible;
+}
+
+.container-table-quantity {
+  width: 100%;
+  overflow-x: auto;
 }
 
 .table-section {
@@ -1155,7 +1050,6 @@ const hideTooltip = () => {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
 }
 
 .table-section h3 {
@@ -1168,43 +1062,23 @@ const hideTooltip = () => {
 
 .table-container {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* Mejora scroll en iOS */
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   max-width: 100%;
+  width: 100%;
 }
 
 .product-table {
   width: 100%;
-  min-width: 600px; /* Asegura que la tabla no se comprima demasiado */
   border-collapse: collapse;
   text-align: left;
-  overflow: scroll;
-}
-
-@media (max-width: 480px) {
-  .table-container {
-    margin: 0 -0.5rem;
-    padding: 0 0.5rem;
-  }
-
-  .product-table th,
-  .product-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .table-section {
-    margin-top: 1rem;
-    border-radius: 6px;
-  }
 }
 
 .product-table th,
 .product-table td {
   padding: 1rem;
   border-bottom: 1px solid #eee;
+  white-space: nowrap;
 }
 
 .product-table th {
@@ -1225,6 +1099,7 @@ const hideTooltip = () => {
   border-radius: 50%;
   border: 2px solid #fff;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .tracking-info {
@@ -1232,7 +1107,6 @@ const hideTooltip = () => {
   align-items: center;
   gap: 0.5rem;
 }
-
 .status-badge {
   padding: 4px 8px;
   border-radius: 4px;
@@ -1244,9 +1118,12 @@ const hideTooltip = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
   padding: 1rem;
   background-color: #f8f9fa;
   border-bottom: 1px solid #eee;
+  min-width: 100%;
 }
 
 .total-info,
@@ -1254,6 +1131,7 @@ const hideTooltip = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-basis: auto;
 }
 
 .total-label,
@@ -1277,6 +1155,8 @@ const hideTooltip = () => {
   display: flex;
   justify-content: flex-end;
   padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1024px) {
@@ -1285,26 +1165,8 @@ const hideTooltip = () => {
     gap: 2rem;
   }
 
-  .main-image-container {
-    max-width: 500px;
-    margin: 0 auto;
-  }
-
-  .product-gallery {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
   .table-header {
-    flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
   }
 }
 
@@ -1313,17 +1175,23 @@ const hideTooltip = () => {
     padding: 1rem 0;
   }
 
+  .product-container {
+    padding: 0 0.5rem;
+  }
+
   .product-main {
     gap: 1.5rem;
   }
 
   .detail-row {
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .detail-key {
     width: 100%;
     margin-bottom: 0.25rem;
+    font-weight: 600;
   }
 
   .product-name {
@@ -1338,6 +1206,11 @@ const hideTooltip = () => {
   .product-table td {
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;
+    white-space: normal;
+  }
+  .product-table th:first-child,
+  .product-table td:first-child {
+    min-width: 120px;
   }
 
   .zoom-toolbar {
@@ -1359,52 +1232,9 @@ const hideTooltip = () => {
   }
 }
 
-.price-skeleton {
-  height: 20px;
-  width: 100px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-  border-radius: 4px;
-}
-
-.price-text {
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.price-iva {
-  font-size: 0.85rem;
-  color: #666;
-  display: inline-block;
-  margin-left: 0.25rem;
-}
-
-@media (max-width: 480px) {
-  .price-text, .price-iva {
-    display: block;
-  }
-
-  .price-iva {
-    margin-left: 0;
-    font-size: 0.8rem;
-  }
-}
-
-.quote-section {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: flex-start;
-}
-
-@keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
 @media (max-width: 480px) {
   .product-container {
-    padding: 0.5rem;
+    padding: 0 0.25rem;
   }
 
   .thumbnail-button {
@@ -1430,36 +1260,15 @@ const hideTooltip = () => {
     gap: 0.4rem;
   }
 
-  .zoom-nav {
-    display: none;
+  .table-header {
+    padding: 0.75rem;
   }
-
-  .zoom-toolbar {
-    top: auto;
-    right: auto;
-    bottom: 1.5rem;
-    left: 0;
-    right: 0;
-    justify-content: center;
-  }
-
-  .zoom-indicator {
-    top: auto;
-    left: 0;
-    right: 0;
-    bottom: 5rem;
-    text-align: center;
-    width: fit-content;
-    margin: 0 auto;
-  }
+  .total-value { font-size: 1rem; }
+  .total-label, .update-label, .update-value { font-size: 0.85rem; }
 
   .price-toggle :deep(.tv-btn) {
     font-size: 0.85rem;
     padding: 0.5rem;
-  }
-
-  .table-header {
-    padding: 0.75rem;
   }
 
   .detail-list {
@@ -1468,6 +1277,7 @@ const hideTooltip = () => {
 
   .description {
     padding: 0.75rem;
+    font-size: 0.9rem;
   }
 
   .product-info {
@@ -1482,10 +1292,103 @@ const hideTooltip = () => {
     margin-bottom: 0.5rem;
   }
 
-  /* Solucionar el desfase de descripción en móviles */
   .details-grid {
     gap: 0.5rem;
+    padding: 0 0.5rem;
   }
+
+  .zoom-nav {
+    width: 36px;
+    height: 36px;
+    font-size: 1.8rem;
+  }
+  .zoom-nav-left { left: 1vw; }
+  .zoom-nav-right { right: 1vw; }
+
+  .zoom-toolbar {
+    top: auto;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    right: auto;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0.25rem;
+    border-radius: 20px;
+  }
+  .zoom-rotate, .zoom-reset, .zoom-close {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+
+  .zoom-indicator {
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: auto;
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+    font-size: 0.85rem;
+  }
+
+  .price-text, .price-iva {
+    display: block;
+    text-align: right;
+  }
+
+  .price-iva {
+    margin-left: 0;
+    font-size: 0.8rem;
+  }
+}
+
+.price-skeleton {
+  height: 20px;
+  width: 100px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+  margin: auto;
+}
+@media (max-width: 480px) {
+  .price-skeleton {
+    width: 80px;
+    margin: 0 0 0 auto;
+  }
+}
+
+.price-text {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.price-iva {
+  font-size: 0.85rem;
+  color: #666;
+  display: inline-block;
+  margin-left: 0.25rem;
+}
+
+.quote-section {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-start;
+  padding: 0 1.5rem;
+}
+@media (max-width: 768px) {
+  .quote-section {
+    padding: 0;
+    margin-top: 1rem;
+  }
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .zoom-modal {
@@ -1506,6 +1409,11 @@ const hideTooltip = () => {
 .zoom-modal-closing {
   animation: fadeOut 0.2s;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 @keyframes fadeOut {
   from { opacity: 1; }
   to { opacity: 0; }
@@ -1522,7 +1430,7 @@ const hideTooltip = () => {
   user-select: none;
   will-change: transform;
   -webkit-user-drag: none;
-  touch-action: none; /* Mejora interacción táctil */
+  touch-action: none;
 }
 
 @media (max-width: 600px) {
@@ -1536,55 +1444,6 @@ const hideTooltip = () => {
   transition: transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s;
 }
 
-.zoom-toolbar {
-  position: absolute;
-  top: 2.5rem;
-  right: 2.5rem;
-  display: flex;
-  gap: 0.5rem;
-  z-index: 2;
-}
-.zoom-rotate, .zoom-reset {
-  background: rgba(255,255,255,0.92);
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 1.7rem;
-  color: var(--primary-color);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-  opacity: 0.92;
-  line-height: 1;
-  padding: 0;
-}
-.zoom-reset:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.zoom-indicator {
-  position: absolute;
-  top: 1.1rem;
-  left: 2.5rem;
-  z-index: 3;
-  background: rgba(255,255,255,0.92);
-  border-radius: 18px;
-  padding: 0.18rem 0.85rem;
-  font-size: 1.1rem;
-  color: #333;
-  font-weight: 500;
-  letter-spacing: 1px;
-  pointer-events: none;
-  white-space: nowrap;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
-  opacity: 0.98;
-  transition: opacity 0.12s;
-}
-
 .zoom-tooltip {
   position: fixed;
   z-index: 10001;
@@ -1596,7 +1455,7 @@ const hideTooltip = () => {
   pointer-events: none;
   white-space: nowrap;
   box-shadow: 0 2px 10px rgba(0,0,0,0.18);
-  opacity: 0.98;
+  opacity: 0; /* Empieza oculto */
   transition: opacity 0.12s;
 }
 
@@ -1614,6 +1473,8 @@ const hideTooltip = () => {
   justify-content: center;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, border 0.2s;
   border: 2px solid #fff;
+  line-height: 1;
+  padding: 0;
 }
 .zoom-close:hover {
   background: #d32f2f;
@@ -1636,23 +1497,19 @@ const hideTooltip = () => {
   color: var(--primary-color);
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
   display: flex;
+  align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, opacity 0.2s;
   opacity: 0.92;
   line-height: 1;
   padding: 0;
 }
-.zoom-nav > * {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
+
 .zoom-nav:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  background: rgba(230, 230, 230, 0.8);
 }
 .zoom-nav-left {
   left: 2vw;
