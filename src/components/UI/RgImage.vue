@@ -53,6 +53,8 @@ onMounted(() => {
       :alt="alt || ''"
       @error="handleError"
       @load="handleLoad"
+      :width="width"
+      :height="height"
     />
     <div v-if="isLoading" class="loading-placeholder" />
   </div>
@@ -68,11 +70,11 @@ onMounted(() => {
 
 .image-container img {
   display: block;
-  max-width: 100%; /* Evita que la imagen se expanda más allá de su tamaño original */
+  width: 100%;
+  max-height: 350px;
   object-fit: contain;
   transition: opacity 0.3s ease-in-out;
   background-color: #fff;
-  height: auto; /* Asegura que la altura se ajuste proporcionalmente */
 }
 
 .image-container.is-loading img {

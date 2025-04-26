@@ -4,6 +4,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
 import { formatColor, formatNumber, getRelativeTime } from '@/utils'
+import { useIsMobile } from '@/composable';
 import { useHead } from '@vueuse/head';
 
 const RgImage = defineAsyncComponent(/* webpackChunkName: "rgImage" */() => import('@/components/UI/RgImage.vue'));
@@ -17,6 +18,8 @@ const productsStore = useProductsStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const product = ref<ProductsRedGlobal | null>(null);
+
+const { isSize483 } = useIsMobile()
 
 useHead({
   title: computed(() => `${product.value?.id} ${product.value?.name} – Red Global Promocionales` || 'Producto – Red Global Promocionales'),
@@ -38,7 +41,7 @@ const selectedImage = ref('');
 const currentImageIndex = ref(0);
 const visibleThumbnails = 6;
 const selectedColor = ref('');
-const isLoading = ref(false);
+const isLoading = ref(true);
 const showPricesWithIva = ref(false);
 const showQuoteModal = ref(false);
 const isZoomed = ref(false);
@@ -58,6 +61,7 @@ const touchStartX = ref<number|null>(null);
 const swipeThreshold = 50;
 
 const openZoom = (image: string) => {
+  if (isSize483.value) return
   zoomedImage.value = image;
   isZoomed.value = true;
   zoomRotation.value = 0;
@@ -347,7 +351,7 @@ const hideTooltip = () => {
 <template>
   <div class="product-view">
     <RgLoader v-if="isLoading" />
-    <div v-else-if="product" class="product-container">
+    <div v-else class="product-container">
       <div class="product-main">
         <div class="product-gallery">
           <div class="main-image-container">
@@ -563,114 +567,114 @@ const hideTooltip = () => {
         </div>
         <SimilarProducts v-if="product" :current-product="product" />
       </div>
-    </div>
 
-    <QuoteModal
-      v-if="product"
-      :is-open="showQuoteModal"
-      :product="product"
-      @close="showQuoteModal = false"
-    />
-    <transition name="zoom-img-fade" mode="out-in">
-      <div
-        v-if="isZoomed"
-        class="zoom-modal"
-        :class="{
+      <QuoteModal
+          v-if="product"
+          :is-open="showQuoteModal"
+          :product="product"
+          @close="showQuoteModal = false"
+      />
+      <transition name="zoom-img-fade" mode="out-in">
+        <div
+            v-if="isZoomed"
+            class="zoom-modal"
+            :class="{
           'zoom-modal-opening': zoomAnimState === 'opening',
           'zoom-modal-closing': zoomAnimState === 'closing'
         }"
-        @click="handleOverlayClick"
-      >
-        <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-left"
-          :disabled="uniqueImages.indexOf(zoomedImage) <= 0"
-          @click="zoomPrevImage"
-          @mouseenter="showTooltip('Imagen anterior', $event)"
-          @mouseleave="hideTooltip"
-          @mousemove="showTooltip('Imagen anterior', $event)"
-          aria-label="Imagen anterior"
-          tabindex="0"
-        >‹</button>
-        <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-right"
-          :disabled="uniqueImages.indexOf(zoomedImage) >= uniqueImages.length - 1"
-          @click="zoomNextImage"
-          @mouseenter="showTooltip('Imagen siguiente', $event)"
-          @mouseleave="hideTooltip"
-          @mousemove="showTooltip('Imagen siguiente', $event)"
-          aria-label="Imagen siguiente"
-          tabindex="0"
-          v-bind="$attrs"
-        >›</button>
-        <div class="zoom-toolbar">
-          <button class="zoom-close"
-            @click="closeZoom"
-            @mouseenter="showTooltip('Cerrar', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Cerrar', $event)"
-            title="Cerrar"
-          >✕</button>
-          <button class="zoom-rotate"
-            @click="rotateLeft"
-            @mouseenter="showTooltip('Girar a la izquierda', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Girar a la izquierda', $event)"
-            title="Girar a la izquierda"
-          >⟲</button>
-          <button class="zoom-rotate"
-            @click="rotateRight"
-            @mouseenter="showTooltip('Girar a la derecha', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Girar a la derecha', $event)"
-            title="Girar a la derecha"
-          >⟳</button>
-          <button class="zoom-rotate zoom-reset"
-            @click="resetRotation"
-            :disabled="zoomRotation === 0"
-            @mouseenter="showTooltip('Restaurar orientación', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Restaurar orientación', $event)"
-            title="Restaurar orientación"
-          >
-            <span style="font-size:1.3rem">⤾</span>
-          </button>
-          <button class="zoom-rotate zoom-reset"
-            @click="resetZoom"
-            :disabled="zoomScale === 1"
-            @mouseenter="showTooltip('Restaurar zoom', $event)"
-            @mouseleave="hideTooltip"
-            @mousemove="showTooltip('Restaurar zoom', $event)"
-            title="Restaurar zoom"
-          >
-            <span style="font-size:1.2rem">🔍</span>
-          </button>
-        </div>
-        <div class="zoom-indicator">
-          <span>{{ zoomRotation }}° | {{ (zoomScale * 100).toFixed(0) }}%</span>
-        </div>
-        <transition name="zoom-img-fade" mode="out-in">
-          <img
-            v-if="zoomedImage"
-            :key="zoomedImage"
-            :src="zoomedImage"
-            class="zoomed-img"
-            :class="{ 'with-rotate-transition': rotateTransition }"
-            :style="{
+            @click="handleOverlayClick"
+        >
+          <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-left"
+                  :disabled="uniqueImages.indexOf(zoomedImage) <= 0"
+                  @click="zoomPrevImage"
+                  @mouseenter="showTooltip('Imagen anterior', $event)"
+                  @mouseleave="hideTooltip"
+                  @mousemove="showTooltip('Imagen anterior', $event)"
+                  aria-label="Imagen anterior"
+                  tabindex="0"
+          >‹</button>
+          <button v-if="uniqueImages.length > 1" class="zoom-nav zoom-nav-right"
+                  :disabled="uniqueImages.indexOf(zoomedImage) >= uniqueImages.length - 1"
+                  @click="zoomNextImage"
+                  @mouseenter="showTooltip('Imagen siguiente', $event)"
+                  @mouseleave="hideTooltip"
+                  @mousemove="showTooltip('Imagen siguiente', $event)"
+                  aria-label="Imagen siguiente"
+                  tabindex="0"
+                  v-bind="$attrs"
+          >›</button>
+          <div class="zoom-toolbar">
+            <button class="zoom-close"
+                    @click="closeZoom"
+                    @mouseenter="showTooltip('Cerrar', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Cerrar', $event)"
+                    title="Cerrar"
+            >✕</button>
+            <button class="zoom-rotate"
+                    @click="rotateLeft"
+                    @mouseenter="showTooltip('Girar a la izquierda', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Girar a la izquierda', $event)"
+                    title="Girar a la izquierda"
+            >⟲</button>
+            <button class="zoom-rotate"
+                    @click="rotateRight"
+                    @mouseenter="showTooltip('Girar a la derecha', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Girar a la derecha', $event)"
+                    title="Girar a la derecha"
+            >⟳</button>
+            <button class="zoom-rotate zoom-reset"
+                    @click="resetRotation"
+                    :disabled="zoomRotation === 0"
+                    @mouseenter="showTooltip('Restaurar orientación', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Restaurar orientación', $event)"
+                    title="Restaurar orientación"
+            >
+              <span style="font-size:1.3rem">⤾</span>
+            </button>
+            <button class="zoom-rotate zoom-reset"
+                    @click="resetZoom"
+                    :disabled="zoomScale === 1"
+                    @mouseenter="showTooltip('Restaurar zoom', $event)"
+                    @mouseleave="hideTooltip"
+                    @mousemove="showTooltip('Restaurar zoom', $event)"
+                    title="Restaurar zoom"
+            >
+              <span style="font-size:1.2rem">🔍</span>
+            </button>
+          </div>
+          <div class="zoom-indicator">
+            <span>{{ zoomRotation }}° | {{ (zoomScale * 100).toFixed(0) }}%</span>
+          </div>
+          <transition name="zoom-img-fade" mode="out-in">
+            <img
+                v-if="zoomedImage"
+                :key="zoomedImage"
+                :src="zoomedImage"
+                class="zoomed-img"
+                :class="{ 'with-rotate-transition': rotateTransition }"
+                :style="{
               transform: `rotate(${zoomRotation}deg) scale(${zoomScale}) translate(${dragOffset.x}px, ${dragOffset.y}px)` ,
               cursor: zoomScale > 1 ? (dragStart ? 'grabbing' : 'grab') : 'zoom-out'
             }"
-            draggable="false"
-            alt="Imagen ampliada"
-            @wheel.prevent="handleWheelZoom"
-            @mousedown="onImgMouseDown"
-            @touchstart="onImgTouchStart"
-            @touchmove="onImgTouchMove"
-            @touchend="onImgTouchEnd"
-          />
-        </transition>
-        <div v-if="tooltip" class="zoom-tooltip" :style="{ left: tooltipPos.x + 12 + 'px', top: tooltipPos.y + 12 + 'px' }">
-          {{ tooltip }}
+                draggable="false"
+                alt="Imagen ampliada"
+                @wheel.prevent="handleWheelZoom"
+                @mousedown="onImgMouseDown"
+                @touchstart="onImgTouchStart"
+                @touchmove="onImgTouchMove"
+                @touchend="onImgTouchEnd"
+            />
+          </transition>
+          <div v-if="tooltip" class="zoom-tooltip" :style="{ left: tooltipPos.x + 12 + 'px', top: tooltipPos.y + 12 + 'px' }">
+            {{ tooltip }}
+          </div>
         </div>
-      </div>
-    </transition>
+      </transition>
+    </div>
   </div>
 </template>
 
@@ -810,7 +814,6 @@ const hideTooltip = () => {
 
 .thumbnail {
   width: 100%;
-  height: 100%;
   object-fit: contain;
   display: block;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
