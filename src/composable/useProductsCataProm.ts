@@ -1,7 +1,7 @@
 import type { CataPromProduct, CataPromCategory, CataPromStock, CataPromProductDetails } from '@/types/cataprom.d';
 import type { ProductsRedGlobal, ImagesRedGlobal, TableEntry } from '@/types/common.d';
 import { ref } from 'vue';
-import { constructCategoryCataProm, constructDescriptionCataProm, formatText } from '@/utils';
+import { constructCategoryCataProm, constructDescriptionCataProm, formatText, calculateTotalQuantity } from '@/utils';
 import {
   getCategoriesCataProm,
   getProductsByCategoryCataProm,
@@ -98,12 +98,12 @@ export function useProductsCataProm() {
                   getStockByProductCataProm(product.id)
                 ]);
                 const mappedStock = mapStockToTableEntries(stocks, details.precio1);
-                const totalProducts = mappedStock.reduce((acc, entry) => acc + entry.quantity, 0);
+                const totalProducts = calculateTotalQuantity(mappedStock);
                 return {
                   ...product,
                   images: mapProductDetailsToImages(details, stocks),
                   tableQuantity: mappedStock,
-                  totalProducts: totalProducts
+                  totalProducts,
                 } as ProductsRedGlobal;
               } catch (error) {
                 console.error(`Error procesando producto ${product.id}:`, error);

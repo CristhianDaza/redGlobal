@@ -20,6 +20,7 @@ import {
   constructTotalProductsStockSur,
   getDiscountsMarpico,
   transformColPhone,
+  calculateTotalQuantity,
 } from './formatters';
 import { CONSTANTS } from './constants';
 
@@ -49,6 +50,7 @@ export {
   constructTotalProductsStockSur,
   getDiscountsMarpico,
   transformColPhone,
+  calculateTotalQuantity,
 
   // Images
   constructImagesPromos,
