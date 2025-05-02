@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated titles and meta-tags to use singular form for consistency across views
 
+### Dependencies
+- Updated `axios` from `1.8.4` to `1.9.0`
+- Updated `firebase` from `11.6.0` to `11.6.1`
+- Updated `vue-router` from `4.5.0` to `4.5.1`
+- Updated `vite` from `6.3.2` to `6.3.4`
+
 ## [1.0.2] - 26/04/2025
 
 ### Fixed
