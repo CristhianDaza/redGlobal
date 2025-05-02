@@ -60,8 +60,9 @@ const rotateTransition = ref(false);
 const touchStartX = ref<number|null>(null);
 const swipeThreshold = 50;
 
-const openZoom = (image: string) => {
+const openZoom = (image: string | undefined) => {
   if (isSize483.value) return
+  if (!image || image === undefined) return;
   zoomedImage.value = image;
   isZoomed.value = true;
   zoomRotation.value = 0;
@@ -367,7 +368,7 @@ const hideTooltip = () => {
               style="cursor: zoom-in;"
             />
           </div>
-          <div class="thumbnails-container" v-if="product.images?.length">
+          <div class="thumbnails-container" v-if="product?.images?.length">
             <button
               class="nav-button prev"
               :disabled="currentImageIndex === 0"
@@ -401,9 +402,9 @@ const hideTooltip = () => {
               ›
             </button>
           </div>
-          <div class="color-selector" v-if="product?.tableQuantity?.length  && product.api !== 'cataProm'">
+          <div class="color-selector" v-if="product?.tableQuantity?.length  && product?.api !== 'cataProm'">
             <button
-              v-for="item in product.tableQuantity"
+              v-for="item in product?.tableQuantity"
               :key="item.color"
               class="color-button"
               :class="{ active: selectedColor === item.color }"
@@ -415,39 +416,39 @@ const hideTooltip = () => {
         </div>
 
         <div class="product-info">
-          <h1 class="product-name">{{ product.name }}</h1>
-          <p class="product-id">Código: {{ product.id }}</p>
+          <h1 class="product-name">{{ product?.name }}</h1>
+          <p class="product-id">Código: {{ product?.id }}</p>
 
           <div class="product-details">
             <div class="details-grid">
               <div class="detail-item description">
-                <span class="value" v-html="product.description"></span>
+                <span class="value" v-html="product?.description"></span>
               </div>
 
               <div class="detail-list">
-                <div class="detail-row" v-if="product.material && product.material !== ''">
+                <div class="detail-row" v-if="product?.material && product?.material !== ''">
                   <span class="detail-key">Material:</span>
-                  <span class="detail-value">{{ product.material }}</span>
+                  <span class="detail-value">{{ product?.material }}</span>
                 </div>
 
-                <div class="detail-row" v-if="product.size && product.size !== ''">
+                <div class="detail-row" v-if="product?.size && product?.size !== ''">
                   <span class="detail-key">Medidas:</span>
-                  <span class="detail-value">{{ product.size }}</span>
+                  <span class="detail-value">{{ product?.size }}</span>
                 </div>
 
-                <div class="detail-row" v-if="product.areaPrinting && product.areaPrinting !== ''">
+                <div class="detail-row" v-if="product?.areaPrinting && product?.areaPrinting !== ''">
                   <span class="detail-key">Área de<br /> impresión:</span>
-                  <span class="detail-value">{{ product.areaPrinting }}</span>
+                  <span class="detail-value">{{ product?.areaPrinting }}</span>
                 </div>
 
-                <div class="detail-row" v-if="product.printing && product.printing !== ''">
+                <div class="detail-row" v-if="product?.printing && product?.printing !== ''">
                   <span class="detail-key">Método de<br /> impresión:</span>
-                  <span class="detail-value">{{ product.printing }}</span>
+                  <span class="detail-value">{{ product?.printing }}</span>
                 </div>
 
-                <div class="detail-row" v-if="product.packaging && product.packaging !== ''">
+                <div class="detail-row" v-if="product?.packaging && product?.packaging !== ''">
                   <span class="detail-key">Empaquetado:</span>
-                  <span class="detail-value">{{ product.packaging }}</span>
+                  <span class="detail-value">{{ product?.packaging }}</span>
                 </div>
 
                 <!-- Botón de cotización -->
@@ -461,10 +462,10 @@ const hideTooltip = () => {
                   </RgButton>
                 </div>
 
-                <div class="detail-row" v-if="product.category?.length && product.category?.length > 0">
-                  <span class="detail-key">{{ product.category.length > 1 ? 'Categorías:' : 'Categoría:' }}</span>
+                <div class="detail-row" v-if="product?.category?.length && product?.category?.length > 0">
+                  <span class="detail-key">{{ product?.category.length > 1 ? 'Categorías:' : 'Categoría:' }}</span>
                   <span class="detail-value categories">
-                    <span v-for="category in product.category"
+                    <span v-for="category in product?.category"
                       :key="category"
                       class="category-tag"
                     >
@@ -474,10 +475,10 @@ const hideTooltip = () => {
                 </div>
               </div>
 
-              <div class="labels-section" v-if="product.labels && product.labels.length > 0">
+              <div class="labels-section" v-if="product?.labels && product?.labels.length > 0">
                 <div class="labels-grid">
                   <div
-                    v-for="label in product.labels"
+                    v-for="label in product?.labels"
                     :key="label.id"
                     class="label-container"
                   >
@@ -502,7 +503,7 @@ const hideTooltip = () => {
           <div class="table-header">
             <div class="total-info">
               <span class="total-label">Total disponible:</span>
-              <span class="total-value">{{ formatNumber(product.totalProducts) }} unidades.</span>
+              <span class="total-value">{{ formatNumber(product?.totalProducts) }} unidades.</span>
             </div>
             <div class="update-info">
               <span class="update-label">Inventario actualizado:</span>
@@ -528,7 +529,7 @@ const hideTooltip = () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="entry in product.tableQuantity" :key="entry.colorName">
+              <tr v-for="entry in product?.tableQuantity" :key="entry.colorName">
                 <td>
                   <div class="color-cell">
                     <span
