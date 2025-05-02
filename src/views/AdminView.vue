@@ -280,11 +280,11 @@ const handleUpdateProducts = () => {
 };
 
 useHead({
-  title: computed(() => `${activeTabTitle[route.query.tab as tabs]} Admin – Red Global Promocionales` || 'Admin – Red Global Promocionales'),
+  title: computed(() => `${activeTabTitle[route.query.tab as tabs]} Admin – Red Global Promocional` || 'Admin – Red Global Promocional'),
   meta: [
     { name: 'description', content: 'Panel de administración para gestionar menú, usuarios, cotizaciones, categorías y catálogos.' },
     { name: 'robots', content: 'noindex, nofollow' },
-    { property: 'og:title', content: 'Admin – Red Global Promocionales' },
+    { property: 'og:title', content: 'Admin – Red Global Promocional' },
     { property: 'og:description', content: 'Panel de administración para gestionar menú, usuarios, cotizaciones, categorías y catálogos.' },
     { property: 'og:type', content: 'website' },
     { property: 'og:locale', content: 'es_CO' },

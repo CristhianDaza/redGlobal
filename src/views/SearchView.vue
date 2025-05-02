@@ -125,11 +125,11 @@ const productsToShow = computed<ProductsRedGlobal[]>(() => {
 });
 
 useHead({
-  title: 'Buscar productos – Red Global Promocionales',
+  title: 'Buscar productos – Red Global Promocional',
   meta: [
     { name: 'description', content: 'Busca productos promocionales y regalos corporativos en nuestro catálogo. Resultados filtrados y paginados.' },
     { name: 'robots', content: 'index, follow' },
-    { property: 'og:title', content: 'Buscar productos – Red Global Promocionales' },
+    { property: 'og:title', content: 'Buscar productos – Red Global Promocional' },
     { property: 'og:description', content: 'Busca productos promocionales y regalos corporativos en nuestro catálogo. Resultados filtrados y paginados.' },
     { property: 'og:type', content: 'website' },
     { property: 'og:locale', content: 'es_CO' },

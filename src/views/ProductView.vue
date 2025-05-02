@@ -22,12 +22,12 @@ const product = ref<ProductsRedGlobal | null>(null);
 const { isSize483 } = useIsMobile()
 
 useHead({
-  title: computed(() => `${product.value?.id} ${product.value?.name} – Red Global Promocionales` || 'Producto – Red Global Promocionales'),
+  title: computed(() => `${product.value?.id} ${product.value?.name} – Red Global Promocional` || 'Producto – Red Global Promocional'),
   meta: [
-    { name: 'description', content: product.value?.description || 'Detalles del producto promocional en Red Global Promocionales.' },
+    { name: 'description', content: product.value?.description || 'Detalles del producto promocional en Red Global Promocional.' },
     { name: 'robots', content: 'index, follow' },
-    { property: 'og:title', content: product.value?.name || 'Producto – Red Global Promocionales' },
-    { property: 'og:description', content: product.value?.description || 'Detalles del producto promocional en Red Global Promocionales.' },
+    { property: 'og:title', content: product.value?.name || 'Producto – Red Global Promocional' },
+    { property: 'og:description', content: product.value?.description || 'Detalles del producto promocional en Red Global Promocional.' },
     { property: 'og:type', content: 'product' },
     { property: 'og:locale', content: 'es_CO' },
     { property: 'og:url', content: `https://redglobalpromocionales.com/product/${product.value?.id}` }

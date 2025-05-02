@@ -9,11 +9,11 @@ const RgLoader = defineAsyncComponent(/* webpackChunkName: "rgLoader" */() => im
 const { catalogs, loadCatalogs, isLoadingCatalog } = useCatalogAdmin()
 
 useHead({
-  title: 'Catálogos – Red Global Promocionales',
+  title: 'Catálogos – Red Global Promocional',
   meta: [
     { name: 'description', content: 'Descarga nuestros catálogos de regalos corporativos y productos promocionales. Gran variedad para tu empresa.' },
     { name: 'robots', content: 'index, follow' },
-    { property: 'og:title', content: 'Catálogos – Red Global Promocionales' },
+    { property: 'og:title', content: 'Catálogos – Red Global Promocional' },
     { property: 'og:description', content: 'Descarga nuestros catálogos de regalos corporativos y productos promocionales. Gran variedad para tu empresa.' },
     { property: 'og:type', content: 'website' },
     { property: 'og:locale', content: 'es_CO' },

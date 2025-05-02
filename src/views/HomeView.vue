@@ -31,11 +31,11 @@ const popularProducts = computed(() => {
 });
 
 useHead({
-  title: 'Inicio – Red Global Promocionales',
+  title: 'Inicio – Red Global Promocional',
   meta: [
     { name: 'description', content: 'Regalos corporativos y productos promocionales personalizados. Encuentra la mejor variedad para tu empresa.' },
     { name: 'robots', content: 'index, follow' },
-    { property: 'og:title', content: 'Inicio – Red Global Promocionales' },
+    { property: 'og:title', content: 'Inicio – Red Global Promocional' },
     { property: 'og:description', content: 'Regalos corporativos y productos promocionales personalizados. Encuentra la mejor variedad para tu empresa.' },
     { property: 'og:type', content: 'website' },
     { property: 'og:locale', content: 'es_CO' },

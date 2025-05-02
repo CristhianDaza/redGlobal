@@ -77,11 +77,11 @@ const handleSubmit = async () => {
 };
 
 useHead({
-  title: 'Contacto – Red Global Promocionales',
+  title: 'Contacto – Red Global Promocional',
   meta: [
     { name: 'description', content: 'Contáctanos para cotizaciones y consultas sobre regalos corporativos y productos promocionales.' },
     { name: 'robots', content: 'index, follow' },
-    { property: 'og:title', content: 'Contacto – Red Global Promocionales' },
+    { property: 'og:title', content: 'Contacto – Red Global Promocional' },
     { property: 'og:description', content: 'Contáctanos para cotizaciones y consultas sobre regalos corporativos y productos promocionales.' },
     { property: 'og:type', content: 'website' },
     { property: 'og:locale', content: 'es_CO' },

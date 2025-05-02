@@ -186,11 +186,11 @@ const handleCategorySelect = (category: string) => {
 };
 
 useHead({
-  title: 'Productos – Red Global Promocionales',
+  title: 'Productos – Red Global Promocional',
   meta: [
     { name: 'description', content: 'Explora todos nuestros productos promocionales y regalos corporativos. Encuentra la mejor opción para tu empresa.' },
     { name: 'robots', content: 'index, follow' },
-    { property: 'og:title', content: 'Productos – Red Global Promocionales' },
+    { property: 'og:title', content: 'Productos – Red Global Promocional' },
     { property: 'og:description', content: 'Explora todos nuestros productos promocionales y regalos corporativos. Encuentra la mejor opción para tu empresa.' },
     { property: 'og:type', content: 'website' },
     { property: 'og:locale', content: 'es_CO' },
