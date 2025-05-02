@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 02/05/2025
+
+### Fixed
+- Added null checks for product properties to prevent runtime errors
+- Adjusted grid layout for product display and improved responsiveness
+
+### Added
+- Added loading indicator and improved catalog loading state management
+- Added `calculateTotalQuantity` function to compute total stock quantity based on conditions
+
+### Changed
+- Updated titles and meta-tags to use singular form for consistency across views
+
 ## [1.0.2] - 26/04/2025
 
 ### Fixed
@@ -18,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adjusted grid layout and image height for improved responsiveness.
 - Updated image dimensions for a better layout and responsiveness.
 - Updated layout and responsiveness of product details and gallery.
-- Improved zoom functionality and enhanced image responsiveness for better user experience.
+- Improved zoom functionality and enhanced image responsiveness for a better user experience.
 
 ### Added
 - Added a WhatsApp composable to enable reuse across the entire website.
@@ -35,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🎉 Initial stable release.
 
+[1.0.3]: https://github.com/CristhianDaza/redGlobal/pull/4/files
 [1.0.2]: https://github.com/CristhianDaza/redGlobal/pull/3/files
 [1.0.1]: https://github.com/CristhianDaza/redGlobal/pull/2/files
 [1.0.0]: https://github.com/CristhianDaza/redGlobal/pull/1/files
