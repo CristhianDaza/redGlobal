@@ -11,7 +11,9 @@ export function useCatalogAdmin() {
   const catalogs = computed(() => catalogStore.catalogs as unknown as Catalog[])
 
   const loadCatalogs = async () => {
+    isLoadingCatalog.value = true
     await catalogStore.getCatalogs()
+    isLoadingCatalog.value = false
   }
 
   const handleAddCatalog = () => {
