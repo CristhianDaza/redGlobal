@@ -20,38 +20,30 @@ const stockClass = computed(() => {
 </script>
 
 <template>
-  <div class="card-container">
-    <div class="product">
-      <div class="product-image-container">
-        <RgImage
-          :src="productsView.mainImage"
-          :alt="productsView.name"
-          width="auto"
-          height="auto"
-        />
+  <div class="product">
+    <div class="product-image-container">
+      <RgImage
+        :src="productsView.mainImage"
+        :alt="productsView.name"
+        width="auto"
+        height="auto"
+      />
+    </div>
+    <div class="product-content">
+      <div>
+        <p class="product-category" v-if="productsView.category?.length">{{ productsView.category?.[0]}}</p>
+        <h3 class="product-name">{{ productsView.name }}</h3>
+        <p class="product-code">{{ productsView.id }}</p>
       </div>
-      <div class="product-content">
-        <div>
-          <p class="product-category" v-if="productsView.category?.length">{{ productsView.category?.[0]}}</p>
-          <h3 class="product-name">{{ productsView.name }}</h3>
-          <p class="product-code">{{ productsView.id }}</p>
-        </div>
-        <div class="product-stock" v-if="productsView.totalProducts !== undefined">
-          <p class="stock-label">Unidades disponibles:</p>
-          <p class="stock-amount" :class="stockClass">{{ formatNumber(productsView.totalProducts)}}</p>
-        </div>
+      <div class="product-stock" v-if="productsView.totalProducts !== undefined">
+        <p class="stock-label">Unidades disponibles:</p>
+        <p class="stock-amount" :class="stockClass">{{ formatNumber(productsView.totalProducts)}}</p>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.card-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-}
-
 .product {
   display: grid;
   grid-template-rows: 1fr auto;
@@ -62,6 +54,7 @@ const stockClass = computed(() => {
   border: 1px solid #eee;
   cursor: pointer;
   position: relative;
+  height: 100%;
 }
 
 .product:hover {
