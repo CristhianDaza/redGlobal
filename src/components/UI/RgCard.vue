@@ -30,9 +30,11 @@ const stockClass = computed(() => {
       />
     </div>
     <div class="product-content">
-      <p class="product-category" v-if="productsView.category?.length">{{ productsView.category?.[0]}}</p>
-      <h3 class="product-name">{{ productsView.name }}</h3>
-      <p class="product-code">{{ productsView.id }}</p>
+      <div>
+        <p class="product-category" v-if="productsView.category?.length">{{ productsView.category?.[0]}}</p>
+        <h3 class="product-name">{{ productsView.name }}</h3>
+        <p class="product-code">{{ productsView.id }}</p>
+      </div>
       <div class="product-stock" v-if="productsView.totalProducts !== undefined">
         <p class="stock-label">Unidades disponibles:</p>
         <p class="stock-amount" :class="stockClass">{{ formatNumber(productsView.totalProducts)}}</p>
@@ -50,6 +52,7 @@ const stockClass = computed(() => {
   border: 1px solid #eee;
   cursor: pointer;
   position: relative;
+  min-height: 520px;
 }
 
 .product:hover {
@@ -75,6 +78,10 @@ const stockClass = computed(() => {
 
 .product-content {
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 220px;
 }
 
 .product-category {
