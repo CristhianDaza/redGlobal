@@ -266,3 +266,13 @@ export const transformColPhone = (phone: string, normalized = false): string => 
   const p3 = subscriber.slice(6);
   return `(${country}) ${p1} ${p2} ${p3}`;
 }
+
+export const calculateTotalQuantity = (stocks: TableEntry[]): number => {
+  const totalPositive = stocks.reduce((sum, stock) => {
+    return stock.quantity > 0 ? sum + stock.quantity : sum;
+  }, 0);
+
+  const allNegative = stocks.every(stock => stock.quantity < 0);
+
+  return allNegative ? stocks.reduce((sum, stock) => sum + stock.quantity, 0) : totalPositive;
+}

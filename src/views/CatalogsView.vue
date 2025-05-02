@@ -4,15 +4,16 @@ import { defineAsyncComponent, onMounted } from 'vue'
 import { useCatalogAdmin } from '@/composable'
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
+const RgLoader = defineAsyncComponent(/* webpackChunkName: "rgLoader" */() => import('@/components/UI/RgLoader.vue'))
 
 const { catalogs, loadCatalogs, isLoadingCatalog } = useCatalogAdmin()
 
 useHead({
-  title: 'Catálogos – Red Global Promocionales',
+  title: 'Catálogos – Red Global Promocional',
   meta: [
     { name: 'description', content: 'Descarga nuestros catálogos de regalos corporativos y productos promocionales. Gran variedad para tu empresa.' },
     { name: 'robots', content: 'index, follow' },
-    { property: 'og:title', content: 'Catálogos – Red Global Promocionales' },
+    { property: 'og:title', content: 'Catálogos – Red Global Promocional' },
     { property: 'og:description', content: 'Descarga nuestros catálogos de regalos corporativos y productos promocionales. Gran variedad para tu empresa.' },
     { property: 'og:type', content: 'website' },
     { property: 'og:locale', content: 'es_CO' },
@@ -35,7 +36,7 @@ onMounted(() => {
     <h1 class="page-title">Nuestros Catálogos</h1>
 
     <div v-if="isLoadingCatalog" class="loader">
-      <p>Cargando catálogos...</p>
+      <RgLoader>Cargando catálogos...</RgLoader>
     </div>
 
     <div v-else class="catalog-grid">
@@ -66,6 +67,7 @@ onMounted(() => {
 <style scoped>
 .catalog-page {
   padding: 1rem;
+  margin: 0 2rem;
 }
 
 .page-title {

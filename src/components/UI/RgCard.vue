@@ -30,9 +30,11 @@ const stockClass = computed(() => {
       />
     </div>
     <div class="product-content">
-      <p class="product-category" v-if="productsView.category?.length">{{ productsView.category?.[0]}}</p>
-      <h3 class="product-name">{{ productsView.name }}</h3>
-      <p class="product-code">{{ productsView.id }}</p>
+      <div>
+        <p class="product-category" v-if="productsView.category?.length">{{ productsView.category?.[0]}}</p>
+        <h3 class="product-name">{{ productsView.name }}</h3>
+        <p class="product-code">{{ productsView.id }}</p>
+      </div>
       <div class="product-stock" v-if="productsView.totalProducts !== undefined">
         <p class="stock-label">Unidades disponibles:</p>
         <p class="stock-amount" :class="stockClass">{{ formatNumber(productsView.totalProducts)}}</p>
@@ -43,6 +45,8 @@ const stockClass = computed(() => {
 
 <style scoped>
 .product {
+  display: grid;
+  grid-template-rows: 1fr auto;
   background: white;
   border-radius: 12px;
   overflow: hidden;
@@ -50,6 +54,7 @@ const stockClass = computed(() => {
   border: 1px solid #eee;
   cursor: pointer;
   position: relative;
+  height: 100%;
 }
 
 .product:hover {
@@ -63,14 +68,23 @@ const stockClass = computed(() => {
 }
 
 .product-image-container {
-  width: 100%;
-  height: 300px;
-  overflow: hidden;
-  background: #fff;
-  border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  min-height: 150px;
+  overflow: hidden;
+}
+
+.product-image-container :deep(img) {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
 }
 
 .product-content {
@@ -95,6 +109,7 @@ const stockClass = computed(() => {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-code {
@@ -123,19 +138,9 @@ const stockClass = computed(() => {
   transition: color 0.2s;
 }
 
-.stock-negative {
-  color: #c62828; /* Rojo oscuro, alerta fuerte */
-}
+.stock-negative { color: #c62828; }
+.stock-zero { color: #ffb3b3; }
+.stock-low { color: #f9a825; }
+.stock-ok { color: #388e3c; }
 
-.stock-zero {
-  color: #ffb3b3; /* Rojo pastel, suave pero visible */
-}
-
-.stock-low {
-  color: #f9a825; /* Amarillo oscuro/naranja, advertencia */
-}
-
-.stock-ok {
-  color: #388e3c; /* Verde más sobrio, profesional */
-}
 </style>
