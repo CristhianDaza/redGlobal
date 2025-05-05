@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ButtonProps } from '@/types/common.d'
-import TvButton from '@todovue/tvbutton';
+import TvButton from '@todovue/tv-button';
 
 const props = withDefaults(defineProps<ButtonProps>(), {
   type: 'default',

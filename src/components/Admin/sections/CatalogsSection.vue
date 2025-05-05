@@ -41,7 +41,7 @@ defineEmits<{
           <td>
             <a :href="item.toRoute" target="_blank">
               <RgButton
-                icon="share"
+                icon="external-link"
                 type="icon"
                 outlined
                 title="Ver Catálogo"

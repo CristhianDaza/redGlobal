@@ -54,7 +54,7 @@ onMounted(() => {
           />
           <h2 class="catalog-title">{{ catalog.title }}</h2>
           <div class="button-container">
-            <RgButton full icon="share">
+            <RgButton full icon="external-link">
               Ver Catálogo
             </RgButton>
           </div>

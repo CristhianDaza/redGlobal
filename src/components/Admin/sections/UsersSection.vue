@@ -81,7 +81,7 @@ const loadingUserId = ref<string | null>(null);
               }"
             />
             <RgButton
-              :icon="user.active ? 'minus' : 'plus'"
+              :icon="user.active ? 'block' : 'check'"
               type="icon"
               outlined
               @click="$emit('toggle-status', user); loadingUserId = user.id"

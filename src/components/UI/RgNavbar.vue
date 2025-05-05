@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '@/types/common.d';
 import { computed, defineAsyncComponent, ref } from 'vue';
-import TvButton from '@todovue/tvbutton';
+import TvButton from '@todovue/tv-button';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useMenuStore, useQuoteStore, useUserStore } from '@/store';
 import { useWhatsApp, useIsMobile } from '@/composable';

@@ -79,7 +79,7 @@ defineEmits<{
           <td>{{ quote.items.length }} items</td>
           <td class="actions">
             <RgButton
-              icon="menu"
+              icon="view"
               type="icon"
               outlined
               title="Ver Cotización"
@@ -91,7 +91,7 @@ defineEmits<{
             />
             <RgButton
               v-if="quote.status === quoteStatus.PENDING && isAdmin"
-              icon="update"
+              icon="check"
               type="icon"
               outlined
               title="Editar Cotización"
