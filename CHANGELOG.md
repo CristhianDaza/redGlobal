@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added `TvRelativeTime` component to display relative time in product view and admin quote details modal
 
+### Fixed
+- Fixed image responsiveness in `ProductView.vue`
+
 ## [1.0.3] - 02/05/2025
 
 ### Fixed
