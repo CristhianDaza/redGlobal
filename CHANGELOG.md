@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 - Change dependencies to use `^` versioning for all packages in `package.json`
 - Update `@todovue/tvbutton` to `@todovue/tv-button`
+- Updated `firebase` to `11.7.1`
+- Updated `vite` to `6.3.5`
+- Updated `@vitejs/plugin-vue` to `5.2.4`
 
 ### Added
 - Added `TvRelativeTime` component to display relative time in product view and admin quote details modal
