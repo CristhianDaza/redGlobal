@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Quote } from '@/types/common.d'
 import { defineAsyncComponent } from 'vue'
-import { getRelativeTime } from '@/utils'
+import TvRelativeTime from '@todovue/tv-relative-time'
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
 
@@ -64,7 +64,7 @@ defineEmits<{
           </td>
         </tr>
         <tr v-else v-for="quote in quotes" :key="quote.id">
-          <td>{{ getRelativeTime(quote.createdAt) }}</td>
+          <td><TvRelativeTime :date="quote.createdAt" lang="es" /></td>
           <td>
             <div class="user-info">
               <span>{{ quote.userName }}</span>

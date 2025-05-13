@@ -11,7 +11,8 @@
   "dependencies": {
     "@cloudinary/url-gen": "1.21.0",
     "@emailjs/browser": "4.4.1",
-    "@todovue/tv-button": "^1.0.0",
+    "@todovue/tv-button": "1.1.0",
+    "@todovue/tv-relative-time": "1.1.0",
     "@vueuse/head": "^2.0.0",
     "axios": "1.9.0",
     "firebase": "11.6.1",

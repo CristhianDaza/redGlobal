@@ -1,6 +1,6 @@
 import { formatText, cleanText, normalizeString, constructDescriptionCataProm } from './text';
 import { constructImagesPromos, constructImagesStockSur, constructImagesMarpico } from './images';
-import { filterProductsHelper, formatNumber, getRelativeTime, formatColor } from './helpers';
+import { filterProductsHelper, formatNumber, formatColor } from './helpers';
 import {
   combineProducts,
   constructCategoryCataProm,
@@ -60,7 +60,6 @@ export {
   // Helpers
   filterProductsHelper,
   formatNumber,
-  getRelativeTime,
   formatColor,
 
   // Constants

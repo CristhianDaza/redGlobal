@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { QuoteAdmin } from '@/types/common'
 import { defineAsyncComponent } from 'vue'
-import { getRelativeTime } from '@/utils'
+import TvRelativeTime from '@todovue/tv-relative-time'
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 
 defineProps<{
@@ -29,7 +29,7 @@ defineEmits<{
 
       <div class="modal-body" v-if="quote">
         <div class="quote-info">
-          <p><strong>Fecha:</strong> {{ getRelativeTime(quote.createdAt) }}</p>
+          <p><strong>Fecha:</strong><TvRelativeTime :date="quote.createdAt" lang="es" /></p>
           <p><strong>Cliente:</strong> {{ quote.userName }}</p>
           <p><strong>Email:</strong> {{ quote.userEmail }}</p>
           <p><strong>Estado:</strong>

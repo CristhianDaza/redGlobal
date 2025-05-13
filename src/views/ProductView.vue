@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal, TableEntry } from '@/types/common.d';
+import TvRelativeTime from '@todovue/tv-relative-time'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
-import { formatColor, formatNumber, getRelativeTime } from '@/utils'
+import { formatColor, formatNumber } from '@/utils'
 import { useIsMobile } from '@/composable';
 import { useHead } from '@vueuse/head';
 
@@ -507,7 +508,9 @@ const hideTooltip = () => {
             </div>
             <div class="update-info">
               <span class="update-label">Inventario actualizado:</span>
-              <span class="update-value">{{ getRelativeTime(productsStore.lastUpdateProducts) }}</span>
+              <span class="update-value">
+                <TvRelativeTime :date="productsStore.lastUpdateProducts" lang="es" />
+              </span>
             </div>
           </div>
           <div class="price-toggle" v-if="authStore.isAuthenticated()">
@@ -550,7 +553,7 @@ const hideTooltip = () => {
                   <span v-else>-</span>
                 </td>
                 <td v-if="hasAnyTracking">
-                  {{ entry.lastUpdateTracking ? getRelativeTime(entry.lastUpdateTracking) : '-' }}
+                  <TvRelativeTime :date="entry.lastUpdateTracking" lang="es" />
                 </td>
                 <td v-if="authStore.isAuthenticated()">
                   <div v-if="isPriceLoading" class="price-skeleton"></div>
