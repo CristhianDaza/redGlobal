@@ -76,6 +76,7 @@ const stockClass = computed(() => {
   padding: 0.5rem;
   box-sizing: border-box;
   min-height: 150px;
+  max-height: 250px;
   overflow: hidden;
 }
 
@@ -84,7 +85,7 @@ const stockClass = computed(() => {
     max-height: 100%;
     width: auto;
     height: auto;
-    object-fit: contain;
+    object-fit: cover;
 }
 
 .product-content {
