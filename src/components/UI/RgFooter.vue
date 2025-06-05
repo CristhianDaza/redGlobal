@@ -40,7 +40,7 @@ const contactInfo = {
   address: 'Somos una compañía que cuenta con más de 25 años de experiencia en el mercado Publicitario; impulsamos y proyectamos las marcas de nuestros clientes para que tengan un gran impacto; contamos con un equipo de trabajo competitivo, humano e innovador. Poseemos red de distribución a nivel nacional e internacional, manejamos costos competitivos y nos caracterizamos siempre por la calidad, cumplimiento y confiabilidad.',
   email: 'servicioalcliente@redglobalpromo.com.co',
   phone1: transformColPhone(CONSTANTS.NUMBER_WHATSAPP),
-  phone2: '601 236 0535'
+  phone2: '601 703 72 50'
 };
 
 const services = [
