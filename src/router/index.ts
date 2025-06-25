@@ -28,6 +28,11 @@ const routes: RouteRecordRaw[] = [
     name: 'catalogs'
   },
   {
+    path: '/about-us',
+    component: () => import(/* webpackChunkName: "missionVisionView" */ '../views/MissionVisionView.vue'),
+    name: 'about-us'
+  },
+  {
     path: '/admin',
     component: () => import(/* webpackChunkName: "adminView" */ '../views/AdminView.vue'),
     name: 'admin',
