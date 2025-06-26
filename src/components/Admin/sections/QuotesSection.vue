@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Quote } from '@/types/common.d'
+import type { Quote, QuoteAdmin } from '@/types/common.d'
 import { defineAsyncComponent, computed, ref } from 'vue'
 import TvRelativeTime from '@todovue/tv-relative-time'
 
@@ -15,7 +15,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'view', quote: Quote): void
-  (e: 'complete', id: string): void
+  (e: 'complete', quote: QuoteAdmin): void
   (e: 'delete', id: string): void
 }>()
 

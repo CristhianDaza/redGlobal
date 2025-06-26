@@ -14,7 +14,7 @@ defineProps<{
 
 defineEmits<{
   (e: 'close'): void
-  (e: 'complete', id: string): void
+  (e: 'complete', quote: QuoteAdmin): void
 }>()
 </script>
 
