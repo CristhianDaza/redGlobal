@@ -235,8 +235,8 @@ export const firebaseService = {
       const quotesRef = collection(db, 'quotes')
       const snapshot = await getDocs(quotesRef)
       return snapshot.docs.map(doc => ({
+        ...doc.data(),
         idDoc: doc.id,
-        ...doc.data()
       })) as Quote[]
     } catch (error) {
       console.error('Error getting quotes:', error)
