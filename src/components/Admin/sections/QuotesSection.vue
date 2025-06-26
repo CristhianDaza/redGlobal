@@ -64,7 +64,7 @@ defineEmits<{
           </td>
         </tr>
         <tr v-else v-for="quote in quotes" :key="quote.id">
-          <td><TvRelativeTime :date="quote.createdAt" lang="es" /></td>
+          <td><TvRelativeTime v-if="quote.createdAt" :date="quote.createdAt" lang="es" /></td>
           <td>
             <div class="user-info">
               <span>{{ quote.userName }}</span>

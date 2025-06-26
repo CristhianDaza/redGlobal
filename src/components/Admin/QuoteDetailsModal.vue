@@ -29,7 +29,7 @@ defineEmits<{
 
       <div class="modal-body" v-if="quote">
         <div class="quote-info">
-          <p><strong>Fecha:</strong><TvRelativeTime :date="quote.createdAt" lang="es" /></p>
+          <p><strong>Fecha:</strong><TvRelativeTime :date="quote.createdAt" v-if="quote.createdAt" lang="es" /></p>
           <p><strong>Cliente:</strong> {{ quote.userName }}</p>
           <p><strong>Email:</strong> {{ quote.userEmail }}</p>
           <p><strong>Estado:</strong>
