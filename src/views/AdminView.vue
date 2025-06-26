@@ -84,6 +84,7 @@ const {
   handleCloseQuoteDetails,
   handleOpenQuoteDetails,
   handleCompleteQuote,
+  downloadQuoteSummary,
   deleteQuote,
   deleteAllCompletedQuotes,
   canDeleteQuote,
@@ -360,6 +361,7 @@ watch(() => route.query.tab, (newTab) => {
             @view="handleViewQuote"
             @complete="handleCompleteQuote"
             @delete="id => handleDeleteClick(id, 'quotes')"
+            @download="downloadQuoteSummary"
           />
 
           <CategoriesSection

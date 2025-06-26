@@ -17,6 +17,7 @@ const emit = defineEmits<{
   (e: 'view', quote: Quote): void
   (e: 'complete', quote: QuoteAdmin): void
   (e: 'delete', id: string): void
+  (e: 'download'): void
 }>()
 
 const sortKey = ref<'createdAt' | 'userName' | 'status'>('createdAt')
@@ -68,6 +69,22 @@ function changeSort(key: typeof sortKey.value) {
         <div class="stat-info">
           <h3>Completadas</h3>
           <p>{{ props.totals.completed }}</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-icons">download</span>
+        <div class="stat-info">
+          <h3>Descargar Cotizaciones</h3>
+          <p>
+            <RgButton
+              icon="download"
+              type="icon"
+              outlined
+              title="Descargar Cotizaciones"
+              @click="$emit('download')"
+              :customStyle="{ backgroundColor: '#4a5568', color: '#ebf8ff' }"
+            />
+          </p>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import type { QuoteAdmin } from '@/types/common.d'
 import { ref, computed } from 'vue';
+import * as XLSX from 'xlsx'
 import { useQuoteStore, useAuthStore } from '@/store';
 import { useRouter, useRoute } from 'vue-router';
 import {NotificationService} from '@/components/Notification/NotificationService.ts';
@@ -112,6 +113,38 @@ export function useQuoteAdmin(isAdmin: boolean) {
     }
   };
 
+  const downloadQuoteSummary = () => {
+    if (!filteredQuotes.value.length) {
+      NotificationService.push({
+        title: 'Sin cotizaciones',
+        description: 'No hay cotizaciones para exportar',
+        type: 'info'
+      });
+      return;
+    }
+
+    const data = filteredQuotes.value.map(q => ({
+      'Fecha': new Date(q.createdAt).toLocaleString(),
+      'Nombre': q.userName,
+      'Correo': q.userEmail,
+      'Estado': q.status === quoteStatus.COMPLETED ? 'Completada' : 'Pendiente',
+      'Items': q.items.length,
+      'Id': q.id
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    const dayMonthYear = new Date().toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Cotizaciones');
+
+    XLSX.writeFile(workbook, `resumen-cotizaciones-${dayMonthYear}.xlsx`);
+  };
+
   return {
     isLoading,
     showQuoteDetailsModal,
@@ -127,6 +160,7 @@ export function useQuoteAdmin(isAdmin: boolean) {
     handleCompleteQuote,
     deleteQuote,
     deleteAllCompletedQuotes,
+    downloadQuoteSummary,
     canDeleteQuote,
     quoteStatus
   };
