@@ -14,31 +14,35 @@ useHead({
 
 <template>
   <div class="mission-vision-container">
-    <div class="card mission" v-motion-fade-visible>
-      <section>
-        <h2>Misión</h2>
-        <p>
-          En <strong>RED GLOBAL PROMOCIONAL S.A.S.</strong> llevamos <strong>7 años</strong> transformando ideas en productos que conectan con las personas.
-          Desde nuestro inicio, nos hemos especializado en ofrecer <strong>material promocional de alta calidad</strong>,
-          diseñado para fortalecer la presencia de marca de nuestros clientes y generar un impacto memorable.
-          Nuestro compromiso es brindar <strong>soluciones creativas, funcionales y personalizadas</strong>, adaptadas a las necesidades de cada empresa.
-          Gracias a nuestro <strong>equipo apasionado</strong> y a una <strong>red confiable de aliados</strong>,
-          hemos logrado posicionarnos como una opción sólida en el mundo de los promocionales.
-          Más que productos, <em>entregamos experiencias que comunican, fidelizan y dejan huella</em>.
-        </p>
-      </section>
-    </div>
-    <div class="card vision" v-motion-fade-visible>
-      <section>
-        <h2>Visión</h2>
-        <p>
-          Ser reconocidos a nivel <strong>nacional e internacional</strong> como la empresa referente en <strong>soluciones promocionales</strong>,
-          destacándonos por <strong>transformar ideas en experiencias de marca memorables</strong>.
-          Nos proyectamos como <strong>aliados estratégicos</strong> del crecimiento de nuestros clientes, impulsando sus marcas con <strong>creatividad, innovación, cumplimiento</strong>
-          y una excelencia basada en la <em>pasión por los detalles</em>.
-        </p>
-      </section>
-    </div>
+    <transition name="fade">
+      <div class="card mission">
+        <section>
+          <h2>Misión</h2>
+          <p>
+            En <strong>RED GLOBAL PROMOCIONAL S.A.S.</strong> llevamos <strong>7 años</strong> transformando ideas en productos que conectan con las personas.
+            Desde nuestro inicio, nos hemos especializado en ofrecer <strong>material promocional de alta calidad</strong>,
+            diseñado para fortalecer la presencia de marca de nuestros clientes y generar un impacto memorable.
+            Nuestro compromiso es brindar <strong>soluciones creativas, funcionales y personalizadas</strong>, adaptadas a las necesidades de cada empresa.
+            Gracias a nuestro <strong>equipo apasionado</strong> y a una <strong>red confiable de aliados</strong>,
+            hemos logrado posicionarnos como una opción sólida en el mundo de los promocionales.
+            Más que productos, <em>entregamos experiencias que comunican, fidelizan y dejan huella</em>.
+          </p>
+        </section>
+      </div>
+    </transition>
+    <transition name="fade">
+      <div class="card vision">
+        <section>
+          <h2>Visión</h2>
+          <p>
+            Ser reconocidos a nivel <strong>nacional e internacional</strong> como la empresa referente en <strong>soluciones promocionales</strong>,
+            destacándonos por <strong>transformar ideas en experiencias de marca memorables</strong>.
+            Nos proyectamos como <strong>aliados estratégicos</strong> del crecimiento de nuestros clientes, impulsando sus marcas con <strong>creatividad, innovación, cumplimiento</strong>
+            y una excelencia basada en la <em>pasión por los detalles</em>.
+          </p>
+        </section>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -79,7 +83,15 @@ useHead({
   line-height: 1.5;
 }
 
-/* Responsive */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 @media (max-width: 600px) {
   .card {
     padding: 14px 16px;
