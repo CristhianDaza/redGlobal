@@ -2,8 +2,6 @@ import type { FirebaseConfig } from '@/types/firebase';
 
 import { initializeApp, FirebaseApp } from 'firebase/app'
 import { getFirestore, Firestore } from 'firebase/firestore'
-import { getStorage, FirebaseStorage } from 'firebase/storage'
-import { Analytics, getAnalytics } from 'firebase/analytics'
 import { getAuth, Auth } from 'firebase/auth'
 
 const firebaseConfig: FirebaseConfig = {
@@ -18,15 +16,11 @@ const firebaseConfig: FirebaseConfig = {
 
 const app: FirebaseApp = initializeApp(firebaseConfig)
 
-const analytics: Analytics = getAnalytics(app)
 const db: Firestore = getFirestore(app)
-const storage: FirebaseStorage = getStorage(app, import.meta.env.VITE_BACKET_URL)
 const auth: Auth = getAuth(app)
 
 export {
   app,
-  analytics,
   db,
-  storage,
   auth
 }
