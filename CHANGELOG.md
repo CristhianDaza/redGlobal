@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 26/05/2025
+### Dependencies
+- Dependencies are updated to their major versions
+
+### Added
+- Global loader added `RgGlobalLoader.vue`
+- Added button to delete completed quotes
+- Sorting is added to the table that lists quotes
+- Added functionality to download the list of quotes
+- The `About Us` page is added
+- Added functionality to view the modal by URL from an external link
+- An email is now sent when a new quote is created
+- Build is optimized
+
+### Fixed
+- Local images are optimized
+- The color displayed in the quotes modal is corrected
+- Fixed the styles of the quote modal
+- The table class in the admin section is corrected
+- Fixed redirection to catalogs when no products exist
+- Fixed login with credentials that redirects to the home and not to the admin when the user was authenticated
+- The data sent to the email that was not received by the email is corrected.
+- Corrected data type from the `lastUpdate`
+
+### Changed
+- The status of the quote is better displayed
+- Secondary color is removed from user creation
+- The button to update quotes from the admin has been removed and can now only be used from the modal
+- The text in the footer about us is changed
+- The home image and its size are changed
+- Contact information is changed
+- Unused imports from Firebase such as analytics and storage are removed
+- When you enter the admin page, only the necessary information is updated and only if you are an admin
+
 ## [1.0.4] - 12/05/2025
 
 ### Dependencies
@@ -70,7 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🎉 Initial stable release.
 
-[1.0.4]: https://github.com/CristhianDaza/redGlobal/pull/5/files
+[1.1.0]: https://github.com/CristhianDaza/redGlobal/pull/5/files
+[1.0.4]: https://github.com/CristhianDaza/redGlobal/pull/
 [1.0.3]: https://github.com/CristhianDaza/redGlobal/pull/4/files
 [1.0.2]: https://github.com/CristhianDaza/redGlobal/pull/3/files
 [1.0.1]: https://github.com/CristhianDaza/redGlobal/pull/2/files
