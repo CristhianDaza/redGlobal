@@ -206,7 +206,8 @@ export const useQuoteStore = defineStore('quote', () => {
   }
 
   const deleteQuote = async (id: string) => {
-    const quote = state.value.quotes.find(q => q.id === id)
+    console.log('Deleting quote with id:', id)
+    const quote = state.value.quotes.find(q => q.idDoc === id)
     if (!quote) {
       NotificationService.push({
         title: 'Error al eliminar la cotización',

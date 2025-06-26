@@ -151,7 +151,7 @@ function changeSort(key: typeof sortKey.value) {
               type="icon"
               outlined
               title="Eliminar Cotización"
-              @click="emit('delete', quote.id)"
+              @click="emit('delete', quote.idDoc)"
               :customStyle="{ backgroundColor: '#e53e3e', color: '#ebf8ff' }"
             />
           </td>
