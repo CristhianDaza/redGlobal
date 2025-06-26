@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, defineAsyncComponent, watch  } from 'vue';
+import { onMounted, defineAsyncComponent, watch } from 'vue';
 import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore } from '@/store';
 
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
@@ -71,6 +71,7 @@ onMounted(async () => {
         const productsEmpty = !storeProducts.products?.length;
 
         if (isAdmin || productsEmpty) {
+          loaderStore.hideLoader();
           await storeProducts.getAllProducts(isAdmin);
         }
 
