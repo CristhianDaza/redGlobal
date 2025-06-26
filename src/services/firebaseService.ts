@@ -1,6 +1,6 @@
 import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard } from '@/types/common.d'
 import { Catalog, UserRole } from '@/types/common.d'
-import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where, writeBatch } from 'firebase/firestore'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import { db } from '@/config'
 
@@ -234,7 +234,7 @@ export const firebaseService = {
       const quotesRef = collection(db, 'quotes')
       const snapshot = await getDocs(quotesRef)
       return snapshot.docs.map(doc => ({
-        id: doc.id,
+        idDoc: doc.id,
         ...doc.data()
       })) as Quote[]
     } catch (error) {
@@ -276,6 +276,20 @@ export const firebaseService = {
     } catch (error) {
       console.error('Error deleting quote:', error)
       throw error
+    }
+  },
+
+  async deleteMultipleQuotes(ids: string[]): Promise<void> {
+    const batch = writeBatch(db);
+    try {
+      ids.forEach(id => {
+        const docRef = doc(db, 'quotes', id);
+        batch.delete(docRef);
+      });
+      await batch.commit();
+    } catch (error) {
+      console.error('Error deleting multiple quotes:', error);
+      throw error;
     }
   },
 

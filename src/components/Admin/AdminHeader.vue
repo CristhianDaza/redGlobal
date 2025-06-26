@@ -13,13 +13,19 @@ const emit = defineEmits<{
   (e: 'add-user'): void
   (e: 'add-card'): void
   (e: 'add-catalog'): void
+  (e: 'delete-all-quote'): void
 }>()
 
-const handleAdd = () => {
-  if (props.activeTab === 'menu') emit('add-menu')
-  else if (props.activeTab === 'users') emit('add-user')
-  else if (props.activeTab === 'cards') emit('add-card')
-  else if (props.activeTab === 'catalogs') emit('add-catalog')
+const handleEventButton = () => {
+  const eventMap: Record<tabs, string> = {
+    menu: 'add-menu',
+    users: 'add-user',
+    cards: 'add-card',
+    catalogs: 'add-catalog',
+    quotes: 'delete-all-quote',
+  };
+  const event = eventMap[props.activeTab];
+  if (event) emit(event as any);
 }
 
 const activeTabHeader = computed(():string => {
@@ -39,7 +45,7 @@ const activeTabText = computed(():string => {
     menu: 'Agregar un Menú',
     users: 'Crear un Usuario',
     cards: 'Agregar una Categoría',
-    quotes: '',
+    quotes: 'Limpiar Cotizaciones',
     catalogs: 'Agregar un Catálogo',
   }
   return text[props.activeTab];
@@ -53,10 +59,10 @@ const activeTabText = computed(():string => {
     </h1>
 
     <RgButton
-      v-if="activeTab !== 'quotes' && isAdmin"
+      v-if="isAdmin"
       :text="activeTabText"
       class="add-button"
-      @click="handleAdd"
+      @click="handleEventButton"
       type="default"
       rounded
     />

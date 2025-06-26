@@ -85,6 +85,7 @@ const {
   handleOpenQuoteDetails,
   handleCompleteQuote,
   deleteQuote,
+  deleteAllCompletedQuotes,
   canDeleteQuote,
   quoteStatus
 } = useQuoteAdmin(isAdmin.value);
@@ -121,6 +122,11 @@ const handleDeleteClick = (id: string, type: tabs) => {
   showConfirmModal.value = true;
 };
 
+const confirmDeleteQuotes = async () => {
+  itemToConfirmModal.value = { id: '', type: 'deleteAllQuotes' };
+  showConfirmModal.value = true;
+};
+
 const handleConfirmModal = async () => {
   if (!itemToConfirmModal.value) return;
   try {
@@ -144,6 +150,9 @@ const handleConfirmModal = async () => {
         showConfirmModal.value = false;
         itemToConfirmModal.value = undefined;
         await storeProducts.callServices(true);
+        break;
+      case 'deleteAllQuotes':
+        await deleteAllCompletedQuotes();
         break;
     }
   } catch (error) {
@@ -230,7 +239,8 @@ const messageConfirmsMap: Record<string, string> = {
   products: '¿Estás seguro de que deseas eliminar este producto?',
   catalogs: '¿Estás seguro de que deseas eliminar este catálogo?',
   default: '¿Estás seguro de que deseas eliminar este elemento?',
-  update: '¿Estás seguro de que deseas actualizar los productos?'
+  update: '¿Estás seguro de que deseas actualizar los productos?',
+  deleteAllQuotes: '¿Estás seguro de que deseas eliminar todas las cotizaciones completadas?',
 }
 
 const titleConfirmsMap: Record<string, string> = {
@@ -241,7 +251,8 @@ const titleConfirmsMap: Record<string, string> = {
   products: 'Eliminar Producto',
   catalogs: 'Eliminar Catálogo',
   default: 'Eliminar Elemento',
-  update: 'Actualizar Productos'
+  update: 'Actualizar Productos',
+  deleteAllQuotes: 'Eliminar Cotizaciones Completadas',
 }
 
 const messageConfirm = computed(() => {
@@ -311,6 +322,7 @@ watch(() => route.query.tab, (newTab) => {
         @add-user="handleAddUser"
         @add-card="handleAddCard"
         @add-catalog="handleAddCatalog"
+        @delete-all-quote="confirmDeleteQuotes"
       />
 
       <div class="main-content">

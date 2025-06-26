@@ -135,6 +135,7 @@ export const useQuoteStore = defineStore('quote', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         id: crypto.randomUUID(),
+        idDoc: '',
       }
 
       const emailData = {
@@ -243,6 +244,39 @@ export const useQuoteStore = defineStore('quote', () => {
     }
   }
 
+  const deleteAllCompletedQuotes = async () => {
+    try {
+      const completed = state.value.quotes.filter(q => q.status === QuoteStatus.COMPLETED);
+      const completedIds = completed.map(q => q.idDoc);
+
+      if (completedIds.length === 0) {
+        NotificationService.push({
+          title: 'Sin cotizaciones completadas',
+          description: 'No hay cotizaciones completadas para eliminar.',
+          type: 'info'
+        });
+        return;
+      }
+
+      await firebaseService.deleteMultipleQuotes(completedIds);
+
+      NotificationService.push({
+        title: 'Cotizaciones eliminadas',
+        description: `${completedIds.length} cotizaciones completadas han sido eliminadas.`,
+        type: 'success'
+      });
+
+      await getQuotes();
+    } catch (error) {
+      console.error('Error deleting completed quotes:', error);
+      NotificationService.push({
+        title: 'Error al eliminar',
+        description: 'No se pudieron eliminar las cotizaciones completadas.',
+        type: 'error'
+      });
+    }
+  };
+
   loadCurrentQuoteFromStorage()
 
   return {
@@ -255,6 +289,7 @@ export const useQuoteStore = defineStore('quote', () => {
     addItemToQuote,
     updateQuoteItem,
     removeQuoteItem,
+    deleteAllCompletedQuotes,
     clearQuote,
     submitQuote,
     getQuotes,

@@ -70,7 +70,7 @@ export function useQuoteAdmin(isAdmin: boolean) {
 
   const handleCompleteQuote = async (quote: QuoteAdmin) => {
     try {
-      await quoteStore.updateQuoteStatus(quote.id, quoteStatus.COMPLETED);
+      await quoteStore.updateQuoteStatus(quote.idDoc, quoteStatus.COMPLETED);
       if (selectedQuote.value) {
         selectedQuote.value.status = quoteStatus.COMPLETED;
       }
@@ -92,7 +92,6 @@ export function useQuoteAdmin(isAdmin: boolean) {
     }
   };
 
-
   const canDeleteQuote = (quote: QuoteAdmin): boolean => {
     const isCreator = quote.userEmail === authStore.user?.email
     const isPending = quote.status === quoteStatus.PENDING
@@ -101,6 +100,17 @@ export function useQuoteAdmin(isAdmin: boolean) {
     return (isCreator && isPending) || (isAdmin && isCompleted)
   }
 
+  const deleteAllCompletedQuotes = async () => {
+    isLoading.value = true;
+    try {
+      await quoteStore.deleteAllCompletedQuotes();
+      await loadQuotes();
+    } catch (error) {
+      console.error('Error al eliminar cotizaciones completadas:', error);
+    } finally {
+      isLoading.value = false;
+    }
+  };
 
   return {
     isLoading,
@@ -116,6 +126,7 @@ export function useQuoteAdmin(isAdmin: boolean) {
     handleOpenQuoteDetails,
     handleCompleteQuote,
     deleteQuote,
+    deleteAllCompletedQuotes,
     canDeleteQuote,
     quoteStatus
   };
