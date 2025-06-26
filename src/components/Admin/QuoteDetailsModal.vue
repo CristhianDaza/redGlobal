@@ -34,8 +34,8 @@ defineEmits<{
           <p><strong>Cliente:</strong> {{ quote.userName }}</p>
           <p><strong>Email:</strong> {{ quote.userEmail }}</p>
           <p><strong>Estado:</strong>
-            <span :class="['status-badge', quote.status]">
-              {{ quote.status === quoteStatus.PENDING ? ' Pendiente' : ' Completada' }}
+            <span :class="['status-badge', quote.status === quoteStatus.PENDING ? 'status-pending' : 'status-completed']" class="status">
+            {{ quote.status === quoteStatus.PENDING ? ' Pendiente ' : ' Completada ' }}
             </span>
           </p>
         </div>

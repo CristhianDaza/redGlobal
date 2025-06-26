@@ -150,3 +150,19 @@
         grid-template-columns: 1fr;
     }
 }
+
+.status-pending {
+    background: #fff7e6;
+    color: #d97706;
+    border: 1px solid #fbbf24;
+}
+.status-completed {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #34d399;
+}
+
+.status {
+    padding: 0.25rem 0.5rem;
+    margin-left: 0.5rem;
+}

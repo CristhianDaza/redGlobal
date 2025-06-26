@@ -72,8 +72,8 @@ defineEmits<{
             </div>
           </td>
           <td>
-            <span :class="['status-badge', quote.status]">
-              {{ quote.status === quoteStatus.PENDING ? 'Pendiente' : 'Completada' }}
+            <span :class="['status-badge', quote.status === quoteStatus.PENDING ? 'status-pending' : 'status-completed']" class="status">
+            {{ quote.status === quoteStatus.PENDING ? ' Pendiente ' : ' Completada ' }}
             </span>
           </td>
           <td>{{ quote.items.length }} items</td>
