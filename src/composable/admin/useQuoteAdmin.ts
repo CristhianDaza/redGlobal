@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import * as XLSX from 'xlsx'
 import { useQuoteStore, useAuthStore } from '@/store';
 import { useRouter, useRoute } from 'vue-router';
-import {NotificationService} from '@/components/Notification/NotificationService.ts';
+import { NotificationService } from '@/components/Notification/NotificationService.ts';
 
 const quoteStatus = {
   PENDING: 'pending',
@@ -107,6 +107,11 @@ export function useQuoteAdmin(isAdmin: boolean) {
       await quoteStore.deleteAllCompletedQuotes();
       await loadQuotes();
     } catch (error) {
+      NotificationService.push({
+        title: 'Error al eliminar cotizaciones',
+        description: 'Hubo un error al eliminar las cotizaciones completadas. Por favor, intenta nuevamente.',
+        type: 'error'
+      });
       console.error('Error al eliminar cotizaciones completadas:', error);
     } finally {
       isLoading.value = false;

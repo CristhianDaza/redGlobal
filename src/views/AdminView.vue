@@ -233,15 +233,15 @@ watch(activeTab, (newTab) => {
 });
 
 const messageConfirmsMap: Record<string, string> = {
-  menu: '¿Estás seguro de que deseas eliminar este menú?',
-  users: '¿Estás seguro de que deseas eliminar este usuario?',
-  quotes: '¿Estás seguro de que deseas eliminar esta cotización?',
-  cards: '¿Estás seguro de que deseas eliminar esta categoría?',
-  products: '¿Estás seguro de que deseas eliminar este producto?',
-  catalogs: '¿Estás seguro de que deseas eliminar este catálogo?',
-  default: '¿Estás seguro de que deseas eliminar este elemento?',
-  update: '¿Estás seguro de que deseas actualizar los productos?',
-  deleteAllQuotes: '¿Estás seguro de que deseas eliminar todas las cotizaciones completadas?',
+  menu: '¿Estás segur@ de que deseas eliminar este menú?',
+  users: '¿Estás segur@ de que deseas eliminar este usuario?',
+  quotes: '¿Estás segur@ de que deseas eliminar esta cotización?',
+  cards: '¿Estás segur@ de que deseas eliminar esta categoría?',
+  products: '¿Estás segur@ de que deseas eliminar este producto?',
+  catalogs: '¿Estás segur@ de que deseas eliminar este catálogo?',
+  default: '¿Estás segur@ de que deseas eliminar este elemento?',
+  update: '¿Estás segur@ de que deseas actualizar los productos?',
+  deleteAllQuotes: '¿Estás segur@ de que deseas eliminar todas las cotizaciones completadas?',
 }
 
 const titleConfirmsMap: Record<string, string> = {

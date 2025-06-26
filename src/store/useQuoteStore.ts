@@ -206,7 +206,6 @@ export const useQuoteStore = defineStore('quote', () => {
   }
 
   const deleteQuote = async (id: string) => {
-    console.log('Deleting quote with id:', id)
     const quote = state.value.quotes.find(q => q.idDoc === id)
     if (!quote) {
       NotificationService.push({
