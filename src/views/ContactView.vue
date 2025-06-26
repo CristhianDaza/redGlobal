@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useHead } from '@vueuse/head';
-import type { EmailData } from '../services/emailService';
+import type { EmailData } from '@/types/config.d';
 import { ref, defineAsyncComponent } from 'vue';
 import { emailService } from '@/services';
 import { contactCards } from '@/config';

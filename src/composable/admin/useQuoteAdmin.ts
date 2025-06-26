@@ -1,6 +1,8 @@
 import type { QuoteAdmin } from '@/types/common.d'
 import { ref, computed } from 'vue';
 import { useQuoteStore, useAuthStore } from '@/store';
+import { useRouter, useRoute } from 'vue-router';
+import {NotificationService} from '@/components/Notification/NotificationService.ts';
 
 const quoteStatus = {
   PENDING: 'pending',
@@ -11,6 +13,8 @@ const quoteStatus = {
 export function useQuoteAdmin(isAdmin: boolean) {
   const quoteStore = useQuoteStore();
   const authStore = useAuthStore();
+  const router = useRouter();
+  const route = useRoute();
   const isLoading = ref(false);
   const showQuoteDetailsModal = ref(false);
   const selectedQuote = ref<QuoteAdmin | null>(null);
@@ -36,19 +40,37 @@ export function useQuoteAdmin(isAdmin: boolean) {
     filteredQuotes.value.filter(q => q.status === quoteStatus.COMPLETED).length
   );
 
-  const handleViewQuote = (quote: QuoteAdmin) => {
+  const handleViewQuote = async (quote: QuoteAdmin) => {
     selectedQuote.value = quote;
     showQuoteDetailsModal.value = true;
+    await router.replace({ query: { ...route.query, quoteId: quote.id } })
   };
 
-  const handleCloseQuoteDetails = () => {
+  const handleCloseQuoteDetails = async () => {
     showQuoteDetailsModal.value = false;
     selectedQuote.value = null;
+    await router.replace({ query: { ...route.query, quoteId: undefined } });
   };
 
-  const handleCompleteQuote = async (quoteId: string) => {
+  const handleOpenQuoteDetails = async (quoteId: string) => {
+    const quote = quoteStore.quotes.find(q => q.id === quoteId);
+    if (quote) {
+      selectedQuote.value = quote;
+      showQuoteDetailsModal.value = true;
+    } else {
+      NotificationService.push({
+        title: 'Error al abrir la cotización',
+        description: 'No se encontró la cotización solicitada.',
+        type: 'error'
+      })
+      await router.replace({ query: { ...route.query, quoteId: undefined } });
+      console.error('Quote not found:', quoteId);
+    }
+  }
+
+  const handleCompleteQuote = async (quote: QuoteAdmin) => {
     try {
-      await quoteStore.updateQuoteStatus(quoteId, quoteStatus.COMPLETED);
+      await quoteStore.updateQuoteStatus(quote.id, quoteStatus.COMPLETED);
       if (selectedQuote.value) {
         selectedQuote.value.status = quoteStatus.COMPLETED;
       }
@@ -91,6 +113,7 @@ export function useQuoteAdmin(isAdmin: boolean) {
     completedQuotes,
     handleViewQuote,
     handleCloseQuoteDetails,
+    handleOpenQuoteDetails,
     handleCompleteQuote,
     deleteQuote,
     canDeleteQuote,

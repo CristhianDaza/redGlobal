@@ -82,6 +82,7 @@ const {
   completedQuotes,
   handleViewQuote,
   handleCloseQuoteDetails,
+  handleOpenQuoteDetails,
   handleCompleteQuote,
   deleteQuote,
   canDeleteQuote,
@@ -198,6 +199,11 @@ onMounted(async () => {
         loadCategoryCards(),
         loadCatalogs()
       ]);
+
+      if (route.query.quoteId) {
+        const quoteId = route.query.quoteId as string;
+        await handleOpenQuoteDetails(quoteId);
+      }
       return;
     }
     await loadQuotes();

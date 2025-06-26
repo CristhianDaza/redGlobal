@@ -110,7 +110,6 @@ const handleClose = () => {
     @close="handleClose"
   >
     <div class="quote-form">
-      <!-- Información del producto -->
       <div class="product-info">
         <img :src="product.mainImage" :alt="product.name">
         <div class="product-details">
@@ -120,7 +119,6 @@ const handleClose = () => {
         </div>
       </div>
 
-      <!-- Selección de color y cantidad -->
       <div class="form-group">
         <label>Colores:</label>
         <div class="color-grid">
@@ -141,7 +139,6 @@ const handleClose = () => {
         </div>
       </div>
 
-      <!-- Cantidades por color seleccionado -->
       <div v-if="selectedColors.size > 0" class="selected-colors">
         <div
           v-for="[colorKey, { color, quantity }] in selectedColors"
@@ -174,7 +171,6 @@ const handleClose = () => {
         </div>
       </div>
 
-      <!-- Opciones de marcación -->
       <div class="form-group">
         <label class="checkbox-label">
           <input

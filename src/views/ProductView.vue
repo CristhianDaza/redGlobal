@@ -452,7 +452,6 @@ const hideTooltip = () => {
                   <span class="detail-value">{{ product?.packaging }}</span>
                 </div>
 
-                <!-- Botón de cotización -->
                 <div class="quote-section" v-if="authStore.isAuthenticated()">
                   <RgButton
                     @click="showQuoteModal = true"

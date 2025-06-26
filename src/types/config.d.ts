@@ -56,3 +56,17 @@ export interface ContactInfo {
   title: string;
   lines: string[];
 }
+
+export interface EmailData {
+  name: string;
+  email: string;
+  phone: string;
+  company?: string;
+  message: string;
+}
+
+export interface EmailQuoteData {
+  name: string;
+  email: string;
+  id: string;
+}

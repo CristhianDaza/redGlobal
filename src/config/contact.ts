@@ -1,11 +1,6 @@
 import type { ContactInfo } from '@/types/config';
 
 export const contactCards: ContactInfo[] = [
-  // {
-  //   icon: 'location_on',
-  //   title: 'Ubicación',
-  //   lines: ['Calle 123 #45-67', 'Bogotá, Colombia']
-  // },
   {
     icon: 'phone',
     title: 'Teléfono',

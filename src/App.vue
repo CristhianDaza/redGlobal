@@ -40,7 +40,7 @@ onMounted(async () => {
         () => authStore.loading,
         (loading) => {
           if (loading === false) {
-            stop?.(); // llamada segura
+            stop?.();
             resolve();
           }
         },

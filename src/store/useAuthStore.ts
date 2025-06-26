@@ -92,7 +92,6 @@ const login = async (email: string, password: string) => {
       return false
     }
 
-    // Usuario activo, permitir inicio de sesión
     NotificationService.push({
       title: 'Inicio de sesión exitoso',
       description: 'Has iniciado sesión exitosamente',

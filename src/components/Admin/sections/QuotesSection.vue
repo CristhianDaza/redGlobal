@@ -95,7 +95,7 @@ defineEmits<{
               type="icon"
               outlined
               title="Editar Cotización"
-              @click="$emit('complete', quote.id)"
+              @click="$emit('complete', quote)"
               :customStyle="{
                 backgroundColor: '#368a30',
                 color: '#ebf8ff',

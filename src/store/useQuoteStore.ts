@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { QuoteStatus } from '@/types/common.d'
 import { useAuthStore, useUserStore } from '@/store'
-import { firebaseService } from '@/services'
+import { firebaseService, emailService } from '@/services'
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useQuoteStore = defineStore('quote', () => {
@@ -126,16 +126,24 @@ export const useQuoteStore = defineStore('quote', () => {
       const userStore = useUserStore()
       const currentUser = userStore.users.find((user: User) => user.email === authStore.user?.email)
 
-      const quote: Omit<Quote, 'id'> = {
+      const quote: Quote = {
         userId: authStore.user.uid,
         userName: currentUser?.name || 'Usuario',
         userEmail: authStore.user.email || '',
         status: QuoteStatus.PENDING,
         items: [...state.value.currentQuote],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        id: crypto.randomUUID(),
       }
 
+      const emailData = {
+        name: currentUser?.name || 'Usuario',
+        email: authStore.user.email || '',
+        id: quote.id,
+      }
+
+      await emailService.sendQuote(emailData)
       await firebaseService.createQuote(quote)
       clearQuote(true)
       NotificationService.push({
