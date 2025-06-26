@@ -201,16 +201,6 @@ const handleClose = () => {
       </div>
 
       <div class="form-group">
-        <label for="secondaryColor">Color Secundario</label>
-        <input
-          id="secondaryColor"
-          v-model="formData.secondaryColor"
-          type="color"
-          required
-        >
-      </div>
-
-      <div class="form-group">
         <label for="priceIncrease">Porcentaje de Incremento</label>
         <input
           id="priceIncrease"
