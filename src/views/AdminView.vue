@@ -190,7 +190,6 @@ const loadingData = computed(() => {
 
 onMounted(async () => {
   try {
-    console.log(isAdmin.value);
     if (isAdmin.value) {
       await Promise.all([
         loadMenu(),

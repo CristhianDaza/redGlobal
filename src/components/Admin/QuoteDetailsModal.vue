@@ -2,6 +2,7 @@
 import type { QuoteAdmin } from '@/types/common'
 import { defineAsyncComponent } from 'vue'
 import TvRelativeTime from '@todovue/tv-relative-time'
+import { formatColor } from '@/utils'
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 
 defineProps<{
@@ -29,15 +30,14 @@ defineEmits<{
 
       <div class="modal-body" v-if="quote">
         <div class="quote-info">
-          <p><strong>Fecha:</strong><TvRelativeTime :date="quote.createdAt" v-if="quote.createdAt" lang="es" /></p>
+          <p><strong>Fecha:</strong> <TvRelativeTime :date="quote.createdAt" v-if="quote.createdAt" lang="es" /></p>
           <p><strong>Cliente:</strong> {{ quote.userName }}</p>
           <p><strong>Email:</strong> {{ quote.userEmail }}</p>
           <p><strong>Estado:</strong>
             <span :class="['status-badge', quote.status]">
-              {{ quote.status === quoteStatus.PENDING ? 'Pendiente' : 'Completada' }}
+              {{ quote.status === quoteStatus.PENDING ? ' Pendiente' : ' Completada' }}
             </span>
           </p>
-          <p v-if="isAdmin"><strong>Nota:</strong> El precio es + IVA</p>
         </div>
 
         <div class="quote-items">
@@ -63,7 +63,7 @@ defineEmits<{
                 </td>
                 <td>
                   <div class="color-info">
-                    <span class="color-circle" :style="{ backgroundColor: item.color }"></span>
+                    <span class="color-circle" :style="{ backgroundColor: formatColor(item.color) }"></span>
                     <span>{{ item.colorName }}</span>
                   </div>
                 </td>
@@ -75,8 +75,8 @@ defineEmits<{
                   </div>
                   <span v-else>No</span>
                 </td>
-                <td v-if="isAdmin">${{ (item.unitPrice || 0).toLocaleString('es-CO') }}</td>
-                <td v-if="isAdmin">${{ (item.totalPrice || 0).toLocaleString('es-CO') }}</td>
+                <td v-if="isAdmin">${{ (item.unitPrice || 0).toLocaleString('es-CO') }} + IVA</td>
+                <td v-if="isAdmin">${{ (item.totalPrice || 0).toLocaleString('es-CO') }}  + IVA</td>
               </tr>
             </tbody>
           </table>
@@ -154,7 +154,7 @@ defineEmits<{
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 0 1.5rem;
 }
 
 .quote-info {
