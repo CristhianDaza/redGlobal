@@ -71,7 +71,7 @@ defineEmits<{
                 <td>
                   <div v-if="item.includeMarking" class="marking-info">
                     <span class="material-icons text-success">check_circle</span>
-                    <span>{{ item.inkColors }} colores</span>
+                    <span>{{ item.inkColors }} {{ item.inkColors === 1 ? 'tinta' : 'tintas' }}</span>
                   </div>
                   <span v-else>No</span>
                 </td>
