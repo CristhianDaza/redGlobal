@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Quote } from '@/types/common.d'
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, computed, ref } from 'vue'
 import TvRelativeTime from '@todovue/tv-relative-time'
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
 
-defineProps<{
+const props = defineProps<{
   quotes: Quote[]
   totals: { total: number; pending: number; completed: number }
   quoteStatus: { PENDING: string; COMPLETED: string }
@@ -13,11 +13,37 @@ defineProps<{
   canDeleteQuote: (quote: Quote) => boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'view', quote: Quote): void
   (e: 'complete', id: string): void
   (e: 'delete', id: string): void
 }>()
+
+const sortKey = ref<'createdAt' | 'userName' | 'status'>('createdAt')
+const sortAsc = ref(false)
+
+const sortedQuotes = computed(() => {
+  return [...props.quotes].sort((a, b) => {
+    const aValue = a[sortKey.value]
+    const bValue = b[sortKey.value]
+
+    if (aValue == null) return 1
+    if (bValue == null) return -1
+
+    if (aValue < bValue) return sortAsc.value ? -1 : 1
+    if (aValue > bValue) return sortAsc.value ? 1 : -1
+    return 0
+  })
+})
+
+function changeSort(key: typeof sortKey.value) {
+  if (sortKey.value === key) {
+    sortAsc.value = !sortAsc.value
+  } else {
+    sortKey.value = key
+    sortAsc.value = true
+  }
+}
 </script>
 
 <template>
@@ -27,21 +53,21 @@ defineEmits<{
         <span class="material-icons">request_quote</span>
         <div class="stat-info">
           <h3>Total Cotizaciones</h3>
-          <p>{{ totals.total }}</p>
+          <p>{{ props.totals.total }}</p>
         </div>
       </div>
       <div class="stat-card">
         <span class="material-icons">pending</span>
         <div class="stat-info">
           <h3>Pendientes</h3>
-          <p>{{ totals.pending }}</p>
+          <p>{{ props.totals.pending }}</p>
         </div>
       </div>
       <div class="stat-card">
         <span class="material-icons">done</span>
         <div class="stat-info">
           <h3>Completadas</h3>
-          <p>{{ totals.completed }}</p>
+          <p>{{ props.totals.completed }}</p>
         </div>
       </div>
     </div>
@@ -50,21 +76,29 @@ defineEmits<{
       <table>
         <thead>
         <tr>
-          <th>Fecha</th>
-          <th>Usuario</th>
-          <th>Estado</th>
+          <th @click="changeSort('createdAt')" style="cursor: pointer">
+            Fecha {{ sortKey === 'createdAt' ? (sortAsc ? '⬆️' : '⬇️') : '' }}
+          </th>
+          <th @click="changeSort('userName')" style="cursor: pointer">
+            Usuario {{ sortKey === 'userName' ? (sortAsc ? '⬆️' : '⬇️') : '' }}
+          </th>
+          <th @click="changeSort('status')" style="cursor: pointer">
+            Estado {{ sortKey === 'status' ? (sortAsc ? '⬆️' : '⬇️') : '' }}
+          </th>
           <th>Items</th>
           <th>Acciones</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-if="quotes.length === 0">
+        <tr v-if="props.quotes.length === 0">
           <td colspan="5" class="text-center">
             <p>No hay cotizaciones disponibles</p>
           </td>
         </tr>
-        <tr v-else v-for="quote in quotes" :key="quote.id">
-          <td><TvRelativeTime v-if="quote.createdAt" :date="quote.createdAt" lang="es" /></td>
+        <tr v-else v-for="quote in sortedQuotes" :key="quote.id">
+          <td>
+            <TvRelativeTime v-if="quote.createdAt" :date="quote.createdAt" lang="es" />
+          </td>
           <td>
             <div class="user-info">
               <span>{{ quote.userName }}</span>
@@ -72,8 +106,16 @@ defineEmits<{
             </div>
           </td>
           <td>
-            <span :class="['status-badge', quote.status === quoteStatus.PENDING ? 'status-pending' : 'status-completed']" class="status">
-            {{ quote.status === quoteStatus.PENDING ? ' Pendiente ' : ' Completada ' }}
+            <span
+              :class="[
+              'status-badge',
+              quote.status === props.quoteStatus.PENDING
+                ? 'status-pending'
+                : 'status-completed'
+            ]"
+              class="status"
+            >
+              {{ quote.status === props.quoteStatus.PENDING ? ' Pendiente ' : ' Completada ' }}
             </span>
           </td>
           <td>{{ quote.items.length }} items</td>
@@ -83,23 +125,17 @@ defineEmits<{
               type="icon"
               outlined
               title="Ver Cotización"
-              @click="$emit('view', quote)"
-              :customStyle="{
-                backgroundColor: '#4299e1',
-                color: '#ebf8ff',
-              }"
+              @click="emit('view', quote)"
+              :customStyle="{ backgroundColor: '#4299e1', color: '#ebf8ff' }"
             />
             <RgButton
-              v-if="canDeleteQuote(quote)"
+              v-if="props.canDeleteQuote(quote)"
               icon="remove"
               type="icon"
               outlined
               title="Eliminar Cotización"
-              @click="$emit('delete', quote.id)"
-              :customStyle="{
-                backgroundColor: '#e53e3e',
-                color: '#ebf8ff',
-              }"
+              @click="emit('delete', quote.id)"
+              :customStyle="{ backgroundColor: '#e53e3e', color: '#ebf8ff' }"
             />
           </td>
         </tr>
