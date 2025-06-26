@@ -190,13 +190,18 @@ const loadingData = computed(() => {
 
 onMounted(async () => {
   try {
-    await Promise.all([
-      loadMenu(),
-      loadUsers(),
-      loadQuotes(),
-      loadCategoryCards(),
-      loadCatalogs()
-    ]);
+    console.log(isAdmin.value);
+    if (isAdmin.value) {
+      await Promise.all([
+        loadMenu(),
+        loadUsers(),
+        loadQuotes(),
+        loadCategoryCards(),
+        loadCatalogs()
+      ]);
+      return;
+    }
+    await loadQuotes();
   } catch (error) {
     console.error('Error loading initial data:', error);
   }
