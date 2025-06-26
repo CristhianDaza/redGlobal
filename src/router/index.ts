@@ -1,5 +1,6 @@
 import { createWebHistory, createRouter, RouteRecordRaw } from 'vue-router';
 import { useAuthStore, useUserStore } from '@/store';
+import { waitUntil } from '@/utils/waitUntil'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -64,12 +65,15 @@ const router = createRouter({
 
 router.beforeEach(async (to, _, next) => {
   const authStore = useAuthStore()
+  const userStore = useUserStore()
+
+  await waitUntil(() => authStore.loading === false)
+
   if (to.meta.requiresAuth) {
     if (!authStore.isAuthenticated()) {
       return next({ name: 'home' })
     }
 
-    const userStore = useUserStore()
     if (userStore.users.length === 0) {
       await userStore.getUsers()
     }
@@ -80,6 +84,7 @@ router.beforeEach(async (to, _, next) => {
       return next({ name: 'home' })
     }
   }
+
   next()
 })
 

@@ -23,6 +23,7 @@ import {
   calculateTotalQuantity,
 } from './formatters';
 import { CONSTANTS } from './constants';
+import { waitUntil } from './waitUntil.ts';
 
 export {
   // Text
@@ -63,6 +64,9 @@ export {
   formatColor,
 
   // Constants
-  CONSTANTS
+  CONSTANTS,
+
+  // Wait Until
+  waitUntil,
 };
 
