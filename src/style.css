@@ -42,7 +42,7 @@
 }
 
 
-.menu-table,
+.rg-table,
 .cards-table {
     margin-top: 2rem;
     overflow-x: auto;
@@ -51,14 +51,14 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.menu-table table,
+.rg-table table,
 .cards-table table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.menu-table th,
-.menu-table td,
+.rg-table th,
+.rg-table td,
 .cards-table th,
 .cards-table td {
     padding: 1rem;
@@ -66,17 +66,17 @@
     border-bottom: 1px solid #e2e8f0;
 }
 
-.menu-table tbody tr:last-child td,
+.rg-table tbody tr:last-child td,
 .cards-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.menu-table tbody tr:hover,
+.rg-table tbody tr:hover,
 .cards-table tbody tr:hover {
     background-color: #f7fafc;
 }
 
-.menu-table th,
+.rg-table th,
 .cards-table th {
     font-weight: 600;
     color: #4a5568;
@@ -86,12 +86,12 @@
     letter-spacing: 0.05em;
 }
 
-.menu-table td,
+.rg-table td,
 .cards-table td {
     color: #2d3748;
 }
 
-.menu-table .actions,
+.rg-table .actions,
 .cards-table .actions {
     display: flex;
     gap: 0.5rem;
