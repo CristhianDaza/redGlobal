@@ -28,7 +28,7 @@ export interface StateGlobal {
   isLoadingApiStockSur: ref<boolean>;
   isLoadingApiCataProm: ref<boolean>;
   isLoadingSaveProducts: ref<boolean>;
-  lastUpdateProducts: Date | null;
+  lastUpdateProducts: string;
   productsToView: ProductsRedGlobal[];
   isUpdating: boolean;
   isSuccessApiPromos: ref<boolean>;

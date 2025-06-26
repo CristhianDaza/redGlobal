@@ -14,7 +14,7 @@ export const useProductsStore = defineStore('products', {
     isLoadingApiStockSur: false,
     isLoadingApiCataProm: false,
     isLoadingSaveProducts: false,
-    lastUpdateProducts: null,
+    lastUpdateProducts: '',
     productsToView: [],
     isUpdating: false,
     isSuccessApiPromos: false,

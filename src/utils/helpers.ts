@@ -150,3 +150,8 @@ export const formatColor = (color: string): string => {
   const normalizedColor = _normalizeColorName(color)
   return _colors.get(normalizedColor) || '#FFFFFF'
 }
+
+export const getDay = (dateString: string) => {
+  const match = dateString.match(/\d{4}-\d{2}-(\d{2})/);
+  return match ? match[1] : '';
+}

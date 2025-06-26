@@ -3,6 +3,7 @@ import { Catalog, UserRole } from '@/types/common.d'
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where, writeBatch } from 'firebase/firestore'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import { db } from '@/config'
+import { getDay } from '@/utils'
 
 export const firebaseService = {
   async getUsers(): Promise<User[]> {
@@ -153,13 +154,13 @@ export const firebaseService = {
     return allProducts.sort((a, b) => a.name.localeCompare(b.name))
   },
 
-  async getLastUpdate(): Promise<Date | null> {
+  async getLastUpdate(): Promise<string> {
     const querySnapshot = await getDocs(collection(db, 'lastedUpdatedProducts'))
-    if (querySnapshot.empty) return null
+    if (querySnapshot.empty) return ''
     const data = querySnapshot.docs[0].data()
     const lastUpdate = new Date(data.lastUpdate)
     localStorage.setItem('lastUpdate', lastUpdate.toISOString())
-    return lastUpdate
+    return lastUpdate.toISOString()
   },
 
   async updateLastUpdate(): Promise<void> {
@@ -201,7 +202,7 @@ export const firebaseService = {
     const lastUpdate = await this.getLastUpdate()
     if (!lastUpdate) return true
     const now = new Date()
-    return lastUpdate.getDate() !== now.getDate()
+    return getDay(lastUpdate) !== getDay(now.toISOString())
   },
 
   async getMenu(): Promise<MenuItem[]> {
