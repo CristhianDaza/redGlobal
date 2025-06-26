@@ -54,21 +54,21 @@ function changeSort(key: typeof sortKey.value) {
         <span class="material-icons">request_quote</span>
         <div class="stat-info">
           <h3>Total Cotizaciones</h3>
-          <p>{{ props.totals.total }}</p>
+          <p>{{ totals.total }}</p>
         </div>
       </div>
       <div class="stat-card">
         <span class="material-icons">pending</span>
         <div class="stat-info">
           <h3>Pendientes</h3>
-          <p>{{ props.totals.pending }}</p>
+          <p>{{ totals.pending }}</p>
         </div>
       </div>
       <div class="stat-card">
         <span class="material-icons">done</span>
         <div class="stat-info">
           <h3>Completadas</h3>
-          <p>{{ props.totals.completed }}</p>
+          <p>{{ totals.completed }}</p>
         </div>
       </div>
       <div class="stat-card">
@@ -107,7 +107,7 @@ function changeSort(key: typeof sortKey.value) {
         </tr>
         </thead>
         <tbody>
-        <tr v-if="props.quotes.length === 0">
+        <tr v-if="quotes.length === 0">
           <td colspan="5" class="text-center">
             <p>No hay cotizaciones disponibles</p>
           </td>
@@ -126,13 +126,13 @@ function changeSort(key: typeof sortKey.value) {
             <span
               :class="[
               'status-badge',
-              quote.status === props.quoteStatus.PENDING
+              quote.status === quoteStatus.PENDING
                 ? 'status-pending'
                 : 'status-completed'
             ]"
               class="status"
             >
-              {{ quote.status === props.quoteStatus.PENDING ? ' Pendiente ' : ' Completada ' }}
+              {{ quote.status === quoteStatus.PENDING ? ' Pendiente ' : ' Completada ' }}
             </span>
           </td>
           <td>{{ quote.items.length }} items</td>
@@ -146,7 +146,7 @@ function changeSort(key: typeof sortKey.value) {
               :customStyle="{ backgroundColor: '#4299e1', color: '#ebf8ff' }"
             />
             <RgButton
-              v-if="props.canDeleteQuote(quote)"
+              v-if="canDeleteQuote(quote)"
               icon="remove"
               type="icon"
               outlined
