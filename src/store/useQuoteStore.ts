@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { QuoteStatus } from '@/types/common.d'
 import { useAuthStore, useUserStore } from '@/store'
-import { firebaseService } from '@/services'
+import { firebaseService, emailService } from '@/services'
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useQuoteStore = defineStore('quote', () => {
@@ -126,16 +126,25 @@ export const useQuoteStore = defineStore('quote', () => {
       const userStore = useUserStore()
       const currentUser = userStore.users.find((user: User) => user.email === authStore.user?.email)
 
-      const quote: Omit<Quote, 'id'> = {
+      const quote: Quote = {
         userId: authStore.user.uid,
         userName: currentUser?.name || 'Usuario',
         userEmail: authStore.user.email || '',
         status: QuoteStatus.PENDING,
         items: [...state.value.currentQuote],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        id: crypto.randomUUID(),
+        idDoc: '',
       }
 
+      const emailData = {
+        name: currentUser?.name || 'Usuario',
+        email: authStore.user.email || '',
+        id: quote.id,
+      }
+
+      await emailService.sendQuote(emailData)
       await firebaseService.createQuote(quote)
       clearQuote(true)
       NotificationService.push({
@@ -197,7 +206,7 @@ export const useQuoteStore = defineStore('quote', () => {
   }
 
   const deleteQuote = async (id: string) => {
-    const quote = state.value.quotes.find(q => q.id === id)
+    const quote = state.value.quotes.find(q => q.idDoc === id)
     if (!quote) {
       NotificationService.push({
         title: 'Error al eliminar la cotización',
@@ -235,6 +244,39 @@ export const useQuoteStore = defineStore('quote', () => {
     }
   }
 
+  const deleteAllCompletedQuotes = async () => {
+    try {
+      const completed = state.value.quotes.filter(q => q.status === QuoteStatus.COMPLETED);
+      const completedIds = completed.map(q => q.idDoc);
+
+      if (completedIds.length === 0) {
+        NotificationService.push({
+          title: 'Sin cotizaciones completadas',
+          description: 'No hay cotizaciones completadas para eliminar.',
+          type: 'info'
+        });
+        return;
+      }
+
+      await firebaseService.deleteMultipleQuotes(completedIds);
+
+      NotificationService.push({
+        title: 'Cotizaciones eliminadas',
+        description: `${completedIds.length} cotizaciones completadas han sido eliminadas.`,
+        type: 'success'
+      });
+
+      await getQuotes();
+    } catch (error) {
+      console.error('Error deleting completed quotes:', error);
+      NotificationService.push({
+        title: 'Error al eliminar',
+        description: 'No se pudieron eliminar las cotizaciones completadas.',
+        type: 'error'
+      });
+    }
+  };
+
   loadCurrentQuoteFromStorage()
 
   return {
@@ -247,6 +289,7 @@ export const useQuoteStore = defineStore('quote', () => {
     addItemToQuote,
     updateQuoteItem,
     removeQuoteItem,
+    deleteAllCompletedQuotes,
     clearQuote,
     submitQuote,
     getQuotes,

@@ -2,6 +2,7 @@
 import type { QuoteAdmin } from '@/types/common'
 import { defineAsyncComponent } from 'vue'
 import TvRelativeTime from '@todovue/tv-relative-time'
+import { formatColor } from '@/utils'
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 
 defineProps<{
@@ -13,7 +14,7 @@ defineProps<{
 
 defineEmits<{
   (e: 'close'): void
-  (e: 'complete', id: string): void
+  (e: 'complete', quote: QuoteAdmin): void
 }>()
 </script>
 
@@ -29,15 +30,14 @@ defineEmits<{
 
       <div class="modal-body" v-if="quote">
         <div class="quote-info">
-          <p><strong>Fecha:</strong><TvRelativeTime :date="quote.createdAt" lang="es" /></p>
+          <p><strong>Fecha:</strong> <TvRelativeTime :date="quote.createdAt" v-if="quote.createdAt" lang="es" /></p>
           <p><strong>Cliente:</strong> {{ quote.userName }}</p>
           <p><strong>Email:</strong> {{ quote.userEmail }}</p>
           <p><strong>Estado:</strong>
-            <span :class="['status-badge', quote.status]">
-              {{ quote.status === quoteStatus.PENDING ? 'Pendiente' : 'Completada' }}
+            <span :class="['status-badge', quote.status === quoteStatus.PENDING ? 'status-pending' : 'status-completed']" class="status">
+            {{ quote.status === quoteStatus.PENDING ? ' Pendiente ' : ' Completada ' }}
             </span>
           </p>
-          <p v-if="isAdmin"><strong>Nota:</strong> El precio es + IVA</p>
         </div>
 
         <div class="quote-items">
@@ -63,7 +63,7 @@ defineEmits<{
                 </td>
                 <td>
                   <div class="color-info">
-                    <span class="color-circle" :style="{ backgroundColor: item.color }"></span>
+                    <span class="color-circle" :style="{ backgroundColor: formatColor(item.color) }"></span>
                     <span>{{ item.colorName }}</span>
                   </div>
                 </td>
@@ -71,12 +71,12 @@ defineEmits<{
                 <td>
                   <div v-if="item.includeMarking" class="marking-info">
                     <span class="material-icons text-success">check_circle</span>
-                    <span>{{ item.inkColors }} colores</span>
+                    <span>{{ item.inkColors }} {{ item.inkColors === 1 ? 'tinta' : 'tintas' }}</span>
                   </div>
                   <span v-else>No</span>
                 </td>
-                <td v-if="isAdmin">${{ (item.unitPrice || 0).toLocaleString('es-CO') }}</td>
-                <td v-if="isAdmin">${{ (item.totalPrice || 0).toLocaleString('es-CO') }}</td>
+                <td v-if="isAdmin">${{ (item.unitPrice || 0).toLocaleString('es-CO') }} + IVA</td>
+                <td v-if="isAdmin">${{ (item.totalPrice || 0).toLocaleString('es-CO') }}  + IVA</td>
               </tr>
             </tbody>
           </table>
@@ -89,7 +89,7 @@ defineEmits<{
       >
         <RgButton
           text="Marcar como Completada"
-          @click="$emit('complete', quote.id)"
+          @click="$emit('complete', quote)"
           type="default"
           class="complete-quote-btn"
         />
@@ -103,13 +103,15 @@ defineEmits<{
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.32);
   display: flex;
   justify-content: center;
   align-items: center;
+  backdrop-filter: blur(7px) saturate(1.2);
   z-index: 1000;
+  -webkit-backdrop-filter: blur(7px) saturate(1.2);
 }
 
 .modal-content {
@@ -154,7 +156,7 @@ defineEmits<{
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 0 1.5rem;
 }
 
 .quote-info {

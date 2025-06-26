@@ -82,8 +82,11 @@ const {
   completedQuotes,
   handleViewQuote,
   handleCloseQuoteDetails,
+  handleOpenQuoteDetails,
   handleCompleteQuote,
+  downloadQuoteSummary,
   deleteQuote,
+  deleteAllCompletedQuotes,
   canDeleteQuote,
   quoteStatus
 } = useQuoteAdmin(isAdmin.value);
@@ -120,6 +123,11 @@ const handleDeleteClick = (id: string, type: tabs) => {
   showConfirmModal.value = true;
 };
 
+const confirmDeleteQuotes = async () => {
+  itemToConfirmModal.value = { id: '', type: 'deleteAllQuotes' };
+  showConfirmModal.value = true;
+};
+
 const handleConfirmModal = async () => {
   if (!itemToConfirmModal.value) return;
   try {
@@ -143,6 +151,9 @@ const handleConfirmModal = async () => {
         showConfirmModal.value = false;
         itemToConfirmModal.value = undefined;
         await storeProducts.callServices(true);
+        break;
+      case 'deleteAllQuotes':
+        await deleteAllCompletedQuotes();
         break;
     }
   } catch (error) {
@@ -190,59 +201,47 @@ const loadingData = computed(() => {
 
 onMounted(async () => {
   try {
-    await Promise.all([
-      loadMenu(),
-      loadUsers(),
-      loadQuotes(),
-      loadCategoryCards(),
-      loadCatalogs()
-    ]);
+    if (isAdmin.value) {
+      await Promise.all([
+        loadMenu(),
+        loadUsers(),
+        loadQuotes(),
+        loadCategoryCards(),
+        loadCatalogs()
+      ]);
+
+      if (route.query.quoteId) {
+        const quoteId = route.query.quoteId as string;
+        await handleOpenQuoteDetails(quoteId);
+      }
+      return;
+    }
+    await loadQuotes();
   } catch (error) {
     console.error('Error loading initial data:', error);
   }
 });
 
-watch(activeTab, async (newTab) => {
-  try {
-    switch (newTab) {
-      case 'menu':
-        await loadMenu();
-        await router.push({ query: { tab: 'menu' } });
-        break;
-      case 'users':
-        await loadUsers();
-        await router.push({ query: { tab: 'users' } });
-        break;
-      case 'quotes':
-        await loadQuotes();
-        await router.push({ query: { tab: 'quotes' } });
-        break;
-      case 'cards':
-        await loadCategoryCards();
-        await router.push({ query: { tab: 'cards' } });
-        break;
-      case 'catalogs':
-        await loadCatalogs();
-        await router.push({ query: { tab: 'catalogs' } });
-        break;
-      default:
-        await router.push({ name: 'admin' });
-        break;
-    }
-  } catch (error) {
-    console.error('Error loading data for tab:', newTab, error);
+watch(activeTab, (newTab) => {
+  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs'];
+  const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
+  if (tab) {
+    router.replace({ query: { tab } });
+  } else {
+    router.replace({ name: 'admin' });
   }
 });
 
 const messageConfirmsMap: Record<string, string> = {
-  menu: '¿Estás seguro de que deseas eliminar este menú?',
-  users: '¿Estás seguro de que deseas eliminar este usuario?',
-  quotes: '¿Estás seguro de que deseas eliminar esta cotización?',
-  cards: '¿Estás seguro de que deseas eliminar esta categoría?',
-  products: '¿Estás seguro de que deseas eliminar este producto?',
-  catalogs: '¿Estás seguro de que deseas eliminar este catálogo?',
-  default: '¿Estás seguro de que deseas eliminar este elemento?',
-  update: '¿Estás seguro de que deseas actualizar los productos?'
+  menu: '¿Estás segur@ de que deseas eliminar este menú?',
+  users: '¿Estás segur@ de que deseas eliminar este usuario?',
+  quotes: '¿Estás segur@ de que deseas eliminar esta cotización?',
+  cards: '¿Estás segur@ de que deseas eliminar esta categoría?',
+  products: '¿Estás segur@ de que deseas eliminar este producto?',
+  catalogs: '¿Estás segur@ de que deseas eliminar este catálogo?',
+  default: '¿Estás segur@ de que deseas eliminar este elemento?',
+  update: '¿Estás segur@ de que deseas actualizar los productos?',
+  deleteAllQuotes: '¿Estás segur@ de que deseas eliminar todas las cotizaciones completadas?',
 }
 
 const titleConfirmsMap: Record<string, string> = {
@@ -253,7 +252,8 @@ const titleConfirmsMap: Record<string, string> = {
   products: 'Eliminar Producto',
   catalogs: 'Eliminar Catálogo',
   default: 'Eliminar Elemento',
-  update: 'Actualizar Productos'
+  update: 'Actualizar Productos',
+  deleteAllQuotes: 'Eliminar Cotizaciones Completadas',
 }
 
 const messageConfirm = computed(() => {
@@ -300,7 +300,6 @@ watch(() => route.query.tab, (newTab) => {
     activeTab.value = newTab as tabs;
   }
 });
-
 </script>
 
 <template>
@@ -324,6 +323,7 @@ watch(() => route.query.tab, (newTab) => {
         @add-user="handleAddUser"
         @add-card="handleAddCard"
         @add-catalog="handleAddCatalog"
+        @delete-all-quote="confirmDeleteQuotes"
       />
 
       <div class="main-content">
@@ -361,6 +361,7 @@ watch(() => route.query.tab, (newTab) => {
             @view="handleViewQuote"
             @complete="handleCompleteQuote"
             @delete="id => handleDeleteClick(id, 'quotes')"
+            @download="downloadQuoteSummary"
           />
 
           <CategoriesSection

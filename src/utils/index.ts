@@ -1,6 +1,6 @@
 import { formatText, cleanText, normalizeString, constructDescriptionCataProm } from './text';
 import { constructImagesPromos, constructImagesStockSur, constructImagesMarpico } from './images';
-import { filterProductsHelper, formatNumber, formatColor } from './helpers';
+import { filterProductsHelper, formatNumber, formatColor, getDay } from './helpers';
 import {
   combineProducts,
   constructCategoryCataProm,
@@ -23,6 +23,7 @@ import {
   calculateTotalQuantity,
 } from './formatters';
 import { CONSTANTS } from './constants';
+import { waitUntil } from './waitUntil.ts';
 
 export {
   // Text
@@ -61,8 +62,12 @@ export {
   filterProductsHelper,
   formatNumber,
   formatColor,
+  getDay,
 
   // Constants
-  CONSTANTS
+  CONSTANTS,
+
+  // Wait Until
+  waitUntil,
 };
 

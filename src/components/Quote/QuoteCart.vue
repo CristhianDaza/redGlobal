@@ -95,7 +95,6 @@ const handleSubmitQuote = async () => {
     :loading="isLoading"
   >
     <div v-if="hasItems" class="quote-cart">
-      <!-- Lista de productos -->
       <div class="quote-items">
         <div
           v-for="(item, index) in currentQuote"
@@ -185,7 +184,6 @@ const handleSubmitQuote = async () => {
         </div>
       </div>
 
-      <!-- Acciones -->
       <div class="cart-actions">
         <RgButton
           @click="handleClearCart"

@@ -440,7 +440,7 @@ window.addEventListener('resize', () => {
   }
 
   .logo {
-    height: 50px;
+    height: 70px;
     width: auto;
   }
 

@@ -47,7 +47,7 @@ const loadingUserId = ref<string | null>(null);
       </div>
     </div>
 
-    <div class="menu-table">
+    <div class="rg-table">
       <table>
         <thead>
         <tr>

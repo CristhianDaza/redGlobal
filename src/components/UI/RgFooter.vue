@@ -37,10 +37,10 @@ const currentUserLogo = computed((): string | undefined => {
 });
 
 const contactInfo = {
-  address: 'Somos una compañía que cuenta con más de 25 años de experiencia en el mercado Publicitario; impulsamos y proyectamos las marcas de nuestros clientes para que tengan un gran impacto; contamos con un equipo de trabajo competitivo, humano e innovador. Poseemos red de distribución a nivel nacional e internacional, manejamos costos competitivos y nos caracterizamos siempre por la calidad, cumplimiento y confiabilidad.',
+  address: `En <b>RED GLOBAL PROMOCIONAL S.A.S.</b> llevamos 7 años transformando ideas en productos que conectan con las personas. Desde nuestro inicio, nos hemos especializado en ofrecer material promocional de alta calidad, diseñado para fortalecer la presencia de marca de nuestros clientes y generar un impacto memorable. Nuestro compromiso es brindar soluciones creativas, funcionales y personalizadas, adaptadas a las necesidades de cada empresa. Gracias a nuestro equipo apasionado y a una red confiable de aliados, hemos logrado posicionarnos como una opción sólida en el mundo de los promocionales. Más que productos, entregamos experiencias que comunican, fidelizan y dejan huella.`,
   email: 'servicioalcliente@redglobalpromo.com.co',
   phone1: transformColPhone(CONSTANTS.NUMBER_WHATSAPP),
-  phone2: '601 236 0535'
+  phone2: '601 703 72 50'
 };
 
 const services = [
@@ -57,7 +57,7 @@ const services = [
       <div class="footer-grid">
         <div class="company-info">
           <h3>Red Global Promocional</h3>
-          <p>{{ contactInfo.address }}</p>
+          <div class="description" v-html="contactInfo.address"></div>
           <div class="contact-details">
             <p><span class="material-icons">email</span>{{ contactInfo.email }}</p>
             <a :href="whatsAppLink" target="_blank">
@@ -133,7 +133,7 @@ const services = [
     margin: 0 0 1rem;
   }
 
-  p {
+  p, .description {
     color: #666;
     line-height: 1.6;
     margin: 0 0 1.5rem;
@@ -144,7 +144,7 @@ const services = [
     flex-direction: column;
     gap: 0.5rem;
 
-    p {
+    p, .description {
       display: flex;
       align-items: center;
       gap: 0.5rem;

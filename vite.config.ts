@@ -32,15 +32,32 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('src/store/')) {
-            return 'stores';
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia')) {
+              return 'vue'
+            }
+            if (id.includes('firebase')) {
+              return 'firebase'
+            }
+            if (id.includes('@vueuse/head')) {
+              return 'vueuse'
+            }
+            if (id.includes('axios')) {
+              return 'axios'
+            }
+            if (id.includes('@emailjs')) {
+              return 'emailjs'
+            }
+            if (id.includes('@todovue')) {
+              return 'todovue'
+            }
+            return 'vendor'
           }
-          if (id.includes('src/utils/')) {
-            return 'utils';
-          }
+
+          if (id.includes('src/store')) return 'stores'
+          if (id.includes('src/utils')) return 'utils'
         }
       }
-    },
-    chunkSizeWarningLimit: 600,
+    }
   }
 })

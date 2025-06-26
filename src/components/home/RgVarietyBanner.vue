@@ -56,7 +56,7 @@ defineProps<{
 }
 
 .banner-image img {
-  max-width: 80%;
+  max-width: 65%;
   height: auto;
   object-fit: contain;
   border-radius: 0.5rem;

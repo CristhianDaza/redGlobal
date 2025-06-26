@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, defineAsyncComponent, watch } from 'vue';
-import { useMenuStore, useProductsStore, useAuthStore, useUserStore } from '@/store';
+import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore } from '@/store';
 
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
@@ -8,11 +8,13 @@ const RgScrollToTop = defineAsyncComponent(/* webpackChunkName: "rgScrollToTop" 
 const NotificationContainer = defineAsyncComponent(/* webpackChunkName: "notificationContainer" */() => import('./components/Notification/NotificationContainer.vue'));
 const RgModalApi = defineAsyncComponent(/* webpackChunkName: "rgModalApi" */() => import('./components/UI/RgModalApi.vue'));
 const RgWhatsApp = defineAsyncComponent(/* webpackChunkName: "rgWhatsApp" */() => import('./components/UI/RgWhatsApp.vue'));
+const RgLoaderGlobal = defineAsyncComponent(/* webpackChunkName: "rgLoaderGlobal" */() => import('./components/UI/RgLoaderGlobal.vue'));
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
+const loaderStore = useLoaderStore();
 
 const updateCustomColors = () => {
   if (authStore.isAuthenticated()) {
@@ -27,51 +29,67 @@ const updateCustomColors = () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  loaderStore.showLoader();
   let executed = false;
-  const stopWatch = watch(
-  () => authStore.currenLoggingUser,
-  async (currentUser) => {
-    if (currentUser && !executed) {
-      executed = true;
-      const isAdmin = currentUser.role === 'admin';
-      const productsEmpty = !storeProducts.products?.length;
-      if (isAdmin || productsEmpty) {
-        await storeProducts.getAllProducts(isAdmin);
-      }
-      if (authStore.isAuthenticated()) {
-        await userStore.getUsers();
-        updateCustomColors();
-      }
-      stopWatch();
-    } else if (!currentUser) {
-      updateCustomColors();
-    }
 
-    if (!menuStore.menu || menuStore.menu.length === 0) {
-      await menuStore.getMenu();
-    }
-  },
+  const waitForAuth = () =>
+    new Promise<void>((resolve) => {
+      let stop: () => void;
+      stop = watch(
+        () => authStore.loading,
+        (loading) => {
+          if (loading === false) {
+            stop?.();
+            resolve();
+          }
+        },
+        { immediate: true }
+      );
+    });
+
+  await waitForAuth();
+
+  if (authStore.isAuthenticated()) {
+    await userStore.getUsers();
+    updateCustomColors();
+  } else {
+    updateCustomColors();
+  }
+
+  if (!menuStore.menu || menuStore.menu.length === 0) {
+    await menuStore.getMenu();
+  }
+
+  const stopWatch = watch(
+    () => authStore.currenLoggingUser,
+    async (currentUser) => {
+      if (currentUser && !executed) {
+        executed = true;
+
+        const isAdmin = currentUser.role === 'admin';
+        const productsEmpty = !storeProducts.products?.length;
+
+        if (isAdmin || productsEmpty) {
+          loaderStore.hideLoader();
+          await storeProducts.getAllProducts(isAdmin);
+        }
+
+        loaderStore.hideLoader();
+        stopWatch();
+      } else if (!currentUser) {
+        loaderStore.hideLoader();
+        stopWatch();
+      }
+    },
     { immediate: true }
   );
-
-  authStore.$subscribe(async (_, state) => {
-    if (state.user) {
-      await userStore.getUsers();
-      updateCustomColors();
-    } else {
-      updateCustomColors();
-    }
-  });
-
-  userStore.$subscribe(() => {
-    updateCustomColors();
-  });
 });
 </script>
 
 <template>
-  <div class="app">
+  <RgLoaderGlobal v-if="loaderStore.isLoading || authStore.loading" />
+  <div class="app" v-else>
     <RgNavbar />
     <RouterView />
     <RgFooter />

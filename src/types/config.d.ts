@@ -28,7 +28,7 @@ export interface StateGlobal {
   isLoadingApiStockSur: ref<boolean>;
   isLoadingApiCataProm: ref<boolean>;
   isLoadingSaveProducts: ref<boolean>;
-  lastUpdateProducts: Date | null;
+  lastUpdateProducts: string;
   productsToView: ProductsRedGlobal[];
   isUpdating: boolean;
   isSuccessApiPromos: ref<boolean>;
@@ -55,4 +55,18 @@ export interface ContactInfo {
   icon: string;
   title: string;
   lines: string[];
+}
+
+export interface EmailData {
+  name: string;
+  email: string;
+  phone: string;
+  company?: string;
+  message: string;
+}
+
+export interface EmailQuoteData {
+  name: string;
+  email: string;
+  id: string;
 }

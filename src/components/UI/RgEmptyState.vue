@@ -20,7 +20,7 @@ const defaultProps = {
 const actions = [
   {
     text: 'Ver catálogo digital',
-    link: '/catalogo',
+    link: '/catalogs',
     customStyle: {
       backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
       color: '#fff'

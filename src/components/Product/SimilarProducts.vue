@@ -142,7 +142,6 @@ watch(
       </button>
     </div>
 
-    <!-- Botones de navegación móviles abajo de los productos -->
     <div class="mobile-nav-buttons">
       <button
         class="nav-button prev"

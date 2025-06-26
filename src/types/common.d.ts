@@ -102,6 +102,7 @@ export type CategoryCardCreate = Pick<CategoryCard, 'title' | 'buttonText' | 'ba
 
 export interface Quote {
   id: string
+  idDoc: string
   userId: string
   userName: string
   userEmail: string
@@ -165,6 +166,7 @@ export interface Notification {
 
 export interface QuoteAdmin {
   id: string;
+  idDoc: string;
   userId: string;
   userName: string;
   userEmail: string;

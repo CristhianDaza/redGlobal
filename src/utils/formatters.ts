@@ -258,7 +258,7 @@ export const transformColPhone = (phone: string, normalized = false): string => 
   const country = cleaned.slice(0, 3);
   const subscriber = cleaned.slice(3);
   if (normalized) {
-    return (country + subscriber).replace(/\D/g, ''); // "573312517140"
+    return (country + subscriber).replace(/\D/g, '');
   }
 
   const p1 = subscriber.slice(0, 3);

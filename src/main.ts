@@ -1,5 +1,5 @@
 import { createApp } from 'vue';
-import { createHead }   from '@vueuse/head'
+import { createHead } from '@vueuse/head';
 import router from './router';
 import './style.css';
 import { createPinia } from 'pinia';
@@ -12,4 +12,5 @@ const head = createHead();
 RedGlobalApp.use(pinia);
 RedGlobalApp.use(router);
 RedGlobalApp.use(head);
+
 RedGlobalApp.mount('#redGlobal');

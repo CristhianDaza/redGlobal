@@ -1,5 +1,6 @@
 import { createWebHistory, createRouter, RouteRecordRaw } from 'vue-router';
 import { useAuthStore, useUserStore } from '@/store';
+import { waitUntil } from '@/utils/waitUntil'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -28,6 +29,11 @@ const routes: RouteRecordRaw[] = [
     name: 'catalogs'
   },
   {
+    path: '/about-us',
+    component: () => import(/* webpackChunkName: "missionVisionView" */ '../views/MissionVisionView.vue'),
+    name: 'about-us'
+  },
+  {
     path: '/admin',
     component: () => import(/* webpackChunkName: "adminView" */ '../views/AdminView.vue'),
     name: 'admin',
@@ -41,7 +47,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'notfound',
-    component: () => import('../views/NotFoundView.vue'),
+    component: () => import(/* webpackChunkName: "NotFoundView" */ '../views/NotFoundView.vue'),
   }
 ];
 
@@ -59,24 +65,27 @@ const router = createRouter({
 
 router.beforeEach(async (to, _, next) => {
   const authStore = useAuthStore()
+  const userStore = useUserStore()
+
+  await waitUntil(() => authStore.loading === false)
+
   if (to.meta.requiresAuth) {
     if (!authStore.isAuthenticated()) {
-      next({ name: 'login' })
-      return
+      return next({ name: 'home' })
     }
-    const userStore = useUserStore()
-    await userStore.getUsers()
-    const currentUser = userStore.users.find(u => u.email === authStore.user?.email)
 
+    if (userStore.users.length === 0) {
+      await userStore.getUsers()
+    }
+
+    const currentUser = userStore.users.find(u => u.email === authStore.user?.email)
     if (!currentUser?.active) {
       await authStore.logout()
-      next({ name: 'login' })
-      return
+      return next({ name: 'home' })
     }
-    next()
-  } else {
-    next()
   }
+
+  next()
 })
 
 export default router;
