@@ -90,18 +90,6 @@ defineEmits<{
               }"
             />
             <RgButton
-              v-if="quote.status === quoteStatus.PENDING && isAdmin"
-              icon="check"
-              type="icon"
-              outlined
-              title="Editar Cotización"
-              @click="$emit('complete', quote)"
-              :customStyle="{
-                backgroundColor: '#368a30',
-                color: '#ebf8ff',
-              }"
-            />
-            <RgButton
               v-if="canDeleteQuote(quote)"
               icon="remove"
               type="icon"
