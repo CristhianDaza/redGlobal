@@ -202,35 +202,13 @@ onMounted(async () => {
   }
 });
 
-watch(activeTab, async (newTab) => {
-  try {
-    switch (newTab) {
-      case 'menu':
-        await loadMenu();
-        await router.push({ query: { tab: 'menu' } });
-        break;
-      case 'users':
-        await loadUsers();
-        await router.push({ query: { tab: 'users' } });
-        break;
-      case 'quotes':
-        await loadQuotes();
-        await router.push({ query: { tab: 'quotes' } });
-        break;
-      case 'cards':
-        await loadCategoryCards();
-        await router.push({ query: { tab: 'cards' } });
-        break;
-      case 'catalogs':
-        await loadCatalogs();
-        await router.push({ query: { tab: 'catalogs' } });
-        break;
-      default:
-        await router.push({ name: 'admin' });
-        break;
-    }
-  } catch (error) {
-    console.error('Error loading data for tab:', newTab, error);
+watch(activeTab, (newTab) => {
+  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs'];
+  const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
+  if (tab) {
+    router.replace({ query: { tab } });
+  } else {
+    router.replace({ name: 'admin' });
   }
 });
 
@@ -300,7 +278,6 @@ watch(() => route.query.tab, (newTab) => {
     activeTab.value = newTab as tabs;
   }
 });
-
 </script>
 
 <template>

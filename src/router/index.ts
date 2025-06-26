@@ -66,22 +66,21 @@ router.beforeEach(async (to, _, next) => {
   const authStore = useAuthStore()
   if (to.meta.requiresAuth) {
     if (!authStore.isAuthenticated()) {
-      next({ name: 'login' })
-      return
+      return next({ name: 'home' })
     }
-    const userStore = useUserStore()
-    await userStore.getUsers()
-    const currentUser = userStore.users.find(u => u.email === authStore.user?.email)
 
+    const userStore = useUserStore()
+    if (userStore.users.length === 0) {
+      await userStore.getUsers()
+    }
+
+    const currentUser = userStore.users.find(u => u.email === authStore.user?.email)
     if (!currentUser?.active) {
       await authStore.logout()
-      next({ name: 'login' })
-      return
+      return next({ name: 'home' })
     }
-    next()
-  } else {
-    next()
   }
+  next()
 })
 
 export default router;
