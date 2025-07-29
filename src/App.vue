@@ -94,8 +94,6 @@ onMounted(async () => {
   <RgLoaderGlobal v-if="loaderStore.isLoading || authStore.loading || maintenanceStore.isLoading" />
   <Maintenance v-else-if="maintenanceStore.isMaintenanceMode" />
   <div v-else>
-
-    {{ maintenanceStore.isMaintenanceMode }}
     <div class="app">
       <RgNavbar />
       <RouterView />
