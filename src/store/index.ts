@@ -7,3 +7,4 @@ export { useQuoteStore } from '@/store/useQuoteStore';
 export { useCatalogStore } from '@/store/useCatalogStore.ts';
 export { useLoaderStore } from '@/store/useLoaderStore.ts';
 export { useHeroStore } from '@/store/useHeroStore.ts';
+export { useMaintenanceStore } from '@/store/useMaintenanceStore.ts';
