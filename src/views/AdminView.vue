@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
+import {computed, defineAsyncComponent, onMounted, ref, watch} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
-import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin } from '@/composable';
+import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useHeroAdmin } from '@/composable';
 import { tabs, UserFormData, User } from "@/types/common";
 import { useHead } from '@vueuse/head';
 
@@ -11,6 +11,7 @@ const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => im
 const RgConfirmModal = defineAsyncComponent(/* webpackChunkName: "rgConfirmModal" */() => import('@/components/UI/RgConfirmModal.vue'));
 const CategoryCardForm = defineAsyncComponent(/* webpackChunkName: "categoryCardForm" */() => import('@/components/Admin/CategoryCardForm.vue'));
 const CatalogForm = defineAsyncComponent(/* webpackChunkName: "catalogForm" */() => import('@/components/Admin/CatalogForm.vue'));
+const HeroForm = defineAsyncComponent(/* webpackChunkName: "heroForm" */() => import('@/components/Admin/HeroForm.vue'));
 
 const AdminSidebar = defineAsyncComponent(/* webpackChunkName: "adminSidebar" */() => import('@/components/Admin/AdminSidebar.vue'));
 const MenuSection = defineAsyncComponent(/* webpackChunkName: "menuSection" */() => import('@/components/Admin/sections/MenuSection.vue'));
@@ -20,6 +21,7 @@ const QuotesSection = defineAsyncComponent(/* webpackChunkName: "quotesSection" 
 const CategoriesSection = defineAsyncComponent(/* webpackChunkName: "categoriesSection" */() => import('@/components/Admin/sections/CategoriesSection.vue'));
 const QuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "quoteDetailsModal" */() => import('@/components/Admin/QuoteDetailsModal.vue'));
 const CatalogsSection = defineAsyncComponent(/* webpackChunkName: "catalogsSection" */() => import('@/components/Admin/sections/CatalogsSection.vue'));
+const HeroSection = defineAsyncComponent(/* webpackChunkName: "heroSection" */() => import('@/components/Admin/HeroSection.vue'));
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -115,6 +117,18 @@ const {
   deleteCatalog
 } = useCatalogAdmin();
 
+const {
+  isLoadingHero,
+  showHeroModal,
+  editingHero,
+  hero,
+  loadHero,
+  handleAddHero,
+  handleEditHero,
+  handleSaveHero,
+  deleteHero
+} = useHeroAdmin();
+
 const showConfirmModal = ref(false);
 const itemToConfirmModal = ref<{ id: string; type: string } | undefined>(undefined);
 
@@ -154,6 +168,9 @@ const handleConfirmModal = async () => {
         break;
       case 'deleteAllQuotes':
         await deleteAllCompletedQuotes();
+        break;
+      case 'hero':
+        await deleteHero(itemToConfirmModal.value.id);
         break;
     }
   } catch (error) {
@@ -195,6 +212,7 @@ const loadingData = computed(() => {
     case 'quotes': return quoteLoading.value;
     case 'cards': return isLoadingCard.value;
     case 'catalogs': return isLoadingCatalog.value;
+    case 'hero': return isLoadingHero.value;
     default: return false;
   }
 });
@@ -207,7 +225,8 @@ onMounted(async () => {
         loadUsers(),
         loadQuotes(),
         loadCategoryCards(),
-        loadCatalogs()
+        loadCatalogs(),
+        loadHero()
       ]);
 
       if (route.query.quoteId) {
@@ -223,7 +242,7 @@ onMounted(async () => {
 });
 
 watch(activeTab, (newTab) => {
-  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs'];
+  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'hero'];
   const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
   if (tab) {
     router.replace({ query: { tab } });
@@ -239,6 +258,7 @@ const messageConfirmsMap: Record<string, string> = {
   cards: '¿Estás segur@ de que deseas eliminar esta categoría?',
   products: '¿Estás segur@ de que deseas eliminar este producto?',
   catalogs: '¿Estás segur@ de que deseas eliminar este catálogo?',
+  hero: '¿Estás segur@ de que deseas eliminar esta imagen principal?',
   default: '¿Estás segur@ de que deseas eliminar este elemento?',
   update: '¿Estás segur@ de que deseas actualizar los productos?',
   deleteAllQuotes: '¿Estás segur@ de que deseas eliminar todas las cotizaciones completadas?',
@@ -254,6 +274,7 @@ const titleConfirmsMap: Record<string, string> = {
   default: 'Eliminar Elemento',
   update: 'Actualizar Productos',
   deleteAllQuotes: 'Eliminar Cotizaciones Completadas',
+  hero: 'Eliminar Imagen principal',
 }
 
 const messageConfirm = computed(() => {
@@ -271,7 +292,8 @@ const activeTabTitle = {
   users: 'Usuarios',
   quotes: 'Cotizaciones',
   cards: 'Categorías',
-  catalogs: 'Catálogos'
+  catalogs: 'Catálogos',
+  hero: 'Hero'
 }
 
 const handleUpdateProducts = () => {
@@ -319,11 +341,14 @@ watch(() => route.query.tab, (newTab) => {
       <AdminHeader
         :active-tab="activeTab"
         :is-admin="isAdmin"
+        :disabled="false"
+        :hero-count="hero.length"
         @add-menu="handleAddMenuItem"
         @add-user="handleAddUser"
         @add-card="handleAddCard"
         @add-catalog="handleAddCatalog"
         @delete-all-quote="confirmDeleteQuotes"
+        @add-hero="handleAddHero"
       />
 
       <div class="main-content">
@@ -377,6 +402,13 @@ watch(() => route.query.tab, (newTab) => {
             @edit="handleEditCatalog"
             @delete="id => handleDeleteClick(id, 'catalogs')"
           />
+
+          <HeroSection
+            v-if="activeTab === 'hero'"
+            :items="hero"
+            @edit="handleEditHero"
+            @delete="id => handleDeleteClick(id, 'hero')"
+          />
         </div>
 
         <MenuItemForm
@@ -427,6 +459,14 @@ watch(() => route.query.tab, (newTab) => {
           :quote-status="quoteStatus"
           @complete="handleCompleteQuote"
           @close="handleCloseQuoteDetails"
+        />
+
+        <HeroForm
+          :isOpen="showHeroModal"
+          :hero="editingHero"
+          :loading="isLoadingHero"
+          @save="handleSaveHero"
+          @close="showHeroModal = false"
         />
       </div>
     </main>

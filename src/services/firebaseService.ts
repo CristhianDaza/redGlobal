@@ -1,4 +1,4 @@
-import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard } from '@/types/common.d'
+import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard, HeroImage } from '@/types/common.d'
 import { Catalog, UserRole } from '@/types/common.d'
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where, writeBatch } from 'firebase/firestore'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
@@ -420,6 +420,57 @@ export const firebaseService = {
       await deleteDoc(cardRef)
     } catch (error) {
       console.error('Error deleting catalog: ', error)
+      throw error
+    }
+  },
+
+  async getHero(): Promise<Catalog[]> {
+    try {
+      const cardsRef = collection(db, 'hero')
+      const snapshot = await getDocs(cardsRef)
+      return snapshot.docs.map(doc => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          title: data.title,
+          imageUrl: data.imageUrl,
+          toRoute: data.toRoute
+        }
+      })
+    } catch (error) {
+      console.error('Error getting hero:', error)
+      return []
+    }
+  },
+
+  async createHero(hero: HeroImage) {
+    try {
+      const cardsRef = collection(db, 'hero')
+      await addDoc(cardsRef, {
+        ...hero
+      })
+    } catch (error) {
+      console.error('Error creating hero:', error)
+      throw error
+    }
+  },
+
+  async updateHero(id: string, hero: Partial<HeroImage>): Promise<void> {
+    try {
+      const cardRef = doc(db, 'hero', id)
+      await updateDoc(cardRef, hero)
+    } catch (error) {
+      console.error('Error updating hero', error)
+      throw error
+    }
+  },
+
+  async deleteHero(id: string): Promise<void> {
+    try {
+      const cardRef = doc(db, 'hero', id)
+      await deleteDoc(cardRef)
+    } catch (error) {
+      console.error('Error deleting hero: ', error)
       throw error
     }
   }

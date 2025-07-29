@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useHead } from '@vueuse/head';
-import { onMounted, computed, defineAsyncComponent } from 'vue';
+import { onMounted, computed, defineAsyncComponent, ref } from 'vue';
 import { useProductsStore } from '@/store';
+import { useHeroStore } from '@/store/useHeroStore';
 import personalizeProducts from '@/assets/images/personaliza-productos.png';
 
 const RgHero = defineAsyncComponent(/* webpackChunkName: "rgHero" */() => import('@/components/home/RgHero.vue'));
@@ -10,11 +11,15 @@ const RgVarietyBanner = defineAsyncComponent(/* webpackChunkName: "rgVarietyBann
 const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('@/components/UI/RgCard.vue'));
 
 const store = useProductsStore();
+const heroStore = useHeroStore();
+const showHeroLoader = ref(true);
 
 onMounted(async () => {
   if (!store.products || store.products.length === 0) {
     await store.getAllProducts();
   }
+  await heroStore.getHero();
+  showHeroLoader.value = false;
 });
 
 const popularProducts = computed(() => {
@@ -28,6 +33,12 @@ const popularProducts = computed(() => {
   }
 
   return shuffled.slice(0, 12);
+});
+
+const heroImage = computed(() => {
+  return heroStore.hero && heroStore.hero.length > 0 && heroStore.hero[0]?.imageUrl
+    ? heroStore.hero[0].imageUrl
+    : personalizeProducts;
 });
 
 useHead({
@@ -49,12 +60,16 @@ useHead({
 
 <template>
   <main class="home">
+    <div v-if="showHeroLoader" class="hero-loader">
+      <div class="loader"></div>
+    </div>
     <RgHero
+      v-else
       title="Hacemos de tus regalos corporativos la mejor experiencia."
       subtitle="Personaliza"
       subtitle2=" tus productos."
       buttonText="Productos"
-      :background-image="personalizeProducts"
+      :background-image="heroImage"
       routeButton="products"
     />
 
@@ -109,6 +124,27 @@ useHead({
 .container {
   width: 90%;
   margin: 0 auto;
+}
+
+.hero-loader {
+  width: 100vw;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7fafc;
+}
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 5px solid var(--primary-color, #3182ce);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 1024px) {

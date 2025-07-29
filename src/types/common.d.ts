@@ -208,4 +208,11 @@ export interface ButtonProps {
   full?: boolean;
 }
 
-export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs';
+export interface HeroImage {
+  id: string;
+  title: string;
+  imageUrl: string;
+  toRoute: string;
+}
+
+export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'hero';
