@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useHead } from '@vueuse/head';
 import { onMounted, computed, defineAsyncComponent, ref } from 'vue';
-import { useProductsStore } from '@/store';
+import { useProductsStore, useOurClientsStore} from '@/store';
 import { useHeroStore } from '@/store/useHeroStore';
 import personalizeProducts from '@/assets/images/personaliza-productos.png';
 
@@ -9,14 +9,19 @@ const RgHero = defineAsyncComponent(/* webpackChunkName: "rgHero" */() => import
 const RgCategories = defineAsyncComponent(/* webpackChunkName: "rgCategories" */() => import('@/components/home/RgCategories.vue'));
 const RgVarietyBanner = defineAsyncComponent(/* webpackChunkName: "rgVarietyBanner" */() => import('@/components/home/RgVarietyBanner.vue'));
 const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('@/components/UI/RgCard.vue'));
+const RgOurClients = defineAsyncComponent(/* webpackChunkName: "rgOurClients" */() => import('@/components/UI/RgOurClients.vue'));
 
 const store = useProductsStore();
+const ourClientsStore = useOurClientsStore();
 const heroStore = useHeroStore();
 const showHeroLoader = ref(true);
 
 onMounted(async () => {
   if (!store.products || store.products.length === 0) {
     await store.getAllProducts();
+  }
+  if (!ourClientsStore.ourClients || ourClientsStore.ourClients.length === 0) {
+    await ourClientsStore.getOurClients();
   }
   await heroStore.getHero();
   showHeroLoader.value = false;
@@ -75,7 +80,9 @@ useHead({
 
     <div class="container">
       <RgCategories />
-
+      <RgOurClients
+        :images="ourClientsStore.ourClients.length > 0 ? ourClientsStore.ourClients : []"
+      />
       <section class="popular-products">
         <h2 class="section-title">Algunos de nuestros productos</h2>
         <div class="products-grid">
