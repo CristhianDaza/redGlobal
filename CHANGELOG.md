@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.2.0] - 30/07/2025
+### Dependencies
+- Updated `firebase` to `^12.0.0`
+- Updated `@vitejs/plugin-vue` to `^6.0.0`
+- Updated `vite` to `^7.0.0`
+- Updated `vue-tsc` to `^3.0.0`
 
 ### Added
 - Maintenance page added for when the site is under maintenance.
