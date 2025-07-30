@@ -27,6 +27,7 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
 </script>
 
 <template>
+  <h2>Nuestros <span>Clientes</span></h2>
   <div v-if="props.images.length" class="clients-wrapper">
     <div
       v-for="(_, index) in 3"
@@ -53,10 +54,22 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
 </template>
 
 <style scoped>
+h2 {
+  text-align: center;
+  font-size: 2.3rem;
+  margin-top: 5rem;
+  color: var(--text-color);
+}
+
+span {
+  color: var(--primary-color);
+}
+
 .clients-wrapper {
   background: var(--background-color);
   padding: 2rem 0;
   overflow: hidden;
+  margin-top: 2rem;
 }
 
 .row {

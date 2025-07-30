@@ -80,9 +80,11 @@ useHead({
 
     <div class="container">
       <RgCategories />
+    </div>
       <RgOurClients
         :images="ourClientsStore.ourClients.length > 0 ? ourClientsStore.ourClients : []"
       />
+    <div class="container">
       <section class="popular-products">
         <h2 class="section-title">Algunos de nuestros productos</h2>
         <div class="products-grid">
