@@ -40,14 +40,23 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
         @mouseenter="(e) => handleMouse(e, 'add')"
         @mouseleave="(e) => handleMouse(e, 'remove')"
       >
-        <img
-          v-for="(img, idx) in generateRow()"
-          :key="index + '-' + idx + '-' + img.id"
-          :src="img.imageUrl"
-          class="logo"
-          :alt="img.title"
-          :title="img.title"
-        />
+        <template v-for="(img) in generateRow()" :key="'main-' + index + '-' + idx + '-' + img.id">
+          <img
+            :src="img.imageUrl"
+            class="logo"
+            :alt="img.title"
+            :title="img.title"
+          />
+        </template>
+        <template v-for="(img) in generateRow()"  :key="'clone-' + index + '-' + idx + '-' + img.id">
+          <img
+            :src="img.imageUrl"
+            class="logo"
+            :alt="img.title"
+            :title="img.title"
+          />
+        </template>
+
       </div>
     </div>
   </div>
@@ -69,7 +78,7 @@ span {
   background: var(--background-color);
   padding: 2rem 0;
   overflow: hidden;
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .row {
