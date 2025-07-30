@@ -424,7 +424,7 @@ export const firebaseService = {
     }
   },
 
-  async getHero(): Promise<Catalog[]> {
+  async getHero(): Promise<HeroImage[]> {
     try {
       const cardsRef = collection(db, 'hero')
       const snapshot = await getDocs(cardsRef)
@@ -433,8 +433,7 @@ export const firebaseService = {
         return {
           id: doc.id,
           title: data.title,
-          imageUrl: data.imageUrl,
-          toRoute: data.toRoute
+          imageUrl: data.imageUrl
         }
       })
     } catch (error) {

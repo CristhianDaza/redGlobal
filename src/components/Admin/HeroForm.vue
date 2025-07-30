@@ -20,18 +20,15 @@ const emit = defineEmits<{
 const title = ref('')
 const imageFile = ref<File | null>(null)
 const imagePreview = ref('')
-const toRoute = ref('')
 
 watch(() => props.isOpen, (newValue) => {
   if (newValue) {
     if (props.hero) {
       title.value = props.hero.title
       imagePreview.value = props.hero.imageUrl
-      toRoute.value = props.hero.toRoute
     } else {
       title.value = ''
       imagePreview.value = ''
-      toRoute.value = ''
     }
   }
 })
@@ -57,7 +54,6 @@ const handleSave = async () => {
       id: props.hero?.id || '',
       title: title.value,
       imageUrl,
-      toRoute: toRoute.value,
     })
   } catch (error) {
     console.error('Error saving hero:', error)
@@ -91,17 +87,6 @@ const handleClose = () => {
           type="text"
           required
           placeholder="Título de la imagen principal"
-        >
-      </div>
-
-      <div class="form-group">
-        <label for="toRoute">Ruta de navegación</label>
-        <input
-          id="toRoute"
-          v-model="toRoute"
-          type="text"
-          required
-          placeholder="URL donde navegará la imagen"
         >
       </div>
 

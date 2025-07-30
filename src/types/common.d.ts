@@ -212,7 +212,6 @@ export interface HeroImage {
   id: string;
   title: string;
   imageUrl: string;
-  toRoute: string;
 }
 
 export interface OurClients {

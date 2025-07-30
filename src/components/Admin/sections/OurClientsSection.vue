@@ -72,8 +72,8 @@ defineEmits<{
 
 <style scoped>
 .card-thumbnail {
-  width: 100px;
-  height: 100px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   border-radius: 0.375rem;
 }

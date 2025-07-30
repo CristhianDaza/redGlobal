@@ -90,10 +90,12 @@ const currentUserName = computed(() => {
           {{ pendingQuotes }}
         </span>
       </button>
+      <div class="divider"></div>
       <RgButton
         v-if="isAdmin"
         @click="$emit('update-products')"
         full
+        class="button-update-products"
       >
         Actualizar Productos
       </RgButton>
@@ -146,5 +148,15 @@ const currentUserName = computed(() => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.button-update-products {
+  margin-top: 0.5rem;
+}
+
+.divider {
+  height: 2px;
+  background-color: #e2e8f0;
+  margin-top: 2rem;
 }
 </style>

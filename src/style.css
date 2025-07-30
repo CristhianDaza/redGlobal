@@ -122,24 +122,60 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     width: 100%;
     text-align: left;
+    transform-origin: left;
 }
 
 .nav-item:hover {
-    background: #f7fafc;
-    color: #2d3748;
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.02);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .nav-item.active {
     background: var(--primary-color);
     color: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: scale(1.03);
+    animation: pulseIn 0.3s ease;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 4px;
+    border-radius: 2px;
+    background: white;
+    transition: all 0.3s ease;
 }
 
 .nav-item .material-icons {
     font-size: 1.25rem;
+    transition: color 0.3s ease;
 }
+
+.nav-item:hover .material-icons,
+.nav-item.active .material-icons {
+    color: white;
+}
+
+@keyframes pulseIn {
+    0% {
+        transform: scale(0.96);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1.03);
+        opacity: 1;
+    }
+}
+
 
 @media (max-width: 768px) {
     .admin-sidebar {

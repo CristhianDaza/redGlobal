@@ -32,7 +32,6 @@ defineEmits<{
         <thead>
           <tr>
             <th>Nombre</th>
-            <th>Ver Ruta</th>
             <th>Imagen</th>
             <th>Acciones</th>
           </tr>
@@ -40,20 +39,6 @@ defineEmits<{
         <tbody>
           <tr v-for="item in items" :key="item.id">
             <td>{{ item.title }}</td>
-            <td>
-              <a :href="item.toRoute" target="_blank">
-                <RgButton
-                  icon="external-link"
-                  type="icon"
-                  outlined
-                  title="Ver Imagen"
-                  :customStyle="{
-                  backgroundColor: '#335d80',
-                  color: '#ebf8ff',
-                  }"
-                />
-              </a>
-            </td>
             <td>
               <img :src="item.imageUrl" alt="Vista previa" class="card-thumbnail">
             </td>
