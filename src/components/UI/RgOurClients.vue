@@ -15,30 +15,37 @@ const shuffle = (array: OurClients[]): OurClients[] => {
 }
 
 const generateRow = (): OurClients[] => {
-  const clones = 5
-  const result: OurClients[] = []
-  for (let i = 0; i < clones; i++) {
-    result.push(...shuffle(props.images))
-  }
-  return result
+  const row = shuffle(props.images)
+  return [...row, ...row]
+}
+
+const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
+  const el = e.currentTarget as HTMLElement
+  if (state === 'add') el.classList.add('paused')
+  else el.classList.remove('paused')
 }
 </script>
 
 <template>
-  <div class="clients-wrapper">
+  <div v-if="props.images.length" class="clients-wrapper">
     <div
       v-for="(_, index) in 3"
       :key="index"
       class="row"
       :class="{ reverse: index % 2 === 1 }"
     >
-      <div class="tape">
+      <div
+        class="tape"
+        @mouseenter="(e) => handleMouse(e, 'add')"
+        @mouseleave="(e) => handleMouse(e, 'remove')"
+      >
         <img
           v-for="(img, idx) in generateRow()"
-          :key="idx + '-' + img.id"
+          :key="index + '-' + idx + '-' + img.id"
           :src="img.imageUrl"
           class="logo"
           :alt="img.title"
+          :title="img.title"
         />
       </div>
     </div>
@@ -61,7 +68,11 @@ const generateRow = (): OurClients[] => {
 
 .tape {
   display: flex;
-  animation: scroll 40s linear infinite;
+  animation: scroll 10s linear infinite;
+}
+
+.tape.paused {
+  animation-play-state: paused;
 }
 
 .row.reverse .tape {
@@ -69,7 +80,7 @@ const generateRow = (): OurClients[] => {
 }
 
 .logo {
-  height: 60px;
+  height: 70px;
   margin: 0 1.5rem;
   flex-shrink: 0;
   object-fit: contain;
