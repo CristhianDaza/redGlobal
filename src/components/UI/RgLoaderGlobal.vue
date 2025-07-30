@@ -20,7 +20,7 @@ onUnmounted(() => {
 .global-loader {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #e6f3e6, #cfe9cf);
+  background: linear-gradient(135deg, #e0e7ef 0%, #ffffff 100%);
   display: flex;
   justify-content: center;
   align-items: center;

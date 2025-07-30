@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, defineAsyncComponent, watch } from 'vue';
-import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore } from '@/store';
+import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore, useMaintenanceStore } from '@/store';
 
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
@@ -9,12 +9,14 @@ const NotificationContainer = defineAsyncComponent(/* webpackChunkName: "notific
 const RgModalApi = defineAsyncComponent(/* webpackChunkName: "rgModalApi" */() => import('./components/UI/RgModalApi.vue'));
 const RgWhatsApp = defineAsyncComponent(/* webpackChunkName: "rgWhatsApp" */() => import('./components/UI/RgWhatsApp.vue'));
 const RgLoaderGlobal = defineAsyncComponent(/* webpackChunkName: "rgLoaderGlobal" */() => import('./components/UI/RgLoaderGlobal.vue'));
+const RgMaintenance = defineAsyncComponent(/* webpackChunkName: "RgMaintenance" */() => import('./components/UI/RgMaintenance.vue'));
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const loaderStore = useLoaderStore();
+const maintenanceStore = useMaintenanceStore();
 
 const updateCustomColors = () => {
   if (authStore.isAuthenticated()) {
@@ -30,6 +32,7 @@ const updateCustomColors = () => {
 };
 
 onMounted(async () => {
+  await maintenanceStore.getMaintenanceMode();
   loaderStore.showLoader();
   let executed = false;
 
@@ -88,15 +91,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <RgLoaderGlobal v-if="loaderStore.isLoading || authStore.loading" />
-  <div class="app" v-else>
-    <RgNavbar />
-    <RouterView />
-    <RgFooter />
-    <RgScrollToTop />
-    <NotificationContainer />
-    <RgModalApi />
-    <RgWhatsApp />
+  <RgLoaderGlobal v-if="loaderStore.isLoading || authStore.loading || maintenanceStore.isLoading" />
+  <RgMaintenance v-else-if="maintenanceStore.isMaintenanceMode" />
+  <div v-else>
+    <div class="app">
+      <RgNavbar />
+      <RouterView />
+      <RgFooter />
+      <RgScrollToTop />
+      <NotificationContainer />
+      <RgModalApi />
+      <RgWhatsApp />
+    </div>
   </div>
 </template>
 

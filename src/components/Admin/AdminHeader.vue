@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { tabs } from '@/types/common.d'
 import { defineAsyncComponent, computed } from 'vue'
-const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
+const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 
 const props = defineProps<{
   activeTab: tabs
   isAdmin: boolean
+  disabled?: boolean
+  heroCount?: number
 }>()
 
 const emit = defineEmits<{
@@ -14,6 +16,8 @@ const emit = defineEmits<{
   (e: 'add-card'): void
   (e: 'add-catalog'): void
   (e: 'delete-all-quote'): void
+  (e: 'add-hero'): void
+  (e: 'add-our-clients'): void
 }>()
 
 const handleEventButton = () => {
@@ -23,9 +27,11 @@ const handleEventButton = () => {
     cards: 'add-card',
     catalogs: 'add-catalog',
     quotes: 'delete-all-quote',
-  };
-  const event = eventMap[props.activeTab];
-  if (event) emit(event as any);
+    hero: 'add-hero',
+    'our-clients': 'add-our-clients',
+  }
+  const event = eventMap[props.activeTab]
+  if (event) emit(event as any)
 }
 
 const activeTabHeader = computed(():string => {
@@ -35,10 +41,11 @@ const activeTabHeader = computed(():string => {
     cards: 'Categorías',
     quotes: 'Cotizaciones',
     catalogs: 'Catálogos',
-  };
-  return headers[props.activeTab];
-});
-
+    hero: 'Imagen de Inicio',
+    'our-clients': 'Imágenes de Clientes',
+  }
+  return headers[props.activeTab]
+})
 
 const activeTabText = computed(():string => {
   const text = {
@@ -47,8 +54,14 @@ const activeTabText = computed(():string => {
     cards: 'Agregar una Categoría',
     quotes: 'Limpiar Cotizaciones',
     catalogs: 'Agregar un Catálogo',
+    hero: 'Agregar una Imagen de Inicio',
+    'our-clients': 'Agregar Imagen de Cliente',
   }
-  return text[props.activeTab];
+  return text[props.activeTab]
+})
+
+const disabled = computed(() => {
+  return props.disabled || (props.activeTab === 'hero' && (props.heroCount ?? 0) >= 1)
 })
 </script>
 
@@ -65,6 +78,7 @@ const activeTabText = computed(():string => {
       @click="handleEventButton"
       type="default"
       rounded
+      :disabled="disabled"
     />
   </header>
 </template>

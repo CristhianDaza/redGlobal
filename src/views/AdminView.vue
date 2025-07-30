@@ -2,7 +2,7 @@
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
-import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin } from '@/composable';
+import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useHeroAdmin, useOurClientAdmin } from '@/composable';
 import { tabs, UserFormData, User } from "@/types/common";
 import { useHead } from '@vueuse/head';
 
@@ -11,6 +11,8 @@ const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => im
 const RgConfirmModal = defineAsyncComponent(/* webpackChunkName: "rgConfirmModal" */() => import('@/components/UI/RgConfirmModal.vue'));
 const CategoryCardForm = defineAsyncComponent(/* webpackChunkName: "categoryCardForm" */() => import('@/components/Admin/CategoryCardForm.vue'));
 const CatalogForm = defineAsyncComponent(/* webpackChunkName: "catalogForm" */() => import('@/components/Admin/CatalogForm.vue'));
+const HeroForm = defineAsyncComponent(/* webpackChunkName: "heroForm" */() => import('@/components/Admin/HeroForm.vue'));
+const OurClientForm = defineAsyncComponent(/* webpackChunkName: "ourClientForm" */() => import('@/components/Admin/OurClientForm.vue'));
 
 const AdminSidebar = defineAsyncComponent(/* webpackChunkName: "adminSidebar" */() => import('@/components/Admin/AdminSidebar.vue'));
 const MenuSection = defineAsyncComponent(/* webpackChunkName: "menuSection" */() => import('@/components/Admin/sections/MenuSection.vue'));
@@ -20,6 +22,8 @@ const QuotesSection = defineAsyncComponent(/* webpackChunkName: "quotesSection" 
 const CategoriesSection = defineAsyncComponent(/* webpackChunkName: "categoriesSection" */() => import('@/components/Admin/sections/CategoriesSection.vue'));
 const QuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "quoteDetailsModal" */() => import('@/components/Admin/QuoteDetailsModal.vue'));
 const CatalogsSection = defineAsyncComponent(/* webpackChunkName: "catalogsSection" */() => import('@/components/Admin/sections/CatalogsSection.vue'));
+const HeroSection = defineAsyncComponent(/* webpackChunkName: "heroSection" */() => import('@/components/Admin/HeroSection.vue'));
+const OurClientsSection = defineAsyncComponent(/* webpackChunkName: "ourClientsSection" */() => import('@/components/Admin/sections/OurClientsSection.vue'));
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -115,6 +119,30 @@ const {
   deleteCatalog
 } = useCatalogAdmin();
 
+const {
+  isLoadingHero,
+  showHeroModal,
+  editingHero,
+  hero,
+  loadHero,
+  handleAddHero,
+  handleEditHero,
+  handleSaveHero,
+  deleteHero
+} = useHeroAdmin();
+
+const {
+  isLoadingOurClients,
+  showOurClientsModal,
+  editingOurClient,
+  ourClients,
+  loadOurClients,
+  handleAddOurClient,
+  handleEditOurClient,
+  handleSaveOurClient,
+  deleteOurClient
+} = useOurClientAdmin();
+
 const showConfirmModal = ref(false);
 const itemToConfirmModal = ref<{ id: string; type: string } | undefined>(undefined);
 
@@ -138,9 +166,6 @@ const handleConfirmModal = async () => {
       case 'users':
         await deleteUser(itemToConfirmModal.value.id);
         break;
-      case 'quotes':
-        await deleteQuote(itemToConfirmModal.value.id);
-        break;
       case 'cards':
         await deleteCategoryCard(itemToConfirmModal.value.id);
         break;
@@ -154,6 +179,15 @@ const handleConfirmModal = async () => {
         break;
       case 'deleteAllQuotes':
         await deleteAllCompletedQuotes();
+        break;
+      case 'hero':
+        await deleteHero(itemToConfirmModal.value.id);
+        break;
+      case 'our-clients':
+        await deleteOurClient(itemToConfirmModal.value.id);
+        break;
+      default:
+        await deleteQuote(itemToConfirmModal.value.id);
         break;
     }
   } catch (error) {
@@ -195,6 +229,8 @@ const loadingData = computed(() => {
     case 'quotes': return quoteLoading.value;
     case 'cards': return isLoadingCard.value;
     case 'catalogs': return isLoadingCatalog.value;
+    case 'hero': return isLoadingHero.value;
+    case 'our-clients': return isLoadingOurClients.value;
     default: return false;
   }
 });
@@ -207,7 +243,9 @@ onMounted(async () => {
         loadUsers(),
         loadQuotes(),
         loadCategoryCards(),
-        loadCatalogs()
+        loadCatalogs(),
+        loadHero(),
+        loadOurClients(),
       ]);
 
       if (route.query.quoteId) {
@@ -223,7 +261,7 @@ onMounted(async () => {
 });
 
 watch(activeTab, (newTab) => {
-  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs'];
+  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'hero', 'our-clients'];
   const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
   if (tab) {
     router.replace({ query: { tab } });
@@ -239,9 +277,11 @@ const messageConfirmsMap: Record<string, string> = {
   cards: '¿Estás segur@ de que deseas eliminar esta categoría?',
   products: '¿Estás segur@ de que deseas eliminar este producto?',
   catalogs: '¿Estás segur@ de que deseas eliminar este catálogo?',
+  hero: '¿Estás segur@ de que deseas eliminar esta imagen principal?',
   default: '¿Estás segur@ de que deseas eliminar este elemento?',
   update: '¿Estás segur@ de que deseas actualizar los productos?',
   deleteAllQuotes: '¿Estás segur@ de que deseas eliminar todas las cotizaciones completadas?',
+  'our-clients': '¿Estás segur@ de que deseas eliminar esta imagen de cliente?'
 }
 
 const titleConfirmsMap: Record<string, string> = {
@@ -254,6 +294,8 @@ const titleConfirmsMap: Record<string, string> = {
   default: 'Eliminar Elemento',
   update: 'Actualizar Productos',
   deleteAllQuotes: 'Eliminar Cotizaciones Completadas',
+  hero: 'Eliminar Imagen principal',
+  'our-clients': 'Eliminar Imagen de Cliente'
 }
 
 const messageConfirm = computed(() => {
@@ -271,7 +313,9 @@ const activeTabTitle = {
   users: 'Usuarios',
   quotes: 'Cotizaciones',
   cards: 'Categorías',
-  catalogs: 'Catálogos'
+  catalogs: 'Catálogos',
+  hero: 'Hero',
+  'our-clients': 'Nuestros Clientes'
 }
 
 const handleUpdateProducts = () => {
@@ -296,7 +340,7 @@ useHead({
 });
 
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs'].includes(newTab as tabs)) {
+  if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs', 'our-clients'].includes(newTab as tabs)) {
     activeTab.value = newTab as tabs;
   }
 });
@@ -319,11 +363,15 @@ watch(() => route.query.tab, (newTab) => {
       <AdminHeader
         :active-tab="activeTab"
         :is-admin="isAdmin"
+        :disabled="false"
+        :hero-count="hero?.length || 0"
         @add-menu="handleAddMenuItem"
         @add-user="handleAddUser"
         @add-card="handleAddCard"
         @add-catalog="handleAddCatalog"
         @delete-all-quote="confirmDeleteQuotes"
+        @add-hero="handleAddHero"
+        @add-our-clients="handleAddOurClient"
       />
 
       <div class="main-content">
@@ -377,6 +425,20 @@ watch(() => route.query.tab, (newTab) => {
             @edit="handleEditCatalog"
             @delete="id => handleDeleteClick(id, 'catalogs')"
           />
+
+          <HeroSection
+            v-if="activeTab === 'hero'"
+            :items="hero"
+            @edit="handleEditHero"
+            @delete="id => handleDeleteClick(id, 'hero')"
+          />
+
+          <OurClientsSection
+            v-if="activeTab === 'our-clients'"
+            :items="ourClients"
+            @edit="handleEditOurClient"
+            @delete="id => handleDeleteClick(id, 'our-clients')"
+          />
         </div>
 
         <MenuItemForm
@@ -427,6 +489,22 @@ watch(() => route.query.tab, (newTab) => {
           :quote-status="quoteStatus"
           @complete="handleCompleteQuote"
           @close="handleCloseQuoteDetails"
+        />
+
+        <HeroForm
+          :isOpen="showHeroModal"
+          :hero="editingHero"
+          :loading="isLoadingHero"
+          @save="handleSaveHero"
+          @close="showHeroModal = false"
+        />
+
+        <OurClientForm
+          :isOpen="showOurClientsModal"
+          :ourClient="editingOurClient"
+          :loading="isLoadingOurClients"
+          @save="handleSaveOurClient"
+          @close="showOurClientsModal = false"
         />
       </div>
     </main>

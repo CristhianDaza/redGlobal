@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 30/07/2025
+### Dependencies
+- Updated `firebase` to `^12.0.0`
+- Updated `@vitejs/plugin-vue` to `^6.0.0`
+- Updated `vite` to `^7.0.0`
+- Updated `vue-tsc` to `^3.0.0`
+
+### Added
+- Maintenance page added for when the site is under maintenance.
+- Option to change the main image from the admin panel.
+- "Our Clients" section added to the home page and its configuration in admin.
+
+### Changed
+- Updated styles for the main menu.
+- Updated sidebar styles in the admin panel.
+- Changed the color of the global loader.
+
+### Fixed
+- Fixed export issues in composables.
+- Prevented a navigation crash by ensuring product ID is defined before routing.
+
 ## [1.1.0] - 26/05/2025
 ### Dependencies
 - Dependencies are updated to their major versions
@@ -104,6 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🎉 Initial stable release.
 
+[1.2.0]: https://github.com/CristhianDaza/redGlobal/pull/6/files
 [1.1.0]: https://github.com/CristhianDaza/redGlobal/pull/5/files
 [1.0.4]: https://github.com/CristhianDaza/redGlobal/pull/
 [1.0.3]: https://github.com/CristhianDaza/redGlobal/pull/4/files
