@@ -17,6 +17,7 @@ const emit = defineEmits<{
   (e: 'add-catalog'): void
   (e: 'delete-all-quote'): void
   (e: 'add-hero'): void
+  (e: 'add-our-clients'): void
 }>()
 
 const handleEventButton = () => {
@@ -27,6 +28,7 @@ const handleEventButton = () => {
     catalogs: 'add-catalog',
     quotes: 'delete-all-quote',
     hero: 'add-hero',
+    'our-clients': 'add-our-clients',
   }
   const event = eventMap[props.activeTab]
   if (event) emit(event as any)
@@ -40,6 +42,7 @@ const activeTabHeader = computed(():string => {
     quotes: 'Cotizaciones',
     catalogs: 'Catálogos',
     hero: 'Imagen de Inicio',
+    'our-clients': 'Imágenes de Clientes',
   }
   return headers[props.activeTab]
 })
@@ -52,6 +55,7 @@ const activeTabText = computed(():string => {
     quotes: 'Limpiar Cotizaciones',
     catalogs: 'Agregar un Catálogo',
     hero: 'Agregar una Imagen de Inicio',
+    'our-clients': 'Agregar Imagen de Cliente',
   }
   return text[props.activeTab]
 })

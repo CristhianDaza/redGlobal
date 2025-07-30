@@ -5,7 +5,7 @@ import { useProductsMarpico } from '@/composable/useProductsMarpico';
 import { useProductsPromos } from '@/composable/useProductsPromos';
 import { useForm} from "@/composable/useForm.ts";
 
-import { useMenuAdmin, useCategoryAdmin, useQuoteAdmin, useUserAdmin, useCatalogAdmin, useHeroAdmin } from '@/composable/admin/';
+import { useMenuAdmin, useCategoryAdmin, useQuoteAdmin, useUserAdmin, useCatalogAdmin, useHeroAdmin, useOurClientAdmin } from '@/composable/admin/';
 
 import { useWhatsApp } from '@/composable/useWhatsApp';
 import { useIsMobile } from '@/composable/useIsMobile';
@@ -25,6 +25,7 @@ export {
   useUserAdmin,
   useCatalogAdmin,
   useHeroAdmin,
+  useOurClientAdmin,
 
   useWhatsApp,
   useIsMobile

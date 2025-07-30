@@ -1,4 +1,4 @@
-import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard, HeroImage } from '@/types/common.d'
+import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard, HeroImage, OurClients } from '@/types/common.d'
 import { Catalog, UserRole } from '@/types/common.d'
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where, writeBatch } from 'firebase/firestore'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
@@ -487,5 +487,55 @@ export const firebaseService = {
       console.error('Error getting maintenance mode:', error)
       return false
     }
-  }
+  },
+
+  async getOurClients(): Promise<OurClients[]> {
+    try {
+      const ourClientsRef = collection(db, 'ourClients')
+      const snapshot = await getDocs(ourClientsRef)
+      return snapshot.docs.map(doc => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          title: data.title,
+          imageUrl: data.imageUrl,
+        }
+      })
+    } catch (error) {
+      console.error('Error getting our clients:', error)
+      return []
+    }
+  },
+
+  async createOurClient(client: OurClients) {
+    try {
+      const ourClientsRef = collection(db, 'ourClients')
+      await addDoc(ourClientsRef, {
+        ...client
+      })
+    } catch (error) {
+      console.error('Error creating our client:', error)
+      throw error
+    }
+  },
+
+  async updateOurClient(id: string, client: Partial<OurClients>): Promise<void> {
+    try {
+      const ourClientsRef = doc(db, 'ourClients', id)
+      await updateDoc(ourClientsRef, client)
+    } catch (error) {
+      console.error('Error updating our client:', error)
+      throw error
+    }
+  },
+
+  async deleteOurClient(id: string): Promise<void> {
+    try {
+      const ourClientsRef = doc(db, 'ourClients', id)
+      await deleteDoc(ourClientsRef)
+    } catch (error) {
+      console.error('Error deleting our client: ', error)
+      throw error
+    }
+  },
 }

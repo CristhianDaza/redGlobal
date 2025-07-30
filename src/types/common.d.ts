@@ -215,4 +215,10 @@ export interface HeroImage {
   toRoute: string;
 }
 
-export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'hero';
+export interface OurClients {
+  id: string;
+  title: string;
+  imageUrl: string;
+}
+
+export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'hero' | 'our-clients';
