@@ -9,7 +9,7 @@ const NotificationContainer = defineAsyncComponent(/* webpackChunkName: "notific
 const RgModalApi = defineAsyncComponent(/* webpackChunkName: "rgModalApi" */() => import('./components/UI/RgModalApi.vue'));
 const RgWhatsApp = defineAsyncComponent(/* webpackChunkName: "rgWhatsApp" */() => import('./components/UI/RgWhatsApp.vue'));
 const RgLoaderGlobal = defineAsyncComponent(/* webpackChunkName: "rgLoaderGlobal" */() => import('./components/UI/RgLoaderGlobal.vue'));
-const Maintenance = defineAsyncComponent(/* webpackChunkName: "maintenance" */() => import('./components/UI/Maintenance.vue'));
+const RgMaintenance = defineAsyncComponent(/* webpackChunkName: "RgMaintenance" */() => import('./components/UI/RgMaintenance.vue'));
 
 const storeProducts = useProductsStore();
 const menuStore = useMenuStore();
@@ -92,7 +92,7 @@ onMounted(async () => {
 
 <template>
   <RgLoaderGlobal v-if="loaderStore.isLoading || authStore.loading || maintenanceStore.isLoading" />
-  <Maintenance v-else-if="maintenanceStore.isMaintenanceMode" />
+  <RgMaintenance v-else-if="maintenanceStore.isMaintenanceMode" />
   <div v-else>
     <div class="app">
       <RgNavbar />
