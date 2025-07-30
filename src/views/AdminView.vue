@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, defineAsyncComponent, onMounted, ref, watch} from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
 import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useHeroAdmin, useOurClientAdmin } from '@/composable';
