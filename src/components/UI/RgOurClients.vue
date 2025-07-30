@@ -6,15 +6,6 @@ const props = defineProps<{
   images: OurClients[]
 }>()
 
-const shuffle = (array: OurClients[]): OurClients[] => {
-  const copy = [...array]
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[copy[i], copy[j]] = [copy[j], copy[i]]
-  }
-  return copy
-}
-
 const repeatUntilMin = (logos: OurClients[], minTotal: number): OurClients[] => {
   const result: OurClients[] = []
   while (result.length < minTotal) {
@@ -41,10 +32,10 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
 </script>
 
 <template>
-  <h2 class="clients-title">
-    Nuestros <span>Clientes</span>
-  </h2>
   <div v-if="props.images.length" class="clients-wrapper">
+    <h2 class="clients-title">
+      Nuestros <span>Clientes</span>
+    </h2>
     <div
       v-for="(rowImages, index) in rows"
       :key="index"
@@ -57,7 +48,7 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
         @mouseleave="(e) => handleMouse(e, 'remove')"
       >
         <template
-          v-for="(img, idx) in rowImages"
+          v-for="(img) in rowImages"
           :key="'main-' + index + '-' + idx + '-' + img.id"
         >
           <img
@@ -68,7 +59,7 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
           />
         </template>
         <template
-          v-for="(img, idx) in rowImages"
+          v-for="(img) in rowImages"
           :key="'clone-' + index + '-' + idx + '-' + img.id"
         >
           <img
