@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { OurClients } from '@/types/common.d'
+import { computed } from 'vue'
 
 const props = defineProps<{
   images: OurClients[]
@@ -14,10 +15,23 @@ const shuffle = (array: OurClients[]): OurClients[] => {
   return copy
 }
 
-const generateRow = (): OurClients[] => {
-  const row = shuffle(props.images)
-  return [...row, ...row]
+const repeatUntilMin = (logos: OurClients[], minTotal: number): OurClients[] => {
+  const result: OurClients[] = []
+  while (result.length < minTotal) {
+    result.push(...logos)
+  }
+  return result
 }
+
+const rows = computed(() => {
+  const chunkSize = Math.ceil(props.images.length / 3)
+  return [0, 1, 2].map(i => {
+    const slice = props.images.slice(i * chunkSize, (i + 1) * chunkSize)
+    const duplicated = repeatUntilMin(slice, 20) // duplicar hasta al menos 20 logos
+    return [...duplicated]
+  })
+})
+
 
 const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
   const el = e.currentTarget as HTMLElement
@@ -27,10 +41,12 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
 </script>
 
 <template>
-  <h2>Nuestros <span>Clientes</span></h2>
+  <h2 class="clients-title">
+    Nuestros <span>Clientes</span>
+  </h2>
   <div v-if="props.images.length" class="clients-wrapper">
     <div
-      v-for="(_, index) in 3"
+      v-for="(rowImages, index) in rows"
       :key="index"
       class="row"
       :class="{ reverse: index % 2 === 1 }"
@@ -40,7 +56,10 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
         @mouseenter="(e) => handleMouse(e, 'add')"
         @mouseleave="(e) => handleMouse(e, 'remove')"
       >
-        <template v-for="(img) in generateRow()" :key="'main-' + index + '-' + idx + '-' + img.id">
+        <template
+          v-for="(img, idx) in rowImages"
+          :key="'main-' + index + '-' + idx + '-' + img.id"
+        >
           <img
             :src="img.imageUrl"
             class="logo"
@@ -48,7 +67,10 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
             :title="img.title"
           />
         </template>
-        <template v-for="(img) in generateRow()"  :key="'clone-' + index + '-' + idx + '-' + img.id">
+        <template
+          v-for="(img, idx) in rowImages"
+          :key="'clone-' + index + '-' + idx + '-' + img.id"
+        >
           <img
             :src="img.imageUrl"
             class="logo"
@@ -65,7 +87,7 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
 <style scoped>
 h2 {
   text-align: center;
-  font-size: 2.3rem;
+  font-size: 3.5rem;
   margin-top: 5rem;
   color: var(--text-color);
 }
@@ -90,8 +112,10 @@ span {
 
 .tape {
   display: flex;
-  animation: scroll 10s linear infinite;
+  animation: scroll 50s linear infinite;
+  min-width: 200%;
 }
+
 
 .tape.paused {
   animation-play-state: paused;
