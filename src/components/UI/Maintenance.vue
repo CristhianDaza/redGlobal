@@ -1,6 +1,7 @@
 <template>
   <div class="maintenance-container">
     <div class="maintenance-box">
+      <img src="@/assets/images/main-logo.png" alt="Logo" class="maintenance-logo" />
       <span class="maintenance-icon">🛠️</span>
       <h1>¡Volveremos pronto!</h1>
       <p>
@@ -34,6 +35,14 @@
   width: 100%;
   text-align: center;
   border: 1px solid #cbd5e0;
+}
+
+.maintenance-logo {
+  width: 240px;
+  margin-bottom: 1.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .maintenance-icon {
