@@ -134,10 +134,13 @@ window.addEventListener('resize', () => {
 
       <div class="navbar-menu">
         <template v-if="!menuStore.isLoading">
-          <router-link :to="path" v-for="({id, title, path}) in menuStore.getMenuItems" :key="id">
-            <button class="menu-item">
-              {{ title }}
-            </button>
+          <router-link
+            :to="path"
+            class="menu-item"
+            v-for="({id, title, path}) in menuStore.getMenuItems"
+            :key="id"
+          >
+            {{ title }}
           </router-link>
         </template>
         <template v-else>
@@ -271,27 +274,47 @@ window.addEventListener('resize', () => {
 .menu-item {
   background: none;
   border: none;
-  padding: 0.5rem 1rem;
-  color: #333;
+  padding: 0.75rem 1rem;
+  color: var(--text-color);
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: color 0.2s ease;
   position: relative;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.menu-item::after {
+  content: '';
+  display: block;
+  margin-top: 0.5rem;
+  height: 2px;
+  width: 0;
+  background: transparent;
+  transition: width 0.3s ease, background 0.3s ease;
 }
 
 .menu-item:hover {
-  color: #000;
+  color: var(--primary-color);
+  transform: translateY(-1px);
 }
 
 .menu-item:hover::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 1rem;
-  right: 1rem;
-  height: 2px;
-  background: currentColor;
+  width: 60%;
+  background: var(--primary-color);
+  margin: 0.5rem auto 0; /* centrado horizontalmente */
 }
+
+.menu-item.router-link-exact-active {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.menu-item.router-link-exact-active::after {
+  width: 60%;
+  background: var(--primary-color);
+  margin: 0.5rem auto 0;
+}
+
 
 .skeleton-item {
   width: 100px;
