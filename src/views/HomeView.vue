@@ -88,7 +88,7 @@ useHead({
       <section class="popular-products">
         <h2 class="section-title">Algunos de nuestros productos</h2>
         <div class="products-grid">
-          <router-link :to="{name: 'product', params: {id: product.id}}" v-for="product in popularProducts" :key="product.id">
+          <router-link :to="{name: 'product', params: {id: product?.id}}" v-for="product in popularProducts" :key="product?.id">
             <RgCard
               :products-view="product"
             />

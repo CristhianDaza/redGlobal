@@ -93,7 +93,7 @@ const handleSearch = () => {
   if (suggestions.value.length === 1) {
     router.push({
       name: 'product',
-      params: { id: suggestions.value[0].id },
+      params: { id: suggestions?.value?.[0]?.id },
     });
     searchQuery.value = '';
     return;
@@ -109,7 +109,7 @@ const handleSearch = () => {
 const handleSelect = (product: ProductsRedGlobal) => {
   router.push({
     name: 'product',
-    params: { id: product.id },
+    params: { id: product?.id },
   });
   searchQuery.value = '';
 };

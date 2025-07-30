@@ -161,7 +161,7 @@ watch(
           <router-link
             v-for="product in productsToShow"
             :key="product.id"
-            :to="{ name: 'product', params: { id: product.id } }"
+            :to="{ name: 'product', params: { id: product?.id } }"
           >
             <RgCard
               :products-view="product"
