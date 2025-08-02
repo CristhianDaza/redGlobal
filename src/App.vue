@@ -33,7 +33,13 @@ const updateCustomColors = () => {
 
 onMounted(async () => {
   await maintenanceStore.getMaintenanceMode();
+
   loaderStore.showLoader();
+
+  if (maintenanceStore.isMaintenanceMode) {
+    loaderStore.hideLoader();
+    return;
+  }
   let executed = false;
 
   const waitForAuth = () =>

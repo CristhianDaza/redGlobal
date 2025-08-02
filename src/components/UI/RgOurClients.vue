@@ -32,7 +32,7 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
 </script>
 
 <template>
-  <div v-if="props.images.length" class="clients-wrapper">
+  <div v-if="props?.images?.length >= 3" class="clients-wrapper">
     <h2 class="clients-title">
       Nuestros <span>Clientes</span>
     </h2>
