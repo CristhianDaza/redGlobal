@@ -63,11 +63,11 @@ const currentUserName = computed(() => {
       </button>
       <button
         v-if="isAdmin"
-        :class="['nav-item', { active: activeTab === 'hero' }]"
-        @click="$emit('tab-change', 'hero')"
+        :class="['nav-item', { active: activeTab === 'carousel' }]"
+        @click="$emit('tab-change', 'carousel')"
       >
         <span class="material-icons">add_photo_alternate</span>
-        <span>Imagen Inicio</span>
+        <span>Imagen del Carrusel</span>
       </button>
       <button
         v-if="isAdmin"

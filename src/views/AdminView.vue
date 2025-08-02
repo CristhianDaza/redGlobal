@@ -2,7 +2,7 @@
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
-import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useHeroAdmin, useOurClientAdmin } from '@/composable';
+import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useCarouselAdmin, useOurClientAdmin } from '@/composable';
 import { tabs, UserFormData, User } from "@/types/common";
 import { useHead } from '@vueuse/head';
 
@@ -11,7 +11,7 @@ const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => im
 const RgConfirmModal = defineAsyncComponent(/* webpackChunkName: "rgConfirmModal" */() => import('@/components/UI/RgConfirmModal.vue'));
 const CategoryCardForm = defineAsyncComponent(/* webpackChunkName: "categoryCardForm" */() => import('@/components/Admin/CategoryCardForm.vue'));
 const CatalogForm = defineAsyncComponent(/* webpackChunkName: "catalogForm" */() => import('@/components/Admin/CatalogForm.vue'));
-const HeroForm = defineAsyncComponent(/* webpackChunkName: "heroForm" */() => import('@/components/Admin/HeroForm.vue'));
+const CarouselForm = defineAsyncComponent(/* webpackChunkName: "carouselForm" */() => import('@/components/Admin/CarouselForm.vue'));
 const OurClientForm = defineAsyncComponent(/* webpackChunkName: "ourClientForm" */() => import('@/components/Admin/OurClientForm.vue'));
 
 const AdminSidebar = defineAsyncComponent(/* webpackChunkName: "adminSidebar" */() => import('@/components/Admin/AdminSidebar.vue'));
@@ -22,7 +22,7 @@ const QuotesSection = defineAsyncComponent(/* webpackChunkName: "quotesSection" 
 const CategoriesSection = defineAsyncComponent(/* webpackChunkName: "categoriesSection" */() => import('@/components/Admin/sections/CategoriesSection.vue'));
 const QuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "quoteDetailsModal" */() => import('@/components/Admin/QuoteDetailsModal.vue'));
 const CatalogsSection = defineAsyncComponent(/* webpackChunkName: "catalogsSection" */() => import('@/components/Admin/sections/CatalogsSection.vue'));
-const HeroSection = defineAsyncComponent(/* webpackChunkName: "heroSection" */() => import('@/components/Admin/HeroSection.vue'));
+const CarouselSection = defineAsyncComponent(/* webpackChunkName: "carouselSection" */() => import('@/components/Admin/sections/CarouselSection.vue'));
 const OurClientsSection = defineAsyncComponent(/* webpackChunkName: "ourClientsSection" */() => import('@/components/Admin/sections/OurClientsSection.vue'));
 
 const authStore = useAuthStore();
@@ -120,16 +120,16 @@ const {
 } = useCatalogAdmin();
 
 const {
-  isLoadingHero,
-  showHeroModal,
-  editingHero,
-  hero,
-  loadHero,
-  handleAddHero,
-  handleEditHero,
-  handleSaveHero,
-  deleteHero
-} = useHeroAdmin();
+  isLoadingCarousel,
+  showCarouselModal,
+  editingCarousel,
+  carousel,
+  loadCarousel,
+  handleAddCarousel,
+  handleEditCarousel,
+  handleSaveCarousel,
+  deleteCarousel,
+} = useCarouselAdmin();
 
 const {
   isLoadingOurClients,
@@ -180,8 +180,8 @@ const handleConfirmModal = async () => {
       case 'deleteAllQuotes':
         await deleteAllCompletedQuotes();
         break;
-      case 'hero':
-        await deleteHero(itemToConfirmModal.value.id);
+      case 'carousel':
+        await deleteCarousel(itemToConfirmModal.value.id);
         break;
       case 'our-clients':
         await deleteOurClient(itemToConfirmModal.value.id);
@@ -229,7 +229,7 @@ const loadingData = computed(() => {
     case 'quotes': return quoteLoading.value;
     case 'cards': return isLoadingCard.value;
     case 'catalogs': return isLoadingCatalog.value;
-    case 'hero': return isLoadingHero.value;
+    case 'carousel': return isLoadingCarousel.value;
     case 'our-clients': return isLoadingOurClients.value;
     default: return false;
   }
@@ -244,7 +244,7 @@ onMounted(async () => {
         loadQuotes(),
         loadCategoryCards(),
         loadCatalogs(),
-        loadHero(),
+        loadCarousel(),
         loadOurClients(),
       ]);
 
@@ -261,7 +261,7 @@ onMounted(async () => {
 });
 
 watch(activeTab, (newTab) => {
-  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'hero', 'our-clients'];
+  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel', 'our-clients'];
   const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
   if (tab) {
     router.replace({ query: { tab } });
@@ -277,7 +277,7 @@ const messageConfirmsMap: Record<string, string> = {
   cards: '¿Estás segur@ de que deseas eliminar esta categoría?',
   products: '¿Estás segur@ de que deseas eliminar este producto?',
   catalogs: '¿Estás segur@ de que deseas eliminar este catálogo?',
-  hero: '¿Estás segur@ de que deseas eliminar esta imagen principal?',
+  carousel: '¿Estás segur@ de que deseas eliminar este elemento del carrusel?',
   default: '¿Estás segur@ de que deseas eliminar este elemento?',
   update: '¿Estás segur@ de que deseas actualizar los productos?',
   deleteAllQuotes: '¿Estás segur@ de que deseas eliminar todas las cotizaciones completadas?',
@@ -294,7 +294,7 @@ const titleConfirmsMap: Record<string, string> = {
   default: 'Eliminar Elemento',
   update: 'Actualizar Productos',
   deleteAllQuotes: 'Eliminar Cotizaciones Completadas',
-  hero: 'Eliminar Imagen principal',
+  carousel: 'Eliminar Elemento del Carrusel',
   'our-clients': 'Eliminar Imagen de Cliente'
 }
 
@@ -314,7 +314,7 @@ const activeTabTitle = {
   quotes: 'Cotizaciones',
   cards: 'Categorías',
   catalogs: 'Catálogos',
-  hero: 'Hero',
+  carousel: 'Carrusel',
   'our-clients': 'Nuestros Clientes'
 }
 
@@ -340,7 +340,7 @@ useHead({
 });
 
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs', 'our-clients'].includes(newTab as tabs)) {
+  if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel','our-clients'].includes(newTab as tabs)) {
     activeTab.value = newTab as tabs;
   }
 });
@@ -363,14 +363,12 @@ watch(() => route.query.tab, (newTab) => {
       <AdminHeader
         :active-tab="activeTab"
         :is-admin="isAdmin"
-        :disabled="false"
-        :hero-count="hero?.length || 0"
         @add-menu="handleAddMenuItem"
         @add-user="handleAddUser"
         @add-card="handleAddCard"
         @add-catalog="handleAddCatalog"
         @delete-all-quote="confirmDeleteQuotes"
-        @add-hero="handleAddHero"
+        @add-carousel="handleAddCarousel"
         @add-our-clients="handleAddOurClient"
       />
 
@@ -426,11 +424,11 @@ watch(() => route.query.tab, (newTab) => {
             @delete="id => handleDeleteClick(id, 'catalogs')"
           />
 
-          <HeroSection
-            v-if="activeTab === 'hero'"
-            :items="hero"
-            @edit="handleEditHero"
-            @delete="id => handleDeleteClick(id, 'hero')"
+          <CarouselSection
+            v-if="activeTab === 'carousel'"
+            :items="carousel"
+            @edit="handleEditCarousel"
+            @delete="id => handleDeleteClick(id, 'carousel')"
           />
 
           <OurClientsSection
@@ -491,12 +489,12 @@ watch(() => route.query.tab, (newTab) => {
           @close="handleCloseQuoteDetails"
         />
 
-        <HeroForm
-          :isOpen="showHeroModal"
-          :hero="editingHero"
-          :loading="isLoadingHero"
-          @save="handleSaveHero"
-          @close="showHeroModal = false"
+        <CarouselForm
+          :isOpen="showCarouselModal"
+          :carousel="editingCarousel"
+          :loading="isLoadingCarousel"
+          @save="handleSaveCarousel"
+          @close="showCarouselModal = false"
         />
 
         <OurClientForm

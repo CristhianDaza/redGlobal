@@ -6,8 +6,6 @@ const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => im
 const props = defineProps<{
   activeTab: tabs
   isAdmin: boolean
-  disabled?: boolean
-  heroCount?: number
 }>()
 
 const emit = defineEmits<{
@@ -16,7 +14,7 @@ const emit = defineEmits<{
   (e: 'add-card'): void
   (e: 'add-catalog'): void
   (e: 'delete-all-quote'): void
-  (e: 'add-hero'): void
+  (e: 'add-carousel'): void
   (e: 'add-our-clients'): void
 }>()
 
@@ -27,7 +25,7 @@ const handleEventButton = () => {
     cards: 'add-card',
     catalogs: 'add-catalog',
     quotes: 'delete-all-quote',
-    hero: 'add-hero',
+    carousel: 'add-carousel',
     'our-clients': 'add-our-clients',
   }
   const event = eventMap[props.activeTab]
@@ -41,7 +39,7 @@ const activeTabHeader = computed(():string => {
     cards: 'Categorías',
     quotes: 'Cotizaciones',
     catalogs: 'Catálogos',
-    hero: 'Imagen de Inicio',
+    carousel: 'Imágenes del Carrusel',
     'our-clients': 'Imágenes de Clientes',
   }
   return headers[props.activeTab]
@@ -54,14 +52,10 @@ const activeTabText = computed(():string => {
     cards: 'Agregar una Categoría',
     quotes: 'Limpiar Cotizaciones',
     catalogs: 'Agregar un Catálogo',
-    hero: 'Agregar una Imagen de Inicio',
+    carousel: 'Agregar Imagen al Carrusel',
     'our-clients': 'Agregar Imagen de Cliente',
   }
   return text[props.activeTab]
-})
-
-const disabled = computed(() => {
-  return props.disabled || (props.activeTab === 'hero' && (props.heroCount ?? 0) >= 1)
 })
 </script>
 
@@ -78,7 +72,6 @@ const disabled = computed(() => {
       @click="handleEventButton"
       type="default"
       rounded
-      :disabled="disabled"
     />
   </header>
 </template>

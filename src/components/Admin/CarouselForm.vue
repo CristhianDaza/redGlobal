@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { HeroImage } from '@/types/common.d'
+import type { CarouselItem } from '@/types/common.d'
 import { ref, watch, defineAsyncComponent } from 'vue'
 import { uploadImage } from '@/config'
 import { NotificationService } from "@/components/Notification/NotificationService";
@@ -8,27 +8,30 @@ const RgModal = defineAsyncComponent(/* webpackChunkName: "rgModal" */() => impo
 
 const props = defineProps<{
   isOpen: boolean
-  hero?: HeroImage
+  carousel?: CarouselItem
   loading?: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'save', hero: HeroImage): void
+  (e: 'save', carousel: CarouselItem): void
   (e: 'close'): void
 }>()
 
 const title = ref('')
 const imageFile = ref<File | null>(null)
 const imagePreview = ref('')
+const toRoute = ref('')
 
 watch(() => props.isOpen, (newValue) => {
   if (newValue) {
-    if (props.hero) {
-      title.value = props.hero.title
-      imagePreview.value = props.hero.imageUrl
+    if (props.carousel) {
+      title.value = props.carousel.title
+      imagePreview.value = props.carousel.imageUrl
+      toRoute.value = props.carousel.toRoute
     } else {
       title.value = ''
       imagePreview.value = ''
+      toRoute.value = ''
     }
   }
 })
@@ -43,7 +46,7 @@ const handleImageChange = (event: Event) => {
 
 const handleSave = async () => {
   try {
-    let imageUrl = props.hero?.imageUrl || ''
+    let imageUrl = props.carousel?.imageUrl || ''
 
     if (imageFile.value) {
       const result = await uploadImage(imageFile.value)
@@ -51,15 +54,16 @@ const handleSave = async () => {
     }
 
     emit('save', {
-      id: props.hero?.id || '',
+      id: props.carousel?.id || '',
       title: title.value,
       imageUrl,
+      toRoute: toRoute.value,
     })
   } catch (error) {
-    console.error('Error saving hero:', error)
+    console.error('Error saving carousel:', error)
     NotificationService.push({
-      title: 'Error al guardar la imagen principal',
-      description: 'Hubo un error al guardar la imagen principal. Por favor, inténtalo de nuevo.',
+      title: 'Error al guardar el carousel',
+      description: 'Hubo un problema al guardar el carousel. Por favor, inténtalo de nuevo.',
       type: 'error'
     })
   }
@@ -73,12 +77,12 @@ const handleClose = () => {
 <template>
   <RgModal
     :is-open="isOpen"
-    :title="hero ? 'Editar Imagén de Inicio' : 'Agregar Imagén de Inicio'"
+    :title="carousel ? 'Editar Carousel' : 'Nuevo Carousel'"
     :loading="loading"
     @close="handleClose"
     @confirm="handleSave"
   >
-    <form class="hero-form">
+    <form class="carousel-form">
       <div class="form-group">
         <label for="title">Título</label>
         <input
@@ -86,7 +90,18 @@ const handleClose = () => {
           v-model="title"
           type="text"
           required
-          placeholder="Título de la imagen principal"
+          placeholder="Título del carousel"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="toRoute">Ruta de navegación</label>
+        <input
+          id="toRoute"
+          v-model="toRoute"
+          type="text"
+          required
+          placeholder="URL donde navegará el carousel"
         >
       </div>
 
@@ -97,7 +112,7 @@ const handleClose = () => {
           type="file"
           accept="image/*"
           @change="handleImageChange"
-          :required="!props.hero"
+          :required="!props.carousel"
         >
         <img
           v-if="imagePreview"
@@ -111,7 +126,7 @@ const handleClose = () => {
 </template>
 
 <style scoped>
-.hero-form {
+.carousel-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;

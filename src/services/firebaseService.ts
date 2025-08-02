@@ -1,4 +1,4 @@
-import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard, HeroImage, OurClients } from '@/types/common.d'
+import type { ProductsRedGlobal, MenuItem, User, UserFormData, Quote, CategoryCard, CarouselItem, OurClients } from '@/types/common.d'
 import { Catalog, UserRole } from '@/types/common.d'
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, query, where, writeBatch } from 'firebase/firestore'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
@@ -424,52 +424,53 @@ export const firebaseService = {
     }
   },
 
-  async getHero(): Promise<HeroImage[]> {
+  async getCarousel(): Promise<CarouselItem[]> {
     try {
-      const cardsRef = collection(db, 'hero')
-      const snapshot = await getDocs(cardsRef)
+      const carouselRref = collection(db, 'carousel')
+      const snapshot = await getDocs(carouselRref)
       return snapshot.docs.map(doc => {
         const data = doc.data()
         return {
           id: doc.id,
           title: data.title,
-          imageUrl: data.imageUrl
+          imageUrl: data.imageUrl,
+          toRoute: data.toRoute
         }
       })
     } catch (error) {
-      console.error('Error getting hero:', error)
+      console.error('Error getting carousel:', error)
       return []
     }
   },
 
-  async createHero(hero: HeroImage) {
+  async createCarousel(carousel: CarouselItem) {
     try {
-      const cardsRef = collection(db, 'hero')
-      await addDoc(cardsRef, {
-        ...hero
+      const carouselRref = collection(db, 'carousel')
+      await addDoc(carouselRref, {
+        ...carousel
       })
     } catch (error) {
-      console.error('Error creating hero:', error)
+      console.error('Error creating carousel:', error)
       throw error
     }
   },
 
-  async updateHero(id: string, hero: Partial<HeroImage>): Promise<void> {
+  async updateCarousel(id: string, carousel: Partial<CarouselItem>): Promise<void> {
     try {
-      const cardRef = doc(db, 'hero', id)
-      await updateDoc(cardRef, hero)
+      const carouselRref = doc(db, 'carousel', id)
+      await updateDoc(carouselRref, carousel)
     } catch (error) {
-      console.error('Error updating hero', error)
+      console.error('Error updating carousel', error)
       throw error
     }
   },
 
-  async deleteHero(id: string): Promise<void> {
+  async deleteCarousel(id: string): Promise<void> {
     try {
-      const cardRef = doc(db, 'hero', id)
-      await deleteDoc(cardRef)
+      const carouselRref = doc(db, 'carousel', id)
+      await deleteDoc(carouselRref)
     } catch (error) {
-      console.error('Error deleting hero: ', error)
+      console.error('Error deleting carousel: ', error)
       throw error
     }
   },

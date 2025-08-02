@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { HeroImage } from '@/types/common.d'
+import type { CarouselItem } from '@/types/common.d'
 import { defineAsyncComponent } from "vue";
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
 
-defineProps<{ items: HeroImage[] }>()
+defineProps<{ items: CarouselItem[] }>()
 
 defineEmits<{
-  (e: 'edit', item: HeroImage): void
+  (e: 'edit', item: CarouselItem): void
   (e: 'delete', id: string): void
 }>()
 </script>
@@ -20,7 +20,7 @@ defineEmits<{
           image
         </span>
         <div class="stat-info">
-          <h3>Imagen de Inicio
+          <h3>Imágenes en el carrusel
           </h3>
           <p>{{ items.length }}</p>
         </div>
@@ -32,6 +32,7 @@ defineEmits<{
         <thead>
           <tr>
             <th>Nombre</th>
+            <th>Ver Ruta</th>
             <th>Imagen</th>
             <th>Acciones</th>
           </tr>
@@ -39,6 +40,20 @@ defineEmits<{
         <tbody>
           <tr v-for="item in items" :key="item.id">
             <td>{{ item.title }}</td>
+            <td>
+              <a :href="item.toRoute" target="_blank">
+                <RgButton
+                  icon="external-link"
+                  type="icon"
+                  outlined
+                  title="Ver Ruta"
+                  :customStyle="{
+                    backgroundColor: '#335d80',
+                    color: '#ebf8ff',
+                  }"
+                />
+              </a>
+            </td>
             <td>
               <img :src="item.imageUrl" alt="Vista previa" class="card-thumbnail">
             </td>
