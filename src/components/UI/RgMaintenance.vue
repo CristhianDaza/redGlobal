@@ -24,6 +24,7 @@
   align-items: center;
   padding: 2rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  z-index: 1000;
 }
 
 .maintenance-box {

@@ -88,6 +88,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  <RgModalApi />
   <RgLoaderGlobal v-if="loaderStore.isLoading || authStore.loading || maintenanceStore.isLoading" />
   <RgMaintenance v-else-if="maintenanceStore.isMaintenanceMode" />
   <div v-else>
@@ -97,7 +98,6 @@ onMounted(async () => {
       <RgFooter />
       <RgScrollToTop />
       <NotificationContainer />
-      <RgModalApi />
       <RgWhatsApp />
     </div>
   </div>

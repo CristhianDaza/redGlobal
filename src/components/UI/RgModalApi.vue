@@ -27,7 +27,7 @@ const allApisCompleted = computed(() => {
             <template v-else>
               <span class="material-icons success" v-if="storeProducts.isSuccessApiPromos">check_circle</span>
               <span class="material-icons error" v-else>error</span>
-            </template>  
+            </template>
           </span>
         </li>
         <li>
@@ -90,7 +90,7 @@ const allApisCompleted = computed(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .modal {
