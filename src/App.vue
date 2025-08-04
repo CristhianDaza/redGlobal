@@ -38,68 +38,52 @@ const updateCustomColors = () => {
 
 
 onMounted(async () => {
-  await maintenanceStore.getMaintenanceMode();
-  await colorStore.getColor();
   loaderStore.showLoader();
 
+  await maintenanceStore.getMaintenanceMode();
   if (maintenanceStore.isMaintenanceMode) {
     loaderStore.hideLoader();
     return;
   }
-  let executed = false;
+  await colorStore.getColor();
 
-  const waitForAuth = () =>
-    new Promise<void>((resolve) => {
-      let stop: () => void;
-      stop = watch(
-        () => authStore.loading,
-        (loading) => {
-          if (loading === false) {
-            stop?.();
-            resolve();
-          }
-        },
-        { immediate: true }
-      );
-    });
+  await new Promise<void>((resolve) => {
+    if (!authStore.loading) {
+      resolve();
+      return;
+    }
 
-  await waitForAuth();
+    const stop = watch(
+      () => authStore.loading,
+      (loading) => {
+        if (loading === false) {
+          stop();
+          resolve();
+        }
+      },
+      { immediate: true }
+    );
+  });
 
   if (authStore.isAuthenticated()) {
     await userStore.getUsers();
-    updateCustomColors();
-  } else {
-    updateCustomColors();
   }
+
+  updateCustomColors();
 
   if (!menuStore.menu || menuStore.menu.length === 0) {
     await menuStore.getMenu();
   }
 
-  let stopWatch: (() => void) | undefined;
-  stopWatch = watch(
-    () => authStore.currenLoggingUser,
-    async (currentUser) => {
-      if (currentUser && !executed) {
-        executed = true;
+  const currentUser = authStore.currenLoggingUser;
+  const isAdmin = currentUser?.role === 'admin';
+  const productsEmpty = !storeProducts.products?.length;
 
-        const isAdmin = currentUser.role === 'admin';
-        const productsEmpty = !storeProducts.products?.length;
+  if (isAdmin || productsEmpty) {
+    await storeProducts.getAllProducts(isAdmin);
+  }
 
-        if (isAdmin || productsEmpty) {
-          loaderStore.hideLoader();
-          await storeProducts.getAllProducts(isAdmin);
-        }
-
-        loaderStore.hideLoader();
-        stopWatch?.();
-      } else if (!currentUser) {
-        loaderStore.hideLoader();
-        stopWatch?.();
-      }
-    },
-    { immediate: true }
-  );
+  loaderStore.hideLoader();
 });
 </script>
 
