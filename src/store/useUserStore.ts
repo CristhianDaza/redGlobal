@@ -1,8 +1,8 @@
-import type {User, UserFormData} from '@/types/common.d'
-import {defineStore} from 'pinia'
-import {ref} from 'vue'
-import {NotificationService} from '@/components/Notification/NotificationService';
-import {firebaseService} from '@/services'
+import type { User, UserFormData } from '@/types/common.d'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import { NotificationService } from '@/components/Notification/NotificationService';
+import { usersFirebase } from '@/services/firebase'
 
 export const useUserStore = defineStore('user', () => {
   const users = ref<User[]>([])
@@ -12,7 +12,7 @@ export const useUserStore = defineStore('user', () => {
   const getUsers = async () => {
     try {
       isLoadingUsers.value = true
-      users.value = await firebaseService.getUsers()
+      users.value = await usersFirebase.getUsers()
       lastUpdateUsers.value = new Date().toISOString()
     } catch (error) {
       console.error('Error getting users:', error)
@@ -28,7 +28,7 @@ export const useUserStore = defineStore('user', () => {
 
   const createUser = async (user: Omit<UserFormData, 'logo'> & { id: string, logo?: string }) => {
     try {
-      await firebaseService.createUser(user)
+      await usersFirebase.createUser(user)
       await getUsers()
       NotificationService.push({
         title: 'Usuario creado',
@@ -47,7 +47,7 @@ export const useUserStore = defineStore('user', () => {
 
   const updateUser = async (id: string, user: Partial<User>) => {
     try {
-      await firebaseService.updateUser(id, user)
+      await usersFirebase.updateUser(id, user)
       await getUsers()
       NotificationService.push({
         title: 'Usuario actualizado',
@@ -66,7 +66,7 @@ export const useUserStore = defineStore('user', () => {
 
   const deleteUser = async (id: string) => {
     try {
-      await firebaseService.deleteUser(id)
+      await usersFirebase.deleteUser(id)
       await getUsers()
       NotificationService.push({
         title: 'Usuario eliminado',

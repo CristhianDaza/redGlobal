@@ -1,7 +1,7 @@
 import type { StateGlobal } from '@/types/config.d'
 import type { ProductsRedGlobal } from '@/types/common.d'
 import { defineStore } from 'pinia'
-import { firebaseService } from '@/services'
+import { productsFirebase } from '@/services/firebase'
 import { normalizeString } from '@/utils'
 import { useProductsCataProm, useProductsMarpico, useProductsPromos, useProductStockSur } from '@/composable'
 import { NotificationService } from '@/components/Notification/NotificationService';
@@ -28,8 +28,8 @@ export const useProductsStore = defineStore('products', {
         if (isAdminUser) {
           await this.callServices()
         } else {
-          this.products = await firebaseService.getAllProducts()
-          this.lastUpdateProducts = await firebaseService.getLastUpdate()
+          this.products = await productsFirebase.getAllProducts()
+          this.lastUpdateProducts = await productsFirebase.getLastUpdate()
         }
       } catch (error) {
         console.error('Error in getAllProducts:', error)
@@ -63,10 +63,10 @@ export const useProductsStore = defineStore('products', {
         isSuccessProductsCataPromComposable
       } = useProductsCataProm()
 
-      const shouldUpdate = await firebaseService.shouldUpdate()
-      this.lastUpdateProducts = await firebaseService.getLastUpdate()
+      const shouldUpdate = await productsFirebase.shouldUpdate()
+      this.lastUpdateProducts = await productsFirebase.getLastUpdate()
       if (!shouldUpdate && !forceUpdate) {
-        this.products = await firebaseService.getAllProducts()
+        this.products = await productsFirebase.getAllProducts()
         return;
       }
 
@@ -119,7 +119,7 @@ export const useProductsStore = defineStore('products', {
       this.isLoadingSaveProducts = true;
       try {
         if (allProducts.length > 0) {
-          await firebaseService.saveProducts(allProducts)
+          await productsFirebase.saveProducts(allProducts)
           this.$patch({ products: allProducts })
           this.$patch({ lastUpdateProducts: new Date().toISOString() })
         } else {

@@ -32,7 +32,7 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
 </script>
 
 <template>
-  <div v-if="props.images.length" class="clients-wrapper">
+  <div v-if="props?.images?.length >= 3" class="clients-wrapper">
     <h2 class="clients-title">
       Nuestros <span>Clientes</span>
     </h2>
@@ -49,7 +49,7 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
       >
         <template
           v-for="(img) in rowImages"
-          :key="'main-' + index + '-' + idx + '-' + img.id"
+          :key="img.id"
         >
           <img
             :src="img.imageUrl"
@@ -60,7 +60,7 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
         </template>
         <template
           v-for="(img) in rowImages"
-          :key="'clone-' + index + '-' + idx + '-' + img.id"
+          :key="img.id"
         >
           <img
             :src="img.imageUrl"

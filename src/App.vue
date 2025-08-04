@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, defineAsyncComponent, watch } from 'vue';
-import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore, useMaintenanceStore } from '@/store';
+import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore, useMaintenanceStore, useColorStore } from '@/store';
 
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
@@ -17,76 +17,73 @@ const authStore = useAuthStore();
 const userStore = useUserStore();
 const loaderStore = useLoaderStore();
 const maintenanceStore = useMaintenanceStore();
+const colorStore = useColorStore();
 
 const updateCustomColors = () => {
+  const fallbackColor = '#ff4444';
+  const storeColor = colorStore.color?.[0]?.hex || fallbackColor;
+
   if (authStore.isAuthenticated()) {
     const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
-    if (currentUser) {
-      document.documentElement.style.setProperty('--primary-color', currentUser.primaryColor || '#ff4444');
-      document.documentElement.style.setProperty('--secondary-color', currentUser.secondaryColor || '#666');
-    }
+
+    const userColor = currentUser?.primaryColor || storeColor;
+
+    document.documentElement.style.setProperty('--primary-color', userColor);
+    document.documentElement.style.setProperty('--secondary-color', currentUser?.secondaryColor || '#666');
   } else {
-    document.documentElement.style.setProperty('--primary-color', '#ff4444');
+    document.documentElement.style.setProperty('--primary-color', storeColor);
     document.documentElement.style.setProperty('--secondary-color', '#666');
   }
 };
 
+
 onMounted(async () => {
-  await maintenanceStore.getMaintenanceMode();
   loaderStore.showLoader();
-  let executed = false;
 
-  const waitForAuth = () =>
-    new Promise<void>((resolve) => {
-      let stop: () => void;
-      stop = watch(
-        () => authStore.loading,
-        (loading) => {
-          if (loading === false) {
-            stop?.();
-            resolve();
-          }
-        },
-        { immediate: true }
-      );
-    });
+  await maintenanceStore.getMaintenanceMode();
+  if (maintenanceStore.isMaintenanceMode) {
+    loaderStore.hideLoader();
+    return;
+  }
+  await colorStore.getColor();
 
-  await waitForAuth();
+  await new Promise<void>((resolve) => {
+    if (!authStore.loading) {
+      resolve();
+      return;
+    }
+
+    const stop = watch(
+      () => authStore.loading,
+      (loading) => {
+        if (loading === false) {
+          stop();
+          resolve();
+        }
+      },
+      { immediate: true }
+    );
+  });
 
   if (authStore.isAuthenticated()) {
     await userStore.getUsers();
-    updateCustomColors();
-  } else {
-    updateCustomColors();
   }
+
+  updateCustomColors();
 
   if (!menuStore.menu || menuStore.menu.length === 0) {
     await menuStore.getMenu();
   }
 
-  const stopWatch = watch(
-    () => authStore.currenLoggingUser,
-    async (currentUser) => {
-      if (currentUser && !executed) {
-        executed = true;
+  const currentUser = authStore.currenLoggingUser;
+  const isAdmin = currentUser?.role === 'admin';
+  const productsEmpty = !storeProducts.products?.length;
 
-        const isAdmin = currentUser.role === 'admin';
-        const productsEmpty = !storeProducts.products?.length;
+  if (isAdmin || productsEmpty) {
+    await storeProducts.getAllProducts(isAdmin);
+  }
 
-        if (isAdmin || productsEmpty) {
-          loaderStore.hideLoader();
-          await storeProducts.getAllProducts(isAdmin);
-        }
-
-        loaderStore.hideLoader();
-        stopWatch();
-      } else if (!currentUser) {
-        loaderStore.hideLoader();
-        stopWatch();
-      }
-    },
-    { immediate: true }
-  );
+  loaderStore.hideLoader();
 });
 </script>
 

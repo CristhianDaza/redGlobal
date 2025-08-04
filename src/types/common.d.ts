@@ -208,10 +208,11 @@ export interface ButtonProps {
   full?: boolean;
 }
 
-export interface HeroImage {
+export interface CarouselItem {
   id: string;
   title: string;
   imageUrl: string;
+  toRoute: string;
 }
 
 export interface OurClients {
@@ -220,4 +221,9 @@ export interface OurClients {
   imageUrl: string;
 }
 
-export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'hero' | 'our-clients';
+export interface ColorItem {
+  id: string;
+  hex: string;
+}
+
+export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color';

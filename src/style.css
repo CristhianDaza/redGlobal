@@ -202,3 +202,16 @@
     padding: 0.25rem 0.5rem;
     margin-left: 0.5rem;
 }
+
+.carousel .vs-carousel__arrows {
+    min-height: calc(100% - 6px);
+    opacity: 0.5;
+    background: var(--primary-color);
+    color: black;
+    margin: 0;
+}
+
+.vs-carousel__arrows:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

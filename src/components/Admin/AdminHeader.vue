@@ -6,8 +6,8 @@ const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => im
 const props = defineProps<{
   activeTab: tabs
   isAdmin: boolean
-  disabled?: boolean
-  heroCount?: number
+  isDisabled?: boolean
+  colorCount?: number
 }>()
 
 const emit = defineEmits<{
@@ -16,8 +16,9 @@ const emit = defineEmits<{
   (e: 'add-card'): void
   (e: 'add-catalog'): void
   (e: 'delete-all-quote'): void
-  (e: 'add-hero'): void
+  (e: 'add-carousel'): void
   (e: 'add-our-clients'): void
+  (e: 'add-color'): void
 }>()
 
 const handleEventButton = () => {
@@ -27,8 +28,9 @@ const handleEventButton = () => {
     cards: 'add-card',
     catalogs: 'add-catalog',
     quotes: 'delete-all-quote',
-    hero: 'add-hero',
+    carousel: 'add-carousel',
     'our-clients': 'add-our-clients',
+    color: 'add-color',
   }
   const event = eventMap[props.activeTab]
   if (event) emit(event as any)
@@ -41,8 +43,9 @@ const activeTabHeader = computed(():string => {
     cards: 'Categorías',
     quotes: 'Cotizaciones',
     catalogs: 'Catálogos',
-    hero: 'Imagen de Inicio',
+    carousel: 'Imágenes del Carrusel',
     'our-clients': 'Imágenes de Clientes',
+    color: 'Color Principal',
   }
   return headers[props.activeTab]
 })
@@ -54,14 +57,15 @@ const activeTabText = computed(():string => {
     cards: 'Agregar una Categoría',
     quotes: 'Limpiar Cotizaciones',
     catalogs: 'Agregar un Catálogo',
-    hero: 'Agregar una Imagen de Inicio',
+    carousel: 'Agregar Imagen al Carrusel',
     'our-clients': 'Agregar Imagen de Cliente',
+    color: 'Crear Color Principal',
   }
   return text[props.activeTab]
 })
 
 const disabled = computed(() => {
-  return props.disabled || (props.activeTab === 'hero' && (props.heroCount ?? 0) >= 1)
+  return props.isDisabled || (props.activeTab === 'color' && (props.colorCount ?? 0) >= 1)
 })
 </script>
 

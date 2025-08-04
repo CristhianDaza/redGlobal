@@ -1,7 +1,7 @@
 import type { CategoryCard, CategoryCardCreate } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { firebaseService } from '@/services'
+import { categoriesFirebase } from '@/services/firebase'
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useCategoryStore = defineStore('category', () => {
@@ -11,7 +11,7 @@ export const useCategoryStore = defineStore('category', () => {
   const getCategoryCards = async () => {
     try {
       isLoadingCards.value = true
-      categoryCards.value = await firebaseService.getCategoryCards()
+      categoryCards.value = await categoriesFirebase.getCategoryCards()
     } catch (error) {
       console.error('Error getting category cards:', error)
       NotificationService.push({
@@ -26,7 +26,7 @@ export const useCategoryStore = defineStore('category', () => {
 
   const createCategoryCard = async (card: CategoryCardCreate) => {
     try {
-      await firebaseService.createCategoryCard(card)
+      await categoriesFirebase.createCategoryCard(card)
       await getCategoryCards()
       NotificationService.push({
         title: 'Categoría creada',
@@ -45,7 +45,7 @@ export const useCategoryStore = defineStore('category', () => {
 
   const updateCategoryCard = async (id: string, card: Partial<CategoryCard>) => {
     try {
-      await firebaseService.updateCategoryCard(id, card)
+      await categoriesFirebase.updateCategoryCard(id, card)
       await getCategoryCards()
       NotificationService.push({
         title: 'Categoría actualizada',
@@ -64,7 +64,7 @@ export const useCategoryStore = defineStore('category', () => {
 
   const deleteCategoryCard = async (id: string) => {
     try {
-      await firebaseService.deleteCategoryCard(id)
+      await categoriesFirebase.deleteCategoryCard(id)
       await getCategoryCards()
       NotificationService.push({
         title: 'Categoría eliminada',

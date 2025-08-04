@@ -1,65 +1,44 @@
 <script setup lang="ts">
-import type { HeroImage } from '@/types/common.d'
+import type { ColorItem } from '@/types/common.d'
 import { ref, watch, defineAsyncComponent } from 'vue'
-import { uploadImage } from '@/config'
 import { NotificationService } from "@/components/Notification/NotificationService";
 
 const RgModal = defineAsyncComponent(/* webpackChunkName: "rgModal" */() => import('@/components/UI/RgModal.vue'))
 
 const props = defineProps<{
   isOpen: boolean
-  hero?: HeroImage
+  color?: ColorItem
   loading?: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'save', hero: HeroImage): void
+  (e: 'save', color: ColorItem): void
   (e: 'close'): void
 }>()
 
-const title = ref('')
-const imageFile = ref<File | null>(null)
-const imagePreview = ref('')
+const hex = ref('#333333')
 
 watch(() => props.isOpen, (newValue) => {
   if (newValue) {
-    if (props.hero) {
-      title.value = props.hero.title
-      imagePreview.value = props.hero.imageUrl
+    if (props.color) {
+      hex.value = props.color.hex
     } else {
-      title.value = ''
-      imagePreview.value = ''
+      hex.value = ''
     }
   }
 })
 
-const handleImageChange = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  if (input.files && input.files[0]) {
-    imageFile.value = input.files[0]
-    imagePreview.value = URL.createObjectURL(input.files[0])
-  }
-}
-
 const handleSave = async () => {
   try {
-    let imageUrl = props.hero?.imageUrl || ''
-
-    if (imageFile.value) {
-      const result = await uploadImage(imageFile.value)
-      imageUrl = result.secure_url
-    }
-
     emit('save', {
-      id: props.hero?.id || '',
-      title: title.value,
-      imageUrl,
+      id: props.color?.id || '',
+      hex: hex.value,
     })
   } catch (error) {
-    console.error('Error saving hero:', error)
+    console.error('Error to save color:', error)
     NotificationService.push({
-      title: 'Error al guardar la imagen principal',
-      description: 'Hubo un error al guardar la imagen principal. Por favor, inténtalo de nuevo.',
+      title: 'Error al guardar el color principal',
+      description: 'Hubo un error al guardar el color principal. Por favor, inténtalo de nuevo.',
       type: 'error'
     })
   }
@@ -73,45 +52,29 @@ const handleClose = () => {
 <template>
   <RgModal
     :is-open="isOpen"
-    :title="hero ? 'Editar Imagén de Inicio' : 'Agregar Imagén de Inicio'"
+    :title="color ? 'Editar Color Principal' : 'Crear Color Principal'"
     :loading="loading"
     @close="handleClose"
     @confirm="handleSave"
   >
-    <form class="hero-form">
+    <form class="our-client-form">
       <div class="form-group">
-        <label for="title">Título</label>
+        <label for="color">Selecciona un color</label>
         <input
-          id="title"
-          v-model="title"
-          type="text"
+          id="color"
+          v-model="hex"
+          type="color"
           required
-          placeholder="Título de la imagen principal"
         >
-      </div>
-
-      <div class="form-group">
-        <label for="image">Imagen</label>
-        <input
-          id="image"
-          type="file"
-          accept="image/*"
-          @change="handleImageChange"
-          :required="!props.hero"
-        >
-        <img
-          v-if="imagePreview"
-          :src="imagePreview"
-          alt="Vista previa"
-          class="image-preview"
-        >
+        <p style="margin-top: 8px;">Color seleccionado: {{ hex }}</p>
       </div>
     </form>
+
   </RgModal>
 </template>
 
 <style scoped>
-.hero-form {
+.our-client-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;

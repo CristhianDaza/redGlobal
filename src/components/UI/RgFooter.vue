@@ -218,7 +218,7 @@ const services = [
   font-size: 0.9rem;
 
   a {
-    color: #333;
+    color: var(--primary-color);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s ease;
