@@ -1,20 +1,27 @@
 <script setup lang="ts">
-interface Props {
-  category: string;
-  subcategories: string[];
-}
+defineProps<{
+  category: string
+  subcategories: string[]
+}>()
 
-const props = defineProps<Props>();
-const emit = defineEmits(['select', 'select-category']);
+defineEmits<{
+  (e: 'select', subcategory: string): void
+  (e: 'select-category', category: string): void
+}>()
 </script>
 
 <template>
-  <div class="category-container">
-    <h3 class="category-title" @click="emit('select-category', props.category)">{{ props.category }}</h3>
-    <ul class="subcategories-list">
-      <li v-for="sub in props.subcategories"
+  <div class="category-card">
+    <div class="category-title" @click="$emit('select-category', category)">
+      {{ category }}
+    </div>
+    <ul class="subcategory-list">
+      <li
+        v-for="sub in subcategories"
         :key="sub"
-        @click="emit('select', sub)">
+        class="subcategory"
+        @click="$emit('select', sub)"
+      >
         {{ sub }}
       </li>
     </ul>
@@ -22,51 +29,43 @@ const emit = defineEmits(['select', 'select-category']);
 </template>
 
 <style scoped>
-.category-container {
+.category-card {
+  background: #fff;
+  border-radius: 14px;
   padding: 1.5rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-bottom: 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  border-left: 6px solid var(--primary-color);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
 }
 
 .category-title {
-  margin: 0 0 1rem 0;
-  font-size: 1.2rem;
-  color: #333;
+  font-size: 1.3rem;
   font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.8rem;
 }
 
-.subcategories-list {
+.subcategory-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.subcategories-list li {
-  padding: 0.5rem 0;
-  cursor: pointer;
-  color: #666;
-  transition: color 0.2s;
-}
-
-.subcategories-list li:hover, .category-title:hover {
-  color: #1a73e8;
+.subcategory {
+  font-size: 0.95rem;
+  padding: 4px 0;
+  color: #555;
+  transition: color 0.2s ease;
   cursor: pointer;
 }
 
-@media (max-width: 768px) {
-  .category-container {
-    padding: 1rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .category-title {
-    font-size: 1.1rem;
-  }
-
-  .subcategories-list li {
-    font-size: 0.9rem;
-  }
+.subcategory:hover {
+  color: var(--primary-color);
 }
 </style>
