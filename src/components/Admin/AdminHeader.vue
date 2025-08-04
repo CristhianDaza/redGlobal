@@ -6,6 +6,8 @@ const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => im
 const props = defineProps<{
   activeTab: tabs
   isAdmin: boolean
+  isDisabled?: boolean
+  colorCount?: number
 }>()
 
 const emit = defineEmits<{
@@ -16,6 +18,7 @@ const emit = defineEmits<{
   (e: 'delete-all-quote'): void
   (e: 'add-carousel'): void
   (e: 'add-our-clients'): void
+  (e: 'add-color'): void
 }>()
 
 const handleEventButton = () => {
@@ -27,6 +30,7 @@ const handleEventButton = () => {
     quotes: 'delete-all-quote',
     carousel: 'add-carousel',
     'our-clients': 'add-our-clients',
+    color: 'add-color',
   }
   const event = eventMap[props.activeTab]
   if (event) emit(event as any)
@@ -41,6 +45,7 @@ const activeTabHeader = computed(():string => {
     catalogs: 'Catálogos',
     carousel: 'Imágenes del Carrusel',
     'our-clients': 'Imágenes de Clientes',
+    color: 'Color Principal',
   }
   return headers[props.activeTab]
 })
@@ -54,8 +59,13 @@ const activeTabText = computed(():string => {
     catalogs: 'Agregar un Catálogo',
     carousel: 'Agregar Imagen al Carrusel',
     'our-clients': 'Agregar Imagen de Cliente',
+    color: 'Crear Color Principal',
   }
   return text[props.activeTab]
+})
+
+const disabled = computed(() => {
+  return props.isDisabled || (props.activeTab === 'color' && (props.colorCount ?? 0) >= 1)
 })
 </script>
 
@@ -72,6 +82,7 @@ const activeTabText = computed(():string => {
       @click="handleEventButton"
       type="default"
       rounded
+      :disabled="disabled"
     />
   </header>
 </template>

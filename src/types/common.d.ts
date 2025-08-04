@@ -221,4 +221,9 @@ export interface OurClients {
   imageUrl: string;
 }
 
-export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients';
+export interface ColorItem {
+  id: string;
+  hex: string;
+}
+
+export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color';

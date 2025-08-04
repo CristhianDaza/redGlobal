@@ -2,7 +2,7 @@
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
-import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useCarouselAdmin, useOurClientAdmin } from '@/composable';
+import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useCarouselAdmin, useOurClientAdmin, useColorAdmin } from '@/composable';
 import { tabs, UserFormData, User } from "@/types/common";
 import { useHead } from '@vueuse/head';
 
@@ -13,6 +13,7 @@ const CategoryCardForm = defineAsyncComponent(/* webpackChunkName: "categoryCard
 const CatalogForm = defineAsyncComponent(/* webpackChunkName: "catalogForm" */() => import('@/components/Admin/CatalogForm.vue'));
 const CarouselForm = defineAsyncComponent(/* webpackChunkName: "carouselForm" */() => import('@/components/Admin/CarouselForm.vue'));
 const OurClientForm = defineAsyncComponent(/* webpackChunkName: "ourClientForm" */() => import('@/components/Admin/OurClientForm.vue'));
+const ColorForm = defineAsyncComponent(/* webpackChunkName: "colorForm" */() => import('@/components/Admin/ColorForm.vue'));
 
 const AdminSidebar = defineAsyncComponent(/* webpackChunkName: "adminSidebar" */() => import('@/components/Admin/AdminSidebar.vue'));
 const MenuSection = defineAsyncComponent(/* webpackChunkName: "menuSection" */() => import('@/components/Admin/sections/MenuSection.vue'));
@@ -24,6 +25,7 @@ const QuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "quoteDetail
 const CatalogsSection = defineAsyncComponent(/* webpackChunkName: "catalogsSection" */() => import('@/components/Admin/sections/CatalogsSection.vue'));
 const CarouselSection = defineAsyncComponent(/* webpackChunkName: "carouselSection" */() => import('@/components/Admin/sections/CarouselSection.vue'));
 const OurClientsSection = defineAsyncComponent(/* webpackChunkName: "ourClientsSection" */() => import('@/components/Admin/sections/OurClientsSection.vue'));
+const ColorSection = defineAsyncComponent(/* webpackChunkName: "colorSection" */() => import('@/components/Admin/sections/ColorSection.vue'));
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -143,6 +145,18 @@ const {
   deleteOurClient
 } = useOurClientAdmin();
 
+const {
+  isLoadingColor,
+  showColorModal,
+  editingColor,
+  color,
+  loadColor,
+  handleAddColor,
+  handleEditColor,
+  handleSaveColor,
+  deleteColor
+} = useColorAdmin();
+
 const showConfirmModal = ref(false);
 const itemToConfirmModal = ref<{ id: string; type: string } | undefined>(undefined);
 
@@ -185,6 +199,9 @@ const handleConfirmModal = async () => {
         break;
       case 'our-clients':
         await deleteOurClient(itemToConfirmModal.value.id);
+        break;
+      case 'color':
+        await deleteColor(itemToConfirmModal.value.id);
         break;
       default:
         await deleteQuote(itemToConfirmModal.value.id);
@@ -231,6 +248,7 @@ const loadingData = computed(() => {
     case 'catalogs': return isLoadingCatalog.value;
     case 'carousel': return isLoadingCarousel.value;
     case 'our-clients': return isLoadingOurClients.value;
+    case 'color': return isLoadingColor.value;
     default: return false;
   }
 });
@@ -246,6 +264,7 @@ onMounted(async () => {
         loadCatalogs(),
         loadCarousel(),
         loadOurClients(),
+        loadColor(),
       ]);
 
       if (route.query.quoteId) {
@@ -261,7 +280,7 @@ onMounted(async () => {
 });
 
 watch(activeTab, (newTab) => {
-  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel', 'our-clients'];
+  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color'];
   const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
   if (tab) {
     router.replace({ query: { tab } });
@@ -281,7 +300,8 @@ const messageConfirmsMap: Record<string, string> = {
   default: '¿Estás segur@ de que deseas eliminar este elemento?',
   update: '¿Estás segur@ de que deseas actualizar los productos?',
   deleteAllQuotes: '¿Estás segur@ de que deseas eliminar todas las cotizaciones completadas?',
-  'our-clients': '¿Estás segur@ de que deseas eliminar esta imagen de cliente?'
+  'our-clients': '¿Estás segur@ de que deseas eliminar esta imagen de cliente?',
+  color: '¿Estás segur@ de que deseas eliminar este color principal?',
 }
 
 const titleConfirmsMap: Record<string, string> = {
@@ -295,7 +315,8 @@ const titleConfirmsMap: Record<string, string> = {
   update: 'Actualizar Productos',
   deleteAllQuotes: 'Eliminar Cotizaciones Completadas',
   carousel: 'Eliminar Elemento del Carrusel',
-  'our-clients': 'Eliminar Imagen de Cliente'
+  'our-clients': 'Eliminar Imagen de Cliente',
+  color: 'Eliminar Color Principal',
 }
 
 const messageConfirm = computed(() => {
@@ -315,7 +336,8 @@ const activeTabTitle = {
   cards: 'Categorías',
   catalogs: 'Catálogos',
   carousel: 'Carrusel',
-  'our-clients': 'Nuestros Clientes'
+  'our-clients': 'Nuestros Clientes',
+  color: 'Color Principal',
 }
 
 const handleUpdateProducts = () => {
@@ -340,7 +362,7 @@ useHead({
 });
 
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel','our-clients'].includes(newTab as tabs)) {
+  if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color'].includes(newTab as tabs)) {
     activeTab.value = newTab as tabs;
   }
 });
@@ -361,6 +383,7 @@ watch(() => route.query.tab, (newTab) => {
 
     <main class="admin-main">
       <AdminHeader
+        :colorCount="color.length"
         :active-tab="activeTab"
         :is-admin="isAdmin"
         @add-menu="handleAddMenuItem"
@@ -370,6 +393,7 @@ watch(() => route.query.tab, (newTab) => {
         @delete-all-quote="confirmDeleteQuotes"
         @add-carousel="handleAddCarousel"
         @add-our-clients="handleAddOurClient"
+        @add-color="handleAddColor"
       />
 
       <div class="main-content">
@@ -437,6 +461,13 @@ watch(() => route.query.tab, (newTab) => {
             @edit="handleEditOurClient"
             @delete="id => handleDeleteClick(id, 'our-clients')"
           />
+
+          <ColorSection
+            v-if="activeTab === 'color'"
+            :items="color"
+            @edit="handleEditColor"
+            @delete="id => handleDeleteClick(id, 'color')"
+          />
         </div>
 
         <MenuItemForm
@@ -503,6 +534,14 @@ watch(() => route.query.tab, (newTab) => {
           :loading="isLoadingOurClients"
           @save="handleSaveOurClient"
           @close="showOurClientsModal = false"
+        />
+
+        <ColorForm
+          :isOpen="showColorModal"
+          :color="editingColor"
+          :loading="isLoadingColor"
+          @save="handleSaveColor"
+          @close="showColorModal = false"
         />
       </div>
     </main>

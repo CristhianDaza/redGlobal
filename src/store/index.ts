@@ -9,3 +9,4 @@ export { useLoaderStore } from '@/store/useLoaderStore.ts';
 export { useCarouselStore } from '@/store/useCarouselStore.ts';
 export { useMaintenanceStore } from '@/store/useMaintenanceStore.ts';
 export { useOurClientsStore } from '@/store/useOurClientsStore.ts';
+export { useColorStore } from '@/store/useColorStore.ts';

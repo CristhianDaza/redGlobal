@@ -78,6 +78,14 @@ const currentUserName = computed(() => {
         <span>Nuestros Clientes</span>
       </button>
       <button
+        v-if="isAdmin"
+        :class="['nav-item', { active: activeTab === 'color' }]"
+        @click="$emit('tab-change', 'color')"
+      >
+        <span class="material-icons">color_lens</span>
+        <span>Color Principal</span>
+      </button>
+      <button
         :class="['nav-item', { active: activeTab === 'quotes' }]"
         @click="$emit('tab-change', 'quotes')"
       >

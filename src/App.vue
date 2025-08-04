@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, defineAsyncComponent, watch } from 'vue';
-import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore, useMaintenanceStore } from '@/store';
+import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore, useMaintenanceStore, useColorStore } from '@/store';
 
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
@@ -17,23 +17,29 @@ const authStore = useAuthStore();
 const userStore = useUserStore();
 const loaderStore = useLoaderStore();
 const maintenanceStore = useMaintenanceStore();
+const colorStore = useColorStore();
 
 const updateCustomColors = () => {
+  const fallbackColor = '#ff4444';
+  const storeColor = colorStore.color?.[0]?.hex || fallbackColor;
+
   if (authStore.isAuthenticated()) {
     const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
-    if (currentUser) {
-      document.documentElement.style.setProperty('--primary-color', currentUser.primaryColor || '#ff4444');
-      document.documentElement.style.setProperty('--secondary-color', currentUser.secondaryColor || '#666');
-    }
+
+    const userColor = currentUser?.primaryColor || storeColor;
+
+    document.documentElement.style.setProperty('--primary-color', userColor);
+    document.documentElement.style.setProperty('--secondary-color', currentUser?.secondaryColor || '#666');
   } else {
-    document.documentElement.style.setProperty('--primary-color', '#ff4444');
+    document.documentElement.style.setProperty('--primary-color', storeColor);
     document.documentElement.style.setProperty('--secondary-color', '#666');
   }
 };
 
+
 onMounted(async () => {
   await maintenanceStore.getMaintenanceMode();
-
+  await colorStore.getColor();
   loaderStore.showLoader();
 
   if (maintenanceStore.isMaintenanceMode) {
