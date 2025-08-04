@@ -70,7 +70,8 @@ onMounted(async () => {
     await menuStore.getMenu();
   }
 
-  const stopWatch = watch(
+  let stopWatch: (() => void) | undefined;
+  stopWatch = watch(
     () => authStore.currenLoggingUser,
     async (currentUser) => {
       if (currentUser && !executed) {
@@ -85,10 +86,10 @@ onMounted(async () => {
         }
 
         loaderStore.hideLoader();
-        stopWatch();
+        stopWatch?.();
       } else if (!currentUser) {
         loaderStore.hideLoader();
-        stopWatch();
+        stopWatch?.();
       }
     },
     { immediate: true }
