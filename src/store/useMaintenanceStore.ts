@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { firebaseService } from '@/services'
+import { maintenanceFirebase } from '@/services/firebase'
 
 export const useMaintenanceStore = defineStore('maintenance', () => {
   const isMaintenanceMode = ref(false);
@@ -9,7 +9,7 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
   const getMaintenanceMode = async () => {
     isLoading.value = true;
     try {
-      isMaintenanceMode.value = await firebaseService.getMaintenanceMode();
+      isMaintenanceMode.value = await maintenanceFirebase.getMaintenanceMode();
     } catch (error) {
       console.error('Error getting maintenance mode:', error);
     } finally {

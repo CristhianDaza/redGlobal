@@ -3,7 +3,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { QuoteStatus } from '@/types/common.d'
 import { useAuthStore, useUserStore } from '@/store'
-import { firebaseService, emailService } from '@/services'
+import { emailService } from '@/services'
+import { quotesFirebase } from '@/services/firebase'
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useQuoteStore = defineStore('quote', () => {
@@ -145,7 +146,7 @@ export const useQuoteStore = defineStore('quote', () => {
       }
 
       await emailService.sendQuote(emailData)
-      await firebaseService.createQuote(quote)
+      await quotesFirebase.createQuote(quote)
       clearQuote(true)
       NotificationService.push({
         title: 'Cotización enviada',
@@ -166,7 +167,7 @@ export const useQuoteStore = defineStore('quote', () => {
   const getQuotes = async () => {
     state.value.isLoadingQuotes = true
     try {
-      state.value.quotes = await firebaseService.getQuotes()
+      state.value.quotes = await quotesFirebase.getQuotes()
       state.value.lastUpdateQuotes = new Date().toISOString()
     } catch (error) {
       console.error('Error fetching quotes:', error)
@@ -177,7 +178,7 @@ export const useQuoteStore = defineStore('quote', () => {
 
   const updateQuoteStatus = async (id: string, status: string) => {
     try {
-      await firebaseService.updateQuoteStatus(id, status)
+      await quotesFirebase.updateQuoteStatus(id, status)
       await getQuotes()
       NotificationService.push({
         title: 'Cotización actualizada',
@@ -226,7 +227,7 @@ export const useQuoteStore = defineStore('quote', () => {
     }
 
     try {
-      await firebaseService.deleteQuote(id)
+      await quotesFirebase.deleteQuote(id)
       NotificationService.push({
         title: 'Cotización eliminada',
         description: 'La cotización ha sido eliminada exitosamente',
@@ -258,7 +259,7 @@ export const useQuoteStore = defineStore('quote', () => {
         return;
       }
 
-      await firebaseService.deleteMultipleQuotes(completedIds);
+      await quotesFirebase.deleteMultipleQuotes(completedIds);
 
       NotificationService.push({
         title: 'Cotizaciones eliminadas',

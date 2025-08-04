@@ -1,7 +1,7 @@
 import type { OurClients } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { firebaseService } from '@/services'
+import { clientsFirebase } from '@/services/firebase'
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useOurClientsStore = defineStore('ourClients', () => {
@@ -11,7 +11,7 @@ export const useOurClientsStore = defineStore('ourClients', () => {
   const getOurClients = async () => {
     try {
       isLoadingOurClients.value = true
-      ourClients.value = await firebaseService.getOurClients()
+      ourClients.value = await clientsFirebase.getOurClients()
     } catch (error) {
       console.error('Error getting our clients:', error)
       NotificationService.push({
@@ -26,7 +26,7 @@ export const useOurClientsStore = defineStore('ourClients', () => {
 
   const createOurClient = async (ourClient: OurClients) => {
     try {
-      await firebaseService.createOurClient(ourClient)
+      await clientsFirebase.createOurClient(ourClient)
       await getOurClients()
       NotificationService.push({
         title: 'Imagen de cliente creada',
@@ -45,7 +45,7 @@ export const useOurClientsStore = defineStore('ourClients', () => {
 
   const updateOurClient = async (id: string, ourClient: Partial<OurClients>) => {
     try {
-      await firebaseService.updateOurClient(id, ourClient)
+      await clientsFirebase.updateOurClient(id, ourClient)
       await getOurClients()
       NotificationService.push({
         title: 'Imagen de cliente actualizada',
@@ -64,7 +64,7 @@ export const useOurClientsStore = defineStore('ourClients', () => {
 
   const deleteOurClient = async (id: string) => {
     try {
-      await firebaseService.deleteOurClient(id)
+      await clientsFirebase.deleteOurClient(id)
       await getOurClients()
       NotificationService.push({
         title: 'Imagen de cliente eliminada',

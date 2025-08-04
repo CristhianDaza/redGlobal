@@ -1,6 +1,6 @@
 import type { MenuItem, MenuState } from '@/types/common.d'
 import { defineStore } from 'pinia'
-import { firebaseService } from '@/services'
+import { menusFirebase } from '@/services/firebase'
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useMenuStore = defineStore('menu', {
@@ -14,7 +14,7 @@ export const useMenuStore = defineStore('menu', {
     async getMenu(): Promise<void> {
       try {
         this.isLoadingMenu = true
-        const menu = await firebaseService.getMenu()
+        const menu = await menusFirebase.getMenu()
         this.saveMenuToLocalStorage(menu)
         this.menu = menu
         this.lastUpdateMenu = new Date().toISOString()
@@ -36,7 +36,7 @@ export const useMenuStore = defineStore('menu', {
         if (!menuData.path && name) {
           menuData.path = name
         }
-        await firebaseService.createMenuItem(menuData as MenuItem)
+        await menusFirebase.createMenuItem(menuData as MenuItem)
         NotificationService.push({
           title: 'Menú creado',
           description: 'El menú ha sido creado exitosamente',
@@ -55,7 +55,7 @@ export const useMenuStore = defineStore('menu', {
 
     async updateMenuItem(menuItem: MenuItem): Promise<void> {
       try {
-        await firebaseService.updateMenuItem(menuItem)
+        await menusFirebase.updateMenuItem(menuItem)
         NotificationService.push({
           title: 'Menú actualizado',
           description: 'El menú ha sido actualizado exitosamente',
@@ -74,7 +74,7 @@ export const useMenuStore = defineStore('menu', {
 
     async deleteMenuItem(id: string): Promise<void> {
       try {
-        await firebaseService.deleteMenuItem(id)
+        await menusFirebase.deleteMenuItem(id)
         NotificationService.push({
           title: 'Menú eliminado',
           description: 'El menú ha sido eliminado exitosamente',

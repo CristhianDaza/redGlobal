@@ -1,7 +1,7 @@
 import type { Catalog } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { firebaseService } from '@/services'
+import { catalogsFirebase } from '@/services/firebase'
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useCatalogStore = defineStore('catalog', () => {
@@ -10,8 +10,8 @@ export const useCatalogStore = defineStore('catalog', () => {
 
   const getCatalogs = async () => {
     try {
-     isLoadingCatalogs.value = true
-      catalogs.value = await firebaseService.getCatalogs()
+      isLoadingCatalogs.value = true
+      catalogs.value = await catalogsFirebase.getCatalogs()
     } catch (error) {
       console.error('Error getting category cards:', error)
       NotificationService.push({
@@ -26,7 +26,7 @@ export const useCatalogStore = defineStore('catalog', () => {
 
   const createCatalog = async (catalog: Catalog) => {
     try {
-      await firebaseService.createCatalog(catalog)
+      await catalogsFirebase.createCatalog(catalog)
       await getCatalogs()
       NotificationService.push({
         title: 'Catálogo creado',
@@ -45,7 +45,7 @@ export const useCatalogStore = defineStore('catalog', () => {
 
   const updateCatalog = async (id: string, card: Partial<Catalog>) => {
     try {
-      await firebaseService.updateCatalog(id, card)
+      await catalogsFirebase.updateCatalog(id, card)
       await getCatalogs()
       NotificationService.push({
         title: 'Catálogo actualizado',
@@ -64,7 +64,7 @@ export const useCatalogStore = defineStore('catalog', () => {
 
   const deleteCatalog = async (id: string) => {
     try {
-      await firebaseService.deleteCatalog(id)
+      await catalogsFirebase.deleteCatalog(id)
       await getCatalogs()
       NotificationService.push({
         title: 'Catálogo eliminado',

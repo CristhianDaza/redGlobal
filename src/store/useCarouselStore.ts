@@ -1,7 +1,7 @@
 import type { CarouselItem } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { firebaseService } from '@/services'
+import { carouselsFirebase } from '@/services/firebase'
 import { NotificationService } from '@/components/Notification/NotificationService';
 
 export const useCarouselStore = defineStore('carousel', () => {
@@ -11,7 +11,7 @@ export const useCarouselStore = defineStore('carousel', () => {
   const getCarousel = async () => {
     try {
       isLoadingCarousel.value = true
-      carousel.value = await firebaseService.getCarousel()
+      carousel.value = await carouselsFirebase.getCarousel()
     } catch (error) {
       console.error('Error getting carousel:', error)
       NotificationService.push({
@@ -26,7 +26,7 @@ export const useCarouselStore = defineStore('carousel', () => {
 
   const createCarousel = async (carousel: CarouselItem) => {
     try {
-      await firebaseService.createCarousel(carousel)
+      await carouselsFirebase.createCarousel(carousel)
       await getCarousel()
       NotificationService.push({
         title: 'Carousel creado',
@@ -45,7 +45,7 @@ export const useCarouselStore = defineStore('carousel', () => {
 
   const updateCarousel = async (id: string, carousel: Partial<CarouselItem>) => {
     try {
-      await firebaseService.updateCarousel(id, carousel)
+      await carouselsFirebase.updateCarousel(id, carousel)
       await getCarousel()
       NotificationService.push({
         title: 'Carousel actualizado',
@@ -64,7 +64,7 @@ export const useCarouselStore = defineStore('carousel', () => {
 
   const deleteCarousel = async (id: string) => {
     try {
-      await firebaseService.deleteCarousel(id)
+      await carouselsFirebase.deleteCarousel(id)
       await getCarousel()
       NotificationService.push({
         title: 'Carousel eliminado',
