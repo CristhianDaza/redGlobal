@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 04/08/2025
+### Dependencies
+- Add `vue-snap` to `^1.0.0`
+
+### Added
+- Main color functionality with admin configuration support.
+- carousel functionality with admin configuration support.
+
+### Changed
+- Removed the hero section.
+- Refactored the Firebase integration.
+- Improved homepage structure to prevent layout shifting (page jumps).
+- Visually redesigned the About Us section.
+- Visually redesigned the Categories section.
+
+### Fixed
+- Fixed a crash in the ourClients section when only one item was present.
+- Fixed key mismatch issues in the ourClients component.
+
 ## [1.2.0] - 30/07/2025
 ### Dependencies
 - Updated `firebase` to `^12.0.0`
@@ -124,6 +143,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - 🎉 Initial stable release.
+
 
 [1.2.0]: https://github.com/CristhianDaza/redGlobal/pull/6/files
 [1.1.0]: https://github.com/CristhianDaza/redGlobal/pull/5/files
