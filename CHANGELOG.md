@@ -144,7 +144,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🎉 Initial stable release.
 
-
+[1.3.0]: https://github.com/CristhianDaza/redGlobal/pull/7/files
 [1.2.0]: https://github.com/CristhianDaza/redGlobal/pull/6/files
 [1.1.0]: https://github.com/CristhianDaza/redGlobal/pull/5/files
 [1.0.4]: https://github.com/CristhianDaza/redGlobal/pull/
