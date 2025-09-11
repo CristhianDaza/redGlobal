@@ -1,6 +1,7 @@
 import { formatText, cleanText, normalizeString, constructDescriptionCataProm } from './text';
 import { constructImagesPromos, constructImagesStockSur, constructImagesMarpico } from './images';
 import { filterProductsHelper, formatNumber, formatColor, getDay } from './helpers';
+import { pluralToSingular, generateSearchVariations } from './pluralToSingular';
 import {
   combineProducts,
   constructCategoryCataProm,
@@ -63,6 +64,10 @@ export {
   formatNumber,
   formatColor,
   getDay,
+
+  // Plural to Singular
+  pluralToSingular,
+  generateSearchVariations,
 
   // Constants
   CONSTANTS,

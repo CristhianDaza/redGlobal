@@ -2,7 +2,7 @@ import type { StateGlobal } from '@/types/config.d'
 import type { ProductsRedGlobal } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { productsFirebase } from '@/services/firebase'
-import { normalizeString } from '@/utils'
+import { normalizeString, generateSearchVariations } from '@/utils'
 import { useProductsCataProm, useProductsMarpico, useProductsPromos, useProductStockSur } from '@/composable'
 import { NotificationService } from '@/components/Notification/NotificationService';
 
@@ -144,14 +144,17 @@ export const useProductsStore = defineStore('products', {
 
       this.productsToView = (this.products || []).filter(product => {
         if (query) {
-          const normalizedQuery = normalizeString(query);
+          const searchVariations = generateSearchVariations(query);
           const normalizedName = normalizeString(product.name);
           const normalizedDescription = normalizeString(product.description);
           const normalizedId = normalizeString(product.id);
 
-          const matchesSearch = normalizedName.includes(normalizedQuery) ||
-            normalizedDescription.includes(normalizedQuery) ||
-            normalizedId.includes(normalizedQuery);
+          const matchesSearch = searchVariations.some(variation => {
+            const normalizedVariation = normalizeString(variation);
+            return normalizedName.includes(normalizedVariation) ||
+              normalizedDescription.includes(normalizedVariation) ||
+              normalizedId.includes(normalizedVariation);
+          });
 
           if (!matchesSearch) {
             return false;
