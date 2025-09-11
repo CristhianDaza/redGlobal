@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved carousel navigation accessibility and responsive design
 - **Fixed product image carousel navigation buttons being disabled incorrectly** when multiple images are available
 - Corrected thumbnail carousel navigation logic to properly enable/disable buttons based on available images
+- **Fixed vue-snap carousel renderSlot error** that occurred when carousel data was not properly loaded
+- Added proper conditional rendering and null checks for carousel component to prevent crashes
+- Implemented carousel placeholder state when no content is available
 - **Resolved CataProm API connectivity issues** by implementing server-side proxy to bypass browser CORS restrictions
 - **Resolved StockSur API CORS issues** by replacing external proxy dependency (`allorigins.win`) with internal PHP proxy for better reliability and performance
 

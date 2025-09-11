@@ -2,7 +2,7 @@
 import type { ProductsRedGlobal } from '@/types/common.d';
 import { ref, watch } from 'vue';
 import { useProductsStore } from '@/store';
-import { normalizeString } from '@/utils';
+import { normalizeString, generateSearchVariations } from '@/utils';
 import { useDebounce } from '@/composable/useDebounce';
 
 const props = defineProps<{
@@ -43,7 +43,7 @@ const filterSuggestions = (query: string) => {
     return;
   }
 
-  const searchTerms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  const searchVariations = generateSearchVariations(query);
 
   suggestions.value = (storeProducts.products || [])
     .filter(product => {
@@ -52,12 +52,12 @@ const filterSuggestions = (query: string) => {
       const normalizedId = normalizeString(product.id);
       const normalizedCategory = normalizeString(product.category);
 
-      return searchTerms.every(term => {
-        const normalizedTerm = normalizeString(term);
-        return normalizedName.includes(normalizedTerm) ||
-          normalizedDescription.includes(normalizedTerm) ||
-          normalizedCategory.includes(normalizedTerm) ||
-          normalizedId.includes(normalizedTerm);
+      return searchVariations.some(variation => {
+        const normalizedVariation = normalizeString(variation);
+        return normalizedName.includes(normalizedVariation) ||
+          normalizedDescription.includes(normalizedVariation) ||
+          normalizedCategory.includes(normalizedVariation) ||
+          normalizedId.includes(normalizedVariation);
       });
     })
 

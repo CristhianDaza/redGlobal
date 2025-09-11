@@ -45,9 +45,11 @@ onMounted(async () => {
     preloadService.preloadCriticalImages(carouselImages, []);
   }
 
-  setInterval(() => {
-    carousel.value?.changeSlide(direction.value);
-  }, 5000);
+  if (carouselStore.carousel && carouselStore.carousel.length > 0) {
+    setInterval(() => {
+      carousel.value?.changeSlide(direction.value);
+    }, 5000);
+  }
 });
 
 const popularProducts = computed(() => {
@@ -87,7 +89,7 @@ useHead({
       </div>
 
       <Carousel
-        v-else
+        v-else-if="carouselStore.carousel && carouselStore.carousel.length > 0"
         class="carousel"
         ref="carousel"
         :hide-arrows="false"
@@ -95,7 +97,7 @@ useHead({
         @left-bound="onLeftBounded"
         @right-bound="onRightBounded"
       >
-        <Slide v-for="slide in carouselStore.carousel" :key="slide">
+        <Slide v-for="slide in carouselStore.carousel" :key="slide.id || slide.title">
           <div class="slide">
             <router-link :to="slide.toRoute">
               <img :src="slide?.imageUrl" :alt="slide?.title" class="carousel-image" />
@@ -103,6 +105,11 @@ useHead({
           </div>
         </Slide>
       </Carousel>
+      <div v-else class="carousel-placeholder">
+        <div class="placeholder-content">
+          <p>No hay contenido de carrusel disponible</p>
+        </div>
+      </div>
 
     <div class="container">
       <RgCategories />
@@ -246,6 +253,22 @@ useHead({
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.carousel-placeholder {
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7fafc;
+  margin-top: 2rem;
+}
+
+.placeholder-content {
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
 }
 
 @media (max-width: 1024px) {
