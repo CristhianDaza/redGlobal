@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - **CataProm API Proxy**: Implemented PHP proxy server to handle CataProm API calls from server-side, resolving IP/URL validation issues when calling from SPA
-- Added `VITE_API_CATAPROM_PROXY_URL` environment variable for proxy configuration
-- Created fallback system in `apiConfig.ts` to use proxy URL with direct API as backup
+- **StockSur API Proxy**: Implemented PHP proxy server to handle StockSur API calls from server-side, eliminating CORS issues and external proxy dependencies
+- Added `VITE_API_CATAPROM_PROXY_URL` environment variable for CataProm proxy configuration
+- Added `VITE_API_STOCKSUR_PROXY_URL` environment variable for StockSur proxy configuration
+- Created fallback system in `apiConfig.ts` to use proxy URLs with direct APIs as backup
 
 ### Fixed
 - Fixed admin automatic daily API refresh functionality
@@ -20,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added proper styling and positioning for carousel navigation buttons
 - Improved carousel navigation accessibility and responsive design
 - **Resolved CataProm API connectivity issues** by implementing server-side proxy to bypass browser CORS restrictions
+- **Resolved StockSur API CORS issues** by replacing external proxy dependency (`allorigins.win`) with internal PHP proxy for better reliability and performance
 
 ### Enhanced
 - Modernized login modal with contemporary design and improved UX

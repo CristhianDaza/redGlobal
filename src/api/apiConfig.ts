@@ -25,9 +25,12 @@ export const apiConfigPromos = createApiInstance(import.meta.env.VITE_API_PROMOS
   'Content-Type': 'application/json',
 });
 
-export const apiConfigStockSur = createApiInstance(import.meta.env.VITE_API_STOCKSUR_BASE_URL, {
-  'Content-Type': 'application/json',
-});
+export const apiConfigStockSur = createApiInstance(
+  import.meta.env.VITE_API_STOCKSUR_PROXY_URL || import.meta.env.VITE_API_STOCKSUR_BASE_URL, 
+  {
+    'Content-Type': 'application/json',
+  }
+);
 
 export const apiConfigCatalogProm = createApiInstance(
   import.meta.env.VITE_API_CATAPROM_PROXY_URL || import.meta.env.VITE_API_CATAPROM_BASE_URL, 
