@@ -773,50 +773,130 @@ const hideTooltip = () => {
 }
 
 .nav-button {
-  background: #f5f5f5;
-  border: none;
+  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  border: 2px solid rgba(0, 0, 0, 0.08);
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   color: #666;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  font-weight: 600;
+}
+
+.nav-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
+  pointer-events: none;
 }
 
 .nav-button:hover:not(:disabled) {
-  background: #e0e0e0;
-  color: #333;
+  background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
+  color: white;
+  border: 2px solid var(--primary-color);
+  box-shadow: 
+    0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
+    0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.nav-button:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.nav-button:active:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 3px 12px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .nav-button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  background: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+  transform: none;
 }
 
 .thumbnail-button {
-  padding: 2px;
-  border: 2px solid transparent;
-  background: none;
+  padding: 3px;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  border-radius: 12px;
   cursor: pointer;
-  border-radius: 4px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  width: 60px;
-  height: 60px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.thumbnail-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
+  pointer-events: none;
 }
 
 .thumbnail-button:hover {
-  border-color: #ddd;
+  border-color: var(--primary-color);
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.thumbnail-button:hover::before {
+  left: 100%;
 }
 
 .thumbnail-button.active {
   border-color: var(--primary-color);
+  background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
+  box-shadow: 
+    0 4px 16px rgba(var(--primary-color-rgb, 0, 123, 255), 0.3),
+    0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.thumbnail-button.active::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
 }
 
 .thumbnail {
@@ -1058,23 +1138,37 @@ const hideTooltip = () => {
 
 .color-button {
   position: relative;
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 50%;
-  border: 2px solid #e2e8f0;
+  border: 3px solid rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .color-button:hover {
-  transform: scale(1.1);
+  transform: scale(1.15) translateY(-2px);
   border-color: var(--primary-color);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.15),
+    0 4px 10px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .color-button.active {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+  box-shadow: 
+    0 0 0 3px rgba(var(--primary-color-rgb, 255, 68, 68), 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: scale(1.1) translateY(-1px);
 }
 
 .color-button::after {
