@@ -490,8 +490,8 @@ const hideTooltip = () => {
                     <img
                       :src="label.image"
                       :alt="formatLabelName(label.name)"
-                      width="100"
-                      height="100"
+                      width="60"
+                      height="60"
                       class="label-image"
                     />
                     <div class="label-tooltip">{{ formatLabelName(label.name) }}</div>

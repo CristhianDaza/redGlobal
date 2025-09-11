@@ -39,7 +39,7 @@ const customStyle = {
               :custom-style="customStyle"
             />
           </div>
-          <img :src="category.imageUrl" :alt="category.title">
+          <img :src="category.imageUrl" :alt="category.title" class="category-img" />
         </div>
       </router-link>
     </div>
@@ -73,7 +73,7 @@ const customStyle = {
       justify-content: space-between;
       align-items: center;
 
-      img {
+      .category-img {
         width: 60%;
         height: auto;
         object-fit: contain;
@@ -124,7 +124,7 @@ const customStyle = {
         height: 180px;
         padding: 1.5rem;
 
-        img {
+        .category-img {
           width: 45%;
           transform: scale(1.1);
         }

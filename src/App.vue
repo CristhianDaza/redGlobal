@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, defineAsyncComponent, watch } from 'vue';
-import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore, useMaintenanceStore, useColorStore } from '@/store';
-import { logger } from '@/services';
+import { useAuthStore, useColorStore, useLoaderStore, useMaintenanceStore, useMenuStore, useProductsStore, useUserStore } from '@/store';
+import { logger, preloadService } from '@/services';
 
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
@@ -95,6 +95,22 @@ onMounted(async () => {
 
     if (isAdmin || productsEmpty) {
       await storeProducts.getAllProducts(isAdmin);
+    }
+
+    // Preload critical images after initial load
+    if (storeProducts.products?.length) {
+      const productImages = storeProducts.products
+        .slice(0, 12)
+        .map(p => p.mainImage)
+        .filter(Boolean);
+      
+      // Get category images from category store instead of menu
+      const categoryImages: string[] = [];
+      
+      // Preload in background without blocking UI
+      preloadService.preloadCriticalImages([], categoryImages)
+        .then(() => preloadService.preloadProductImages(productImages))
+        .catch(error => logger.warn('Image preload failed', 'App.vue', error));
     }
 
   } catch (error) {

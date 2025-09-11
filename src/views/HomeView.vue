@@ -4,6 +4,7 @@ import { onMounted, computed, defineAsyncComponent, ref } from 'vue';
 import { useProductsStore, useOurClientsStore} from '@/store';
 import { useCarouselStore } from '@/store/useCarouselStore.ts';
 import { Carousel, Slide } from 'vue-snap';
+import { preloadService } from '@/services';
 import 'vue-snap/dist/vue-snap.css';
 
 const RgCategories = defineAsyncComponent(/* webpackChunkName: "rgCategories" */() => import('@/components/home/RgCategories.vue'));
@@ -34,6 +35,14 @@ onMounted(async () => {
   }
   if (!carouselStore.carousel || carouselStore.carousel.length === 0) {
     await carouselStore.getCarousel();
+  }
+
+  // Preload carousel images for better UX
+  if (carouselStore.carousel?.length) {
+    const carouselImages = carouselStore.carousel
+      .map(slide => slide.imageUrl)
+      .filter(Boolean);
+    preloadService.preloadCriticalImages(carouselImages, []);
   }
 
   setInterval(() => {
@@ -87,7 +96,7 @@ useHead({
         <Slide v-for="slide in carouselStore.carousel" :key="slide">
           <div class="slide">
             <router-link :to="slide.toRoute">
-              <img :src="slide?.imageUrl" :alt="slide?.title" />
+              <img :src="slide?.imageUrl" :alt="slide?.title" class="carousel-image" />
             </router-link>
           </div>
         </Slide>
@@ -136,6 +145,13 @@ useHead({
   min-height: 600px;
   max-height: 600px;
   height: 600px;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .home {

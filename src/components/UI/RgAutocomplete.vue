@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '@/types/common.d';
-import { ref, watch } from 'vue';
+import { ref, watch, defineAsyncComponent } from 'vue';
 import { useProductsStore } from '@/store';
 import { normalizeString } from '@/utils';
+import { useDebounce } from '@/composable/useDebounce';
+
+const RgLazyImage = defineAsyncComponent(() => import('./RgLazyImage.vue'));
 
 const props = defineProps<{
   modelValue: string;
@@ -21,11 +24,18 @@ const storeProducts = useProductsStore();
 const showSuggestions = ref(false);
 const suggestions = ref<ProductsRedGlobal[]>([]);
 
+const searchQuery = ref(props.modelValue);
+const debouncedQuery = useDebounce(searchQuery, 300);
+
 const handleInput = (event: Event) => {
   const value = (event.target as HTMLInputElement).value;
   emit('update:modelValue', value);
-  filterSuggestions(value);
+  searchQuery.value = value;
 };
+
+watch(debouncedQuery, (newValue) => {
+  filterSuggestions(newValue);
+});
 
 const filterSuggestions = (query: string) => {
   if (!query || query.length < (props.minChars || 3)) {
@@ -75,7 +85,7 @@ const handleViewAll = () => {
 };
 
 watch(() => props.modelValue, (newValue) => {
-  filterSuggestions(newValue);
+  searchQuery.value = newValue;
 });
 </script>
 
@@ -98,11 +108,14 @@ watch(() => props.modelValue, (newValue) => {
       >
         <div class="suggestion-content">
           <span class="suggestion-name">{{ suggestion.name }}</span>
-          <img
+          <RgLazyImage
             v-if="suggestion.mainImage"
             :src="suggestion.mainImage"
             :alt="suggestion.name"
-            class="suggestion-image"
+            :width="32"
+            :height="32"
+            image-class="suggestion-image"
+            :eager="false"
           />
         </div>
       </div>
