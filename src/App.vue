@@ -93,8 +93,11 @@ onMounted(async () => {
     const isAdmin = currentUser?.role === 'admin';
     const productsEmpty = !storeProducts.products?.length;
 
-    if (isAdmin || productsEmpty) {
+    if (productsEmpty) {
       await storeProducts.getAllProducts(isAdmin);
+    } else if (isAdmin) {
+      // For admin users, check if we need to update based on daily schedule
+      await storeProducts.callServices();
     }
 
     // Preload critical images after initial load

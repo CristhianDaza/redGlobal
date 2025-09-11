@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Fixed
+- Fixed admin automatic daily API refresh functionality
+- Corrected `getDay()` function to properly compare full dates (YYYY-MM-DD) instead of just day numbers
+- Optimized admin API calling logic in App.vue to respect daily update schedule
+- Admin users now get automatic API updates once per day without manual intervention
+
 ## [1.4.0] - 11/09/2025
 ### Added
 - Add lazy loading to imagen.

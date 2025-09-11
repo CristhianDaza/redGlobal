@@ -152,6 +152,13 @@ export const formatColor = (color: string): string => {
 }
 
 export const getDay = (dateString: string) => {
-  const match = dateString.match(/\d{4}-\d{2}-(\d{2})/);
-  return match ? match[1] : '';
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    // Return YYYY-MM-DD format for proper day comparison
+    return date.toISOString().split('T')[0];
+  } catch (error) {
+    console.error('Error parsing date:', error);
+    return '';
+  }
 }
