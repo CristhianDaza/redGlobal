@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, watch, onUnmounted } from 'vue';
 
 import { useProductsStore } from '@/store';
 
@@ -85,24 +85,27 @@ const allApisCompleted = computed(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(30, 41, 59, 0.45); /* azul oscuro translúcido */
-  backdrop-filter: blur(10px) saturate(140%);
+  background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  backdrop-filter: blur(12px) saturate(1.3) brightness(0.9);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3) brightness(0.9);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal {
-  background: #f8fafc;
+  background: white;
   padding: 2.5rem 2rem 2rem 2rem;
-  border-radius: 18px;
+  border-radius: 0.75rem;
   min-width: 340px;
   max-width: 90vw;
   text-align: left;
-  box-shadow: 0 8px 32px rgba(16, 38, 84, 0.18);
-  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
+  animation: slideIn 0.3s ease-out;
 }
 
 .modal-title {
@@ -197,6 +200,26 @@ const allApisCompleted = computed(() => {
 }
 @keyframes spin {
   100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 </style>
 

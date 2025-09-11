@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal, TableEntry, QuoteItem } from '@/types/common.d'
-import { ref, computed, defineAsyncComponent } from 'vue'
+import { ref, computed, defineAsyncComponent, watch, onUnmounted } from 'vue'
 import { useAuthStore, useUserStore, useQuoteStore } from '@/store'
 import { formatColor } from '@/utils'
 
@@ -30,6 +30,27 @@ const resetForm = () => {
   includeMarking.value = false
   inkColors.value = 1
 }
+
+const handleEscKey = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && props.isOpen) {
+    handleClose()
+  }
+}
+
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleEscKey)
+  } else {
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', handleEscKey)
+  }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleEscKey)
+  document.body.style.overflow = ''
+})
 
 const availableColors = computed(() => {
   return props.product.tableQuantity?.filter(entry => entry.quantity > 0) || []

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineAsyncComponent, watch } from 'vue';
+import { ref, defineAsyncComponent, watch, onUnmounted } from 'vue';
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */ () => import('@/components/UI/RgButton.vue'));
 
@@ -39,12 +39,26 @@ const handleClose = () => {
 const handleConfirm = () => {
   emit('confirm')
 }
+
+const handleEscKey = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && props.isOpen) {
+    handleClose()
+  }
+}
+
 watch(() => props.isOpen, (open) => {
   if (open) {
     document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleEscKey)
   } else {
     document.body.style.overflow = '';
+    document.removeEventListener('keydown', handleEscKey)
   }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleEscKey)
+  document.body.style.overflow = ''
 })
 </script>
 
@@ -101,23 +115,26 @@ watch(() => props.isOpen, (open) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.32);
+  background: color-mix(in srgb, var(--primary-color) 15%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  /* Blur effect */
-  backdrop-filter: blur(7px) saturate(1.2);
-  -webkit-backdrop-filter: blur(7px) saturate(1.2);
+  /* Enhanced blur effect */
+  backdrop-filter: blur(12px) saturate(1.3) brightness(0.9);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3) brightness(0.9);
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal-content {
   background: white;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: slideIn 0.3s ease-out;
 }
 
 .modal-header {
@@ -181,6 +198,26 @@ watch(() => props.isOpen, (open) => {
 @keyframes spin {
   0% { transform: translate(-50%, -50%) rotate(0deg); }
   100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .modal-footer {
