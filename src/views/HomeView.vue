@@ -45,9 +45,11 @@ onMounted(async () => {
     preloadService.preloadCriticalImages(carouselImages, []);
   }
 
-  setInterval(() => {
-    carousel.value?.changeSlide(direction.value);
-  }, 5000);
+  if (carouselStore.carousel && carouselStore.carousel.length > 0) {
+    setInterval(() => {
+      carousel.value?.changeSlide(direction.value);
+    }, 5000);
+  }
 });
 
 const popularProducts = computed(() => {
@@ -87,13 +89,15 @@ useHead({
       </div>
 
       <Carousel
-        v-else
+        v-else-if="carouselStore.carousel && carouselStore.carousel.length > 0"
         class="carousel"
         ref="carousel"
+        :hide-arrows="false"
+        :hide-arrows-on-bound="false"
         @left-bound="onLeftBounded"
         @right-bound="onRightBounded"
       >
-        <Slide v-for="slide in carouselStore.carousel" :key="slide">
+        <Slide v-for="slide in carouselStore.carousel" :key="slide.id || slide.title">
           <div class="slide">
             <router-link :to="slide.toRoute">
               <img :src="slide?.imageUrl" :alt="slide?.title" class="carousel-image" />
@@ -101,6 +105,11 @@ useHead({
           </div>
         </Slide>
       </Carousel>
+      <div v-else class="carousel-placeholder">
+        <div class="placeholder-content">
+          <p>No hay contenido de carrusel disponible</p>
+        </div>
+      </div>
 
     <div class="container">
       <RgCategories />
@@ -154,6 +163,50 @@ useHead({
   display: block;
 }
 
+/* Carousel navigation arrows */
+.carousel :deep(.vs-carousel__navigation) {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.carousel :deep(.vs-carousel__navigation-button) {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid var(--primary-color, #ff4444);
+  color: var(--primary-color, #ff4444);
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.carousel :deep(.vs-carousel__navigation-button:hover) {
+  background: var(--primary-color, #ff4444);
+  color: white;
+  transform: scale(1.1);
+}
+
+.carousel :deep(.vs-carousel__navigation-button:focus) {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.3);
+}
+
+.carousel :deep(.vs-carousel__navigation-prev) {
+  left: 20px;
+}
+
+.carousel :deep(.vs-carousel__navigation-next) {
+  right: 20px;
+}
+
 .home {
   margin: 0;
   padding: 0;
@@ -202,6 +255,22 @@ useHead({
   100% { transform: rotate(360deg); }
 }
 
+.carousel-placeholder {
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7fafc;
+  margin-top: 2rem;
+}
+
+.placeholder-content {
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
+}
+
 @media (max-width: 1024px) {
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -218,6 +287,21 @@ useHead({
   .section-title {
     font-size: 1.5rem;
     margin: 2rem 0 1rem;
+  }
+
+  /* Mobile carousel arrows */
+  .carousel :deep(.vs-carousel__navigation-button) {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .carousel :deep(.vs-carousel__navigation-prev) {
+    left: 10px;
+  }
+
+  .carousel :deep(.vs-carousel__navigation-next) {
+    right: 10px;
   }
 }
 </style>

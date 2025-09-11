@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, watch, onUnmounted } from 'vue';
+import { computed } from 'vue';
 
 import { useProductsStore } from '@/store';
 

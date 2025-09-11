@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 11/09/2025
+### Added
+- **CataProm API Proxy**: Implemented PHP proxy server to handle CataProm API calls from server-side, resolving IP/URL validation issues when calling from SPA
+- **StockSur API Proxy**: Implemented PHP proxy server to handle StockSur API calls from server-side, eliminating CORS issues and external proxy dependencies
+- Added `VITE_API_CATAPROM_PROXY_URL` environment variable for CataProm proxy configuration
+- Added `VITE_API_STOCKSUR_PROXY_URL` environment variable for StockSur proxy configuration
+- Created fallback system in `apiConfig.ts` to use proxy URLs with direct APIs as backup
+
+### Fixed
+- Fixed admin automatic daily API refresh functionality
+- Corrected `getDay()` function to properly compare full dates (YYYY-MM-DD) instead of just day numbers
+- Optimized admin API calling logic in App.vue to respect daily update schedule
+- Admin users now get automatic API updates once per day without manual intervention
+- Fixed carousel navigation arrows not being visible or functional
+- Added proper styling and positioning for carousel navigation buttons
+- Improved carousel navigation accessibility and responsive design
+- **Fixed product image carousel navigation buttons being disabled incorrectly** when multiple images are available
+- Corrected thumbnail carousel navigation logic to properly enable/disable buttons based on available images
+- **Fixed vue-snap carousel renderSlot error** that occurred when carousel data was not properly loaded
+- Added proper conditional rendering and null checks for carousel component to prevent crashes
+- Implemented carousel placeholder state when no content is available
+- **Resolved CataProm API connectivity issues** by implementing server-side proxy to bypass browser CORS restrictions
+- **Resolved StockSur API CORS issues** by replacing external proxy dependency (`allorigins.win`) with internal PHP proxy for better reliability and performance
+
+### Enhanced
+- Modernized login modal with contemporary design and improved UX
+- Added company logo to login modal header for better brand recognition
+- Enhanced login modal with gradient backgrounds and glassmorphism effects
+- Improved form inputs with better focus states and animations
+- Enhanced ESC key functionality with multiple capture methods and focus management
+- Redesigned close button with modern styling and hover effects
+- Standardized login button to use app's consistent RgButton component
+- Increased company logo size from 80px to 120px for better visibility
+- Adjusted login button text size and styling for improved readability
+- Ensured button uses app's primary color scheme consistently
+
 ## [1.4.0] - 11/09/2025
 ### Added
 - Add lazy loading to imagen.
@@ -153,6 +189,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🎉 Initial stable release.
 
+[1.5.0]: https://github.com/CristhianDaza/redGlobal/pull/9/files
+[1.4.0]: https://github.com/CristhianDaza/redGlobal/pull/8/files
 [1.3.0]: https://github.com/CristhianDaza/redGlobal/pull/7/files
 [1.2.0]: https://github.com/CristhianDaza/redGlobal/pull/6/files
 [1.1.0]: https://github.com/CristhianDaza/redGlobal/pull/5/files
