@@ -552,6 +552,7 @@ window.addEventListener('resize', () => {
       height: 100%;
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
       transition: left 0.5s ease;
+      pointer-events: none;
     }
 
     .material-icons {
@@ -629,6 +630,7 @@ window.addEventListener('resize', () => {
       height: 100%;
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
       transition: left 0.5s ease;
+      pointer-events: none;
     }
 
     .material-icons {
@@ -694,6 +696,7 @@ window.addEventListener('resize', () => {
       height: 100%;
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
       transition: left 0.5s ease;
+      pointer-events: none;
     }
 
     .material-icons {
@@ -752,6 +755,7 @@ window.addEventListener('resize', () => {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     border: 2px solid white;
     z-index: 10;
+    pointer-events: none;
   }
 
 }
