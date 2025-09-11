@@ -90,6 +90,8 @@ useHead({
         v-else
         class="carousel"
         ref="carousel"
+        :hide-arrows="false"
+        :hide-arrows-on-bound="false"
         @left-bound="onLeftBounded"
         @right-bound="onRightBounded"
       >
@@ -152,6 +154,50 @@ useHead({
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Carousel navigation arrows */
+.carousel :deep(.vs-carousel__navigation) {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+.carousel :deep(.vs-carousel__navigation-button) {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid var(--primary-color, #ff4444);
+  color: var(--primary-color, #ff4444);
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.carousel :deep(.vs-carousel__navigation-button:hover) {
+  background: var(--primary-color, #ff4444);
+  color: white;
+  transform: scale(1.1);
+}
+
+.carousel :deep(.vs-carousel__navigation-button:focus) {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.3);
+}
+
+.carousel :deep(.vs-carousel__navigation-prev) {
+  left: 20px;
+}
+
+.carousel :deep(.vs-carousel__navigation-next) {
+  right: 20px;
 }
 
 .home {
@@ -218,6 +264,21 @@ useHead({
   .section-title {
     font-size: 1.5rem;
     margin: 2rem 0 1rem;
+  }
+
+  /* Mobile carousel arrows */
+  .carousel :deep(.vs-carousel__navigation-button) {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .carousel :deep(.vs-carousel__navigation-prev) {
+    left: 10px;
+  }
+
+  .carousel :deep(.vs-carousel__navigation-next) {
+    right: 10px;
   }
 }
 </style>

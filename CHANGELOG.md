@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Corrected `getDay()` function to properly compare full dates (YYYY-MM-DD) instead of just day numbers
 - Optimized admin API calling logic in App.vue to respect daily update schedule
 - Admin users now get automatic API updates once per day without manual intervention
+- Fixed carousel navigation arrows not being visible or functional
+- Added proper styling and positioning for carousel navigation buttons
+- Improved carousel navigation accessibility and responsive design
 
 ## [1.4.0] - 11/09/2025
 ### Added
