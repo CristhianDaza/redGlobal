@@ -19,6 +19,7 @@ const emit = defineEmits<{
   (e: 'add-carousel'): void
   (e: 'add-our-clients'): void
   (e: 'add-color'): void
+  (e: 'add-advisor'): void
 }>()
 
 const handleEventButton = () => {
@@ -31,6 +32,7 @@ const handleEventButton = () => {
     carousel: 'add-carousel',
     'our-clients': 'add-our-clients',
     color: 'add-color',
+    advisors: 'add-advisor',
   }
   const event = eventMap[props.activeTab]
   if (event) emit(event as any)
@@ -46,6 +48,7 @@ const activeTabHeader = computed(():string => {
     carousel: 'Imágenes del Carrusel',
     'our-clients': 'Imágenes de Clientes',
     color: 'Color Principal',
+    advisors: 'Asesores',
   }
   return headers[props.activeTab]
 })
@@ -60,6 +63,7 @@ const activeTabText = computed(():string => {
     carousel: 'Agregar Imagen al Carrusel',
     'our-clients': 'Agregar Imagen de Cliente',
     color: 'Crear Color Principal',
+    advisors: 'Agregar Asesor',
   }
   return text[props.activeTab]
 })

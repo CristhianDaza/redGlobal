@@ -13,6 +13,7 @@ import {
   getDiscountsMarpico,
   constructImagesMarpico,
 } from '@/utils';
+import { cacheService, API_CACHE_CONFIG, logger } from '@/services';
 import noImage from '@/assets/images/no-image.jpg';
 
 export function useProductsMarpico() {
@@ -20,11 +21,25 @@ export function useProductsMarpico() {
   const isSuccessProductsMarpicoComposable = ref<boolean>(false);
 
   const getProductsMarpico = async (): Promise<ProductsRedGlobal[]> => {
+    const cache = cacheService.cacheApiCall<ProductsRedGlobal[]>(
+      'PRODUCTS_MARPICO',
+      {},
+      API_CACHE_CONFIG.PRODUCTS_MARPICO.ttl
+    );
+
     try {
-      const productsMarpico = await getAllProductsMarpico() as MarpicoProduct[];
-      isSuccessProductsMarpicoComposable.value = true;
-      return productsMarpico.map<ProductsRedGlobal>(product => _normalizeProducts(product));
+      return await cache.getOrSet(async () => {
+        logger.info('Fetching products from Marpico API', 'useProductsMarpico');
+        
+        const productsMarpico = await getAllProductsMarpico() as MarpicoProduct[];
+        const normalizedProducts = productsMarpico.map<ProductsRedGlobal>(product => _normalizeProducts(product));
+        
+        logger.info(`Successfully fetched ${normalizedProducts.length} products from Marpico API`, 'useProductsMarpico');
+        isSuccessProductsMarpicoComposable.value = true;
+        return normalizedProducts;
+      });
     } catch (error) {
+      logger.error('Failed to fetch products from Marpico API', 'useProductsMarpico', error);
       isSuccessProductsMarpicoComposable.value = false;
       throw error;
     } finally {

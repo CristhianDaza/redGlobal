@@ -9,6 +9,7 @@ import {
   formatText,
   constructTotalProductsPromos
 } from '@/utils';
+import { cacheService, API_CACHE_CONFIG, logger } from '@/services';
 import noImage from '@/assets/images/no-image.jpg';
 
 export function useProductsPromos() {
@@ -16,17 +17,32 @@ export function useProductsPromos() {
   const isSuccessProductsPromosComposable = ref<boolean>(false);
 
   const getProductsPromos = async (): Promise<ProductsRedGlobal[]> => {
+    const cache = cacheService.cacheApiCall<ProductsRedGlobal[]>(
+      'PRODUCTS_PROMOS',
+      {},
+      API_CACHE_CONFIG.PRODUCTS_PROMOS.ttl
+    );
+
     try {
-      const [
-        productsPromos,
-        stockPromos
-      ] = await Promise.all([
-        getAllProductsPromos() as Promise<PromosProduct[]>,
-        getStockPromos() as Promise<Stock[]>
-      ]);
-      isSuccessProductsPromosComposable.value = true;
-      return productsPromos.map(product => _normalizeProducts(product, stockPromos));
+      return await cache.getOrSet(async () => {
+        logger.info('Fetching products from Promos API', 'useProductsPromos');
+        
+        const [
+          productsPromos,
+          stockPromos
+        ] = await Promise.all([
+          getAllProductsPromos() as Promise<PromosProduct[]>,
+          getStockPromos() as Promise<Stock[]>
+        ]);
+        
+        const normalizedProducts = productsPromos.map(product => _normalizeProducts(product, stockPromos));
+        logger.info(`Successfully fetched ${normalizedProducts.length} products from Promos API`, 'useProductsPromos');
+        
+        isSuccessProductsPromosComposable.value = true;
+        return normalizedProducts;
+      });
     } catch (error) {
+      logger.error('Failed to fetch products from Promos API', 'useProductsPromos', error);
       isSuccessProductsPromosComposable.value = false;
       throw error;
     } finally {

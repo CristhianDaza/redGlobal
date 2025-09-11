@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 11/09/2025
+### Added
+- Add lazy loading to imagen.
+- Optimize call products.
+- Add advisor admin configuration support.
+
+### Changed
+- Update menu items to be hidden on small screens.
+
 ## [1.3.0] - 04/08/2025
 ### Dependencies
 - Add `vue-snap` to `^1.0.0`

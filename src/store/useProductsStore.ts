@@ -2,9 +2,10 @@ import type { StateGlobal } from '@/types/config.d'
 import type { ProductsRedGlobal } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { productsFirebase } from '@/services/firebase'
-import { normalizeString } from '@/utils'
+import { normalizeString, generateSearchVariations } from '@/utils'
 import { useProductsCataProm, useProductsMarpico, useProductsPromos, useProductStockSur } from '@/composable'
 import { NotificationService } from '@/components/Notification/NotificationService';
+import { logger } from '@/services';
 
 export const useProductsStore = defineStore('products', {
   state: (): StateGlobal => ({
@@ -32,7 +33,7 @@ export const useProductsStore = defineStore('products', {
           this.lastUpdateProducts = await productsFirebase.getLastUpdate()
         }
       } catch (error) {
-        console.error('Error in getAllProducts:', error)
+        logger.error('Error in getAllProducts', 'useProductsStore', error);
         NotificationService.push({
           title: 'Error al cargar los productos',
           description: 'Hubo un error al cargar los productos. Por favor, intenta nuevamente.',
@@ -89,16 +90,16 @@ export const useProductsStore = defineStore('products', {
 
       const productsPromos = results[0].status === 'fulfilled'
         ? results[0].value
-        : (console.error('Promos API failed:', results[0].reason), []);
+        : (logger.error('Promos API failed', 'useProductsStore', results[0].reason), []);
       const productsMarpico = results[1].status === 'fulfilled'
         ? results[1].value
-        : (console.error('Marpico API failed:', results[1].reason), []);
+        : (logger.error('Marpico API failed', 'useProductsStore', results[1].reason), []);
       const productsStockSur = results[2].status === 'fulfilled'
         ? results[2].value
-        : (console.error('StockSur API failed:', results[2].reason), []);
+        : (logger.error('StockSur API failed', 'useProductsStore', results[2].reason), []);
       const productsCataProm = results[3].status === 'fulfilled'
         ? results[3].value
-        : (console.error('CataProm API failed:', results[3].reason), []);
+        : (logger.error('CataProm API failed', 'useProductsStore', results[3].reason), []);
 
       const allProducts = [
         ...productsPromos,
@@ -123,10 +124,10 @@ export const useProductsStore = defineStore('products', {
           this.$patch({ products: allProducts })
           this.$patch({ lastUpdateProducts: new Date().toISOString() })
         } else {
-          console.warn('No se guardaron productos porque todas las APIs fallaron.')
+          logger.warn('No se guardaron productos porque todas las APIs fallaron', 'useProductsStore');
         }
       } catch (saveError) {
-        console.error('Error saving products to Firebase:', saveError);
+        logger.error('Error saving products to Firebase', 'useProductsStore', saveError);
       } finally {
         this.isLoadingSaveProducts = false;
         this.isUpdating = false;
@@ -144,14 +145,17 @@ export const useProductsStore = defineStore('products', {
 
       this.productsToView = (this.products || []).filter(product => {
         if (query) {
-          const normalizedQuery = normalizeString(query);
+          const searchVariations = generateSearchVariations(query);
           const normalizedName = normalizeString(product.name);
           const normalizedDescription = normalizeString(product.description);
           const normalizedId = normalizeString(product.id);
 
-          const matchesSearch = normalizedName.includes(normalizedQuery) ||
-            normalizedDescription.includes(normalizedQuery) ||
-            normalizedId.includes(normalizedQuery);
+          const matchesSearch = searchVariations.some(variation => {
+            const normalizedVariation = normalizeString(variation);
+            return normalizedName.includes(normalizedVariation) ||
+              normalizedDescription.includes(normalizedVariation) ||
+              normalizedId.includes(normalizedVariation);
+          });
 
           if (!matchesSearch) {
             return false;

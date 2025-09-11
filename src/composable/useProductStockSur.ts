@@ -12,6 +12,7 @@ import {
   constructTotalProductsStockSur,
   formatText,
 } from '@/utils';
+import { cacheService, API_CACHE_CONFIG, logger } from '@/services';
 import noImage from '@/assets/images/no-image.jpg';
 
 export function useProductStockSur() {
@@ -19,11 +20,25 @@ export function useProductStockSur() {
   const isSuccessProductsStockSurComposable = ref<boolean>(false);
 
   const getProductsStockSur = async (): Promise<ProductsRedGlobal[]> => {
+    const cache = cacheService.cacheApiCall<ProductsRedGlobal[]>(
+      'PRODUCTS_STOCKSUR',
+      {},
+      API_CACHE_CONFIG.PRODUCTS_STOCKSUR.ttl
+    );
+
     try {
-      const products = await getAllProductsStockSur() as StockSurProduct[];
-      isSuccessProductsStockSurComposable.value = true;
-      return products.map(product => _normalizeProducts(product));
+      return await cache.getOrSet(async () => {
+        logger.info('Fetching products from StockSur API', 'useProductStockSur');
+        
+        const products = await getAllProductsStockSur() as StockSurProduct[];
+        const normalizedProducts = products.map(product => _normalizeProducts(product));
+        
+        logger.info(`Successfully fetched ${normalizedProducts.length} products from StockSur API`, 'useProductStockSur');
+        isSuccessProductsStockSurComposable.value = true;
+        return normalizedProducts;
+      });
     } catch (error) {
+      logger.error('Failed to fetch products from StockSur API', 'useProductStockSur', error);
       isSuccessProductsStockSurComposable.value = false;
       throw error;
     } finally {

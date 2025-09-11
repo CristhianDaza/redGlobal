@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useMenuStore, useAuthStore, useUserStore } from '@/store';
 import { useWhatsApp } from '@/composable';
 import { CONSTANTS, transformColPhone } from '@/utils';
 import mainLogo from '@/assets/images/main-logo.png'
+import PrivacyPolicyModal from '@/components/UI/PrivacyPolicyModal.vue';
 
 const menuStore = useMenuStore();
 const { menu } = storeToRefs(menuStore);
@@ -49,6 +50,16 @@ const services = [
   'Impresión litográfica',
   'Decoración institucional'
 ];
+
+const isPrivacyModalOpen = ref(false);
+
+const openPrivacyModal = () => {
+  isPrivacyModalOpen.value = true;
+};
+
+const closePrivacyModal = () => {
+  isPrivacyModalOpen.value = false;
+};
 </script>
 
 <template>
@@ -82,6 +93,15 @@ const services = [
             <li v-for="menuItem in menu" :key="menuItem.id">
               <router-link :to="menuItem.path">{{ menuItem.title }}</router-link>
             </li>
+            <li>
+              <button 
+                class="privacy-link" 
+                @click="openPrivacyModal"
+                type="button"
+              >
+                Políticas de Tratamiento de Datos Personales
+              </button>
+            </li>
           </ul>
         </nav>
         <div class="logo">
@@ -97,6 +117,12 @@ const services = [
   <div class="footer-bottom">
     <p>Design by <a href="https://co.linkedin.com/in/cristhiandaza" target="_blank" rel="noopener noreferrer">Cristhian Daza</a> With <span class="heart">💙</span></p>
   </div>
+
+  <!-- Privacy Policy Modal -->
+  <PrivacyPolicyModal 
+    :is-open="isPrivacyModalOpen" 
+    @close="closePrivacyModal" 
+  />
 </template>
 
 <style scoped>
@@ -176,7 +202,7 @@ const services = [
       color: #666;
       font-size: 0.9rem;
 
-      a {
+      a, .privacy-link {
         color: #666;
         text-decoration: none;
         transition: color 0.2s ease;
@@ -184,6 +210,16 @@ const services = [
         &:hover {
           color: var(--primary-color);
         }
+      }
+
+      .privacy-link {
+        background: none;
+        border: none;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+        text-align: left;
+        font-size: 0.9rem;
       }
     }
   }

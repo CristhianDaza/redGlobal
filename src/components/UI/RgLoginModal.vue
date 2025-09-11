@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 import { useAuthStore } from '@/store';
 
 const props = defineProps<{
@@ -30,6 +30,27 @@ watch(() => authStore.isAuthenticated(), (isAuthenticated) => {
 const closeModal = () => {
   emit('close');
 };
+
+const handleEscKey = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && props.isOpen) {
+    closeModal()
+  }
+}
+
+watch(() => props.isOpen, (open) => {
+  if (open) {
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleEscKey)
+  } else {
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', handleEscKey)
+  }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleEscKey)
+  document.body.style.overflow = ''
+})
 
 const handleSubmit = async () => {
   if (!email.value || !password.value) {
@@ -106,24 +127,28 @@ const handleSubmit = async () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(5px);
+  background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  backdrop-filter: blur(12px) saturate(1.3) brightness(0.9);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3) brightness(0.9);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal-content {
-  background-color: rgba(255, 255, 255, 0.95);
+  background: white;
   padding: 2rem;
-  border-radius: 16px;
+  border-radius: 0.75rem;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transform: scale(0.95);
   opacity: 0;
   transition: all 0.3s ease-out;
+  animation: slideIn 0.3s ease-out;
 }
 
 .modal-content.modal-open {
@@ -250,5 +275,25 @@ const handleSubmit = async () => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 </style>

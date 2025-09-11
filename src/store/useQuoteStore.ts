@@ -26,7 +26,7 @@ export const useQuoteStore = defineStore('quote', () => {
     state.value.quotes.filter(q => q.status === QuoteStatus.COMPLETED)
   )
   const totalItems = computed(() =>
-    state.value.currentQuote.reduce((total, item) => total + item.quantity, 0)
+    state.value.currentQuote.length
   )
 
   const STORAGE_KEY = 'currentQuote'
@@ -69,18 +69,7 @@ export const useQuoteStore = defineStore('quote', () => {
   }
 
   const addItemToQuote = async (item: QuoteItem) => {
-    const existingIndex = state.value.currentQuote.findIndex(
-      i => i.productId === item.productId && i.color === item.color
-    )
-
-    if (existingIndex >= 0) {
-      state.value.currentQuote[existingIndex].quantity += item.quantity
-      if (state.value.currentQuote[existingIndex].quantity > item.maxQuantity) {
-        state.value.currentQuote[existingIndex].quantity = item.maxQuantity
-      }
-    } else {
-      state.value.currentQuote.push(item)
-    }
+    state.value.currentQuote.push(item)
     saveCurrentQuoteToStorage()
   }
 

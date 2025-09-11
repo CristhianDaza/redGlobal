@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { OurClients } from '@/types/common.d'
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
+
+const RgLazyImage = defineAsyncComponent(/* webpackChunkName: "rgLazyImage" */() => import('./RgLazyImage.vue'))
 
 const props = defineProps<{
   images: OurClients[]
@@ -51,22 +53,28 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
           v-for="(img) in rowImages"
           :key="img.id"
         >
-          <img
+          <RgLazyImage
             :src="img.imageUrl"
-            class="logo"
             :alt="img.title"
-            :title="img.title"
+            :width="120"
+            :height="70"
+            image-class="logo"
+            :eager="false"
+            root-margin="100px"
           />
         </template>
         <template
           v-for="(img) in rowImages"
           :key="img.id"
         >
-          <img
+          <RgLazyImage
             :src="img.imageUrl"
-            class="logo"
             :alt="img.title"
-            :title="img.title"
+            :width="120"
+            :height="70"
+            image-class="logo"
+            :eager="false"
+            root-margin="100px"
           />
         </template>
 
@@ -116,7 +124,7 @@ span {
   animation-direction: reverse;
 }
 
-.logo {
+:deep(.logo) {
   height: 70px;
   margin: 0 1.5rem;
   flex-shrink: 0;

@@ -86,6 +86,14 @@ const currentUserName = computed(() => {
         <span>Color Principal</span>
       </button>
       <button
+        v-if="isAdmin"
+        :class="['nav-item', { active: activeTab === 'advisors' }]"
+        @click="$emit('tab-change', 'advisors')"
+      >
+        <span class="material-icons">support_agent</span>
+        <span>Asesores</span>
+      </button>
+      <button
         :class="['nav-item', { active: activeTab === 'quotes' }]"
         @click="$emit('tab-change', 'quotes')"
       >
@@ -160,6 +168,115 @@ const currentUserName = computed(() => {
 
 .button-update-products {
   margin-top: 0.5rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  color: #666;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  text-align: left;
+  position: relative;
+  outline: none;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  min-height: 40px;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
+}
+
+.nav-item:hover {
+  background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
+  color: white;
+  border: 2px solid var(--primary-color);
+  box-shadow: 
+    0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
+    0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.nav-item:hover::before {
+  left: 100%;
+}
+
+.nav-item:hover .material-icons {
+  color: white;
+  transform: scale(1.1);
+}
+
+.nav-item:active {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 12px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
+    0 1px 4px rgba(var(--primary-color-rgb, 0, 123, 255), 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.nav-item.active {
+  background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
+  color: white;
+  border: 2px solid var(--primary-color);
+  box-shadow: 
+    0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
+    0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.nav-item.active .material-icons {
+  color: white;
+}
+
+.nav-item.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px rgba(var(--primary-color-rgb, 0, 123, 255), 0.3),
+    0 3px 10px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.nav-item .material-icons {
+  font-size: 1.25rem;
+}
+
+.quote-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
+  z-index: 10;
 }
 
 .divider {

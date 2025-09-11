@@ -293,17 +293,55 @@ const handleSubmitQuote = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e2e8f0;
-  background: white;
+  border: 1px solid #e9ecef;
+  background: #f8f9fa;
   border-radius: 0.25rem;
   cursor: pointer;
-  color: #4a5568;
+  color: #495057;
   padding: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.quantity-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+  pointer-events: none;
+}
+
+.quantity-btn:hover::before {
+  left: 100%;
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 6px rgba(255, 68, 68, 0.25);
+  transform: translateY(-1px);
+}
+
+.quantity-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(255, 68, 68, 0.2);
 }
 
 .quantity-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  background: #f8f9fa !important;
+  color: #6c757d !important;
+  border-color: #e9ecef !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .quantity-input input {
@@ -361,15 +399,45 @@ const handleSubmitQuote = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  background: none;
-  color: #94a3b8;
+  border: 1px solid #e9ecef;
+  background: #f8f9fa;
+  border-radius: 50%;
+  color: #6c757d;
   cursor: pointer;
   padding: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.remove-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+  pointer-events: none;
+}
+
+.remove-btn:hover::before {
+  left: 100%;
 }
 
 .remove-btn:hover {
-  color: #ef4444;
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+  box-shadow: 0 2px 6px rgba(220, 53, 69, 0.25);
+  transform: translateY(-1px);
+}
+
+.remove-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(220, 53, 69, 0.2);
 }
 
 .cart-actions {

@@ -226,4 +226,10 @@ export interface ColorItem {
   hex: string;
 }
 
-export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color';
+export interface Advisor {
+  id: string;
+  nombre: string;
+  telefono: string;
+}
+
+export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color' | 'advisors';

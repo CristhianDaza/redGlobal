@@ -226,8 +226,8 @@ watch(
 }
 
 .nav-button {
-  background: white;
-  border: 1px solid transparent;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -236,21 +236,50 @@ watch(
   justify-content: center;
   font-size: 1.5rem;
   cursor: pointer;
-  transition: all 0.2s;
-  color: #4a5568;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #495057;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+  pointer-events: none;
+}
+
+.nav-button:hover::before {
+  left: 100%;
 }
 
 .nav-button:hover:not(:disabled) {
-  background: #f7fafc;
-  color: #2d3748;
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+}
+
+.nav-button:active:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(255, 68, 68, 0.2);
 }
 
 .nav-button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  background: #f8f9fa !important;
+  color: #6c757d !important;
+  border-color: #e9ecef !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 /* Botones de navegación móviles */

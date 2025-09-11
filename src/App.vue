@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, defineAsyncComponent, watch } from 'vue';
-import { useMenuStore, useProductsStore, useAuthStore, useUserStore, useLoaderStore, useMaintenanceStore, useColorStore } from '@/store';
+import { useAuthStore, useColorStore, useLoaderStore, useMaintenanceStore, useMenuStore, useProductsStore, useUserStore } from '@/store';
+import { logger, preloadService } from '@/services';
 
 const RgNavbar = defineAsyncComponent(/* webpackChunkName: "rgNavbar" */() => import('./components/UI/RgNavbar.vue'));
 const RgFooter = defineAsyncComponent(/* webpackChunkName: "rgFooter" */() => import('./components/UI/RgFooter.vue'));
@@ -40,50 +41,83 @@ const updateCustomColors = () => {
 onMounted(async () => {
   loaderStore.showLoader();
 
-  await maintenanceStore.getMaintenanceMode();
-  if (maintenanceStore.isMaintenanceMode) {
-    loaderStore.hideLoader();
-    return;
-  }
-  await colorStore.getColor();
-
-  await new Promise<void>((resolve) => {
-    if (!authStore.loading) {
-      resolve();
+  try {
+    await maintenanceStore.getMaintenanceMode();
+    if (maintenanceStore.isMaintenanceMode) {
+      loaderStore.hideLoader();
       return;
     }
 
-    const stop = watch(
-      () => authStore.loading,
-      (loading) => {
-        if (loading === false) {
-          stop();
+    const [colorResult, authResult] = await Promise.allSettled([
+      colorStore.getColor(),
+      new Promise<void>((resolve) => {
+        if (!authStore.loading) {
           resolve();
+          return;
         }
-      },
-      { immediate: true }
-    );
-  });
 
-  if (authStore.isAuthenticated()) {
-    await userStore.getUsers();
+        const stop = watch(
+          () => authStore.loading,
+          (loading) => {
+            if (loading === false) {
+              stop();
+              resolve();
+            }
+          },
+          { immediate: true }
+        );
+      })
+    ]);
+
+    if (colorResult.status === 'rejected') {
+      logger.error('Color store initialization failed', 'App.vue', colorResult.reason);
+    }
+    if (authResult.status === 'rejected') {
+      logger.error('Auth initialization failed', 'App.vue', authResult.reason);
+    }
+
+    const loadPromises: Promise<any>[] = [];
+    
+    if (!menuStore.menu || menuStore.menu.length === 0) {
+      loadPromises.push(menuStore.getMenu());
+    }
+
+    if (authStore.isAuthenticated()) {
+      loadPromises.push(userStore.getUsers());
+    }
+    await Promise.allSettled(loadPromises);
+
+    updateCustomColors();
+
+    const currentUser = authStore.currenLoggingUser;
+    const isAdmin = currentUser?.role === 'admin';
+    const productsEmpty = !storeProducts.products?.length;
+
+    if (isAdmin || productsEmpty) {
+      await storeProducts.getAllProducts(isAdmin);
+    }
+
+    // Preload critical images after initial load
+    if (storeProducts.products?.length) {
+      const productImages = storeProducts.products
+        .slice(0, 12)
+        .map(p => p.mainImage)
+        .filter(Boolean);
+      
+      // Get category images from category store instead of menu
+      const categoryImages: string[] = [];
+      
+      // Preload in background without blocking UI
+      preloadService.preloadCriticalImages([], categoryImages)
+        .then(() => preloadService.preloadProductImages(productImages))
+        .catch(error => logger.warn('Image preload failed', 'App.vue', error));
+    }
+
+  } catch (error) {
+    logger.fatal('Critical error during app initialization', 'App.vue', error);
+  } finally {
+    loaderStore.hideLoader();
   }
-
-  updateCustomColors();
-
-  if (!menuStore.menu || menuStore.menu.length === 0) {
-    await menuStore.getMenu();
-  }
-
-  const currentUser = authStore.currenLoggingUser;
-  const isAdmin = currentUser?.role === 'admin';
-  const productsEmpty = !storeProducts.products?.length;
-
-  if (isAdmin || productsEmpty) {
-    await storeProducts.getAllProducts(isAdmin);
-  }
-
-  loaderStore.hideLoader();
 });
 </script>
 
