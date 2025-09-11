@@ -120,6 +120,18 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 };
 
+const isActiveRoute = (path: string) => {
+  const currentPath = router.currentRoute.value.path;
+  
+  if (path === '/products') {
+    return currentPath === '/products' || currentPath.startsWith('/products/');
+  }
+  if (path === '/search') {
+    return currentPath === '/search';
+  }
+  return currentPath === path;
+};
+
 window.addEventListener('resize', () => {
   windowWidth.value = window.innerWidth;
 });
@@ -139,6 +151,8 @@ window.addEventListener('resize', () => {
             class="menu-item"
             v-for="({id, title, path}) in menuStore.getMenuItems"
             :key="id"
+            active-class="router-link-exact-active"
+            :class="{ 'router-link-exact-active': isActiveRoute(path) }"
           >
             {{ title }}
           </router-link>

@@ -63,17 +63,6 @@ export const getAllProductsStockSur = async (): Promise<StockSurProduct[]> => {
     }
     return allProducts;
   } catch (error) {
-    // Si ves un error de CORS en desarrollo, configura un proxy en vite.config.ts:
-    // server: {
-    //   proxy: {
-    //     '/v2': {
-    //       target: 'https://api.colombia.cdopromocionales.com',
-    //       changeOrigin: true,
-    //       secure: false,
-    //     },
-    //   },
-    // },
-    // Y cambia la base URL a '/v2' en tu .env.development
     console.error('Error general en getAllProductsStockSur:', error);
     return [];
   }
