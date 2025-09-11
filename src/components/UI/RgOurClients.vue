@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { OurClients } from '@/types/common.d'
-import { computed, defineAsyncComponent } from 'vue'
-
-const RgLazyImage = defineAsyncComponent(/* webpackChunkName: "rgLazyImage" */() => import('./RgLazyImage.vue'))
+import { computed } from 'vue'
 
 const props = defineProps<{
   images: OurClients[]
@@ -53,28 +51,24 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
           v-for="(img) in rowImages"
           :key="img.id"
         >
-          <RgLazyImage
+          <img
             :src="img.imageUrl"
             :alt="img.title"
-            :width="120"
-            :height="70"
-            image-class="logo"
-            :eager="false"
-            root-margin="100px"
+            class="logo"
+            width="120"
+            height="70"
           />
         </template>
         <template
           v-for="(img) in rowImages"
           :key="img.id"
         >
-          <RgLazyImage
+          <img
             :src="img.imageUrl"
             :alt="img.title"
-            :width="120"
-            :height="70"
-            image-class="logo"
-            :eager="false"
-            root-margin="100px"
+            class="logo"
+            width="120"
+            height="70"
           />
         </template>
 

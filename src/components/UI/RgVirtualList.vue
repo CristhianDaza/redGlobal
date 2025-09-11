@@ -1,23 +1,23 @@
 <template>
-  <div 
-    ref="containerRef" 
+  <div
+    ref="containerRef"
     class="virtual-list-container"
     :style="{ height: containerHeight + 'px' }"
     @scroll="handleScroll"
   >
-    <div 
-      class="virtual-list-spacer" 
+    <div
+      class="virtual-list-spacer"
       :style="{ height: totalHeight + 'px' }"
     >
-      <div 
+      <div
         class="virtual-list-content"
         :style="{ transform: `translateY(${offsetY}px)` }"
       >
-        <slot 
-          name="item" 
-          v-for="(item, index) in visibleItems" 
+        <slot
+          name="item"
+          v-for="(item, index) in visibleItems"
           :key="getItemKey(item, startIndex + index)"
-          :item="item" 
+          :item="item"
           :index="startIndex + index"
         />
       </div>
@@ -66,6 +66,7 @@ const getItemKey = (item: T, index: number): string | number => {
 
 const handleScroll = (event: Event) => {
   // El scroll es manejado por el composable useVirtualScroll
+  console.log('Scroll event:', event);
 };
 </script>
 
