@@ -307,8 +307,8 @@ const handleClose = () => {
 .quote-form {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  max-height: 70vh;
+  gap: 1.5rem;
+  max-height: 80vh;
   overflow-y: auto;
   padding-right: 0.5rem;
 }
@@ -333,19 +333,19 @@ const handleClose = () => {
 
 .product-info {
   display: flex;
-  gap: 1.5rem;
-  padding: 1.5rem;
+  gap: 1rem;
+  padding: 1rem;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   border: 1px solid #e2e8f0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .product-info img {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   border: 1px solid #e2e8f0;
   background: white;
   padding: 0.5rem;
@@ -494,38 +494,17 @@ select:focus {
 .selected-colors {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  max-height: 300px;
-  overflow-y: auto;
-  padding-right: 0.5rem;
-}
-
-.selected-colors::-webkit-scrollbar {
-  width: 6px;
-}
-
-.selected-colors::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.selected-colors::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.selected-colors::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  gap: 1rem;
+  margin-top: 0.5rem;
 }
 
 .selected-color-item {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
+  gap: 0.75rem;
+  padding: 1rem;
   background-color: #f8fafc;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -534,30 +513,30 @@ select:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .quantities-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .quantity-row {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem;
+  padding: 0.5rem 0.75rem;
   background-color: white;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   border: 1px solid #e2e8f0;
 }
 
 .quantity-control {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.5rem;
   flex: 1;
 }
 
