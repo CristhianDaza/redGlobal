@@ -216,6 +216,10 @@ const isPriceLoading = computed(() => {
   return authStore.isAuthenticated() && userStore.isLoadingUsers;
 });
 
+const hasAvailableQuantities = computed(() => {
+  return product.value?.tableQuantity?.some(entry => entry.quantity > 0) ?? false;
+});
+
 const calculatePriceWithIncrease = (price: number) => {
   if (!authStore.isAuthenticated()) {
     return price;
@@ -457,6 +461,7 @@ const hideTooltip = () => {
                     @click="showQuoteModal = true"
                     icon="plus"
                     icon-position="left"
+                    :disabled="!hasAvailableQuantities"
                   >
                     <span>Cotizar</span>
                   </RgButton>

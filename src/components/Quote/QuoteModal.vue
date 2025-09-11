@@ -20,7 +20,7 @@ const authStore = useAuthStore()
 const userStore = useUserStore()
 const quoteStore = useQuoteStore()
 
-const selectedColors = ref<Map<string, { color: TableEntry, quantity: number }>>(new Map())
+const selectedColors = ref<Map<string, { color: TableEntry, quantities: number[] }>>(new Map())
 const includeMarking = ref(false)
 const inkColors = ref(1)
 const isLoading = ref(false)
@@ -39,16 +39,34 @@ const handleColorChange = (color: TableEntry) => {
   if (selectedColors.value.has(color.color)) {
     selectedColors.value.delete(color.color)
   } else {
-    selectedColors.value.set(color.color, { color, quantity: 1 })
+    selectedColors.value.set(color.color, { color, quantities: [1] })
   }
   selectedColors.value = new Map(selectedColors.value)
 }
 
-const updateQuantity = (color: TableEntry, newQuantity: number) => {
+const updateQuantity = (color: TableEntry, index: number, newQuantity: number) => {
   if (selectedColors.value.has(color.color)) {
     const entry = selectedColors.value.get(color.color)!
     if (newQuantity <= color.quantity && newQuantity > 0) {
-      entry.quantity = newQuantity
+      entry.quantities[index] = newQuantity
+      selectedColors.value = new Map(selectedColors.value)
+    }
+  }
+}
+
+const addQuantityField = (color: TableEntry) => {
+  if (selectedColors.value.has(color.color)) {
+    const entry = selectedColors.value.get(color.color)!
+    entry.quantities.push(1)
+    selectedColors.value = new Map(selectedColors.value)
+  }
+}
+
+const removeQuantityField = (color: TableEntry, index: number) => {
+  if (selectedColors.value.has(color.color)) {
+    const entry = selectedColors.value.get(color.color)!
+    if (entry.quantities.length > 1) {
+      entry.quantities.splice(index, 1)
       selectedColors.value = new Map(selectedColors.value)
     }
   }
@@ -70,22 +88,27 @@ const handleSubmit = async () => {
   isLoading.value = true
 
   try {
-    for (const { color, quantity } of selectedColors.value.values()) {
+    for (const { color, quantities } of selectedColors.value.values()) {
       const unitPrice = calculatePriceWithIncrease(Number(color.price));
-      const quoteItem: QuoteItem = {
-        productId: props.product.id,
-        productName: props.product.name,
-        productImage: props.product.mainImage,
-        color: color.color,
-        colorName: color.colorName,
-        quantity: quantity,
-        maxQuantity: color.quantity,
-        includeMarking: includeMarking.value,
-        inkColors: includeMarking.value ? inkColors.value : undefined,
-        unitPrice: unitPrice,
-        totalPrice: unitPrice * quantity
+      
+      for (const quantity of quantities) {
+        if (quantity > 0) {
+          const quoteItem: QuoteItem = {
+            productId: props.product.id,
+            productName: props.product.name,
+            productImage: props.product.mainImage,
+            color: color.color,
+            colorName: color.colorName,
+            quantity: quantity,
+            maxQuantity: color.quantity,
+            includeMarking: includeMarking.value,
+            inkColors: includeMarking.value ? inkColors.value : undefined,
+            unitPrice: unitPrice,
+            totalPrice: unitPrice * quantity
+          }
+          await quoteStore.addItemToQuote(quoteItem)
+        }
       }
-      await quoteStore.addItemToQuote(quoteItem)
     }
 
     resetForm()
@@ -107,6 +130,7 @@ const handleClose = () => {
   <RgModal
     :is-open="isOpen"
     :title="'Cotizar ' + product.name"
+    :max-width="'800px'"
     @close="handleClose"
   >
     <div class="quote-form">
@@ -141,33 +165,66 @@ const handleClose = () => {
 
       <div v-if="selectedColors.size > 0" class="selected-colors">
         <div
-          v-for="[colorKey, { color, quantity }] in selectedColors"
+          v-for="[colorKey, { color, quantities }] in selectedColors"
           :key="colorKey"
           class="selected-color-item"
         >
-          <div class="color-info">
-            <span
-              class="color-preview"
-              :style="{ backgroundColor: color.color }"
-            ></span>
-            <span class="color-name">{{ color.colorName }}</span>
+          <div class="color-header">
+            <div class="color-info">
+              <span
+                class="color-preview"
+                :style="{ backgroundColor: formatColor(color.color) }"
+              ></span>
+              <span class="color-name">{{ color.colorName }}</span>
+              <span class="color-stock">({{ color.quantity }} disponibles)</span>
+            </div>
+            <RgButton
+              text="+ Agregar cantidad"
+              type="default"
+              :custom-style="{
+                fontSize: '0.75rem',
+                padding: '0.25rem 0.5rem',
+                backgroundColor: 'var(--primary-color)',
+                color: 'white'
+              }"
+              @click="addQuantityField(color)"
+            />
           </div>
-          <div class="quantity-control">
-            <label :for="'quantity-' + colorKey">Cantidad:</label>
-            <input
-              :id="'quantity-' + colorKey"
-              :value="quantity"
-              type="number"
-              :min="1"
-              :max="color.quantity"
-              @input="e => updateQuantity(color, Number((e.target as HTMLInputElement).value))"
-              required
+          <div class="quantities-list">
+            <div
+              v-for="(quantity, index) in quantities"
+              :key="index"
+              class="quantity-row"
             >
-            <span class="help-text">
-              Máximo: {{ color.quantity }} unidades
-            </span>
+              <div class="quantity-control">
+                <label :for="'quantity-' + colorKey + '-' + index">Cantidad {{ index + 1 }}:</label>
+                <input
+                  :id="'quantity-' + colorKey + '-' + index"
+                  :value="quantity"
+                  type="number"
+                  :min="1"
+                  :max="color.quantity"
+                  @input="e => updateQuantity(color, index, Number((e.target as HTMLInputElement).value))"
+                  required
+                >
+              </div>
+              <RgButton
+                v-if="quantities.length > 1"
+                text="Eliminar"
+                type="default"
+                :custom-style="{
+                  fontSize: '0.75rem',
+                  padding: '0.25rem 0.5rem',
+                  backgroundColor: '#ef4444',
+                  color: 'white'
+                }"
+                @click="removeQuantityField(color, index)"
+              />
+            </div>
           </div>
-
+          <div class="help-text">
+            Máximo: {{ color.quantity }} unidades por cantidad
+          </div>
         </div>
       </div>
 
@@ -212,7 +269,7 @@ const handleClose = () => {
             color: 'white',
             boxShadow: 'var(--primary-color) 0px 0px 5px'
           }"
-          :disabled="selectedColors.size === 0 || isLoading || ![...selectedColors.values()].some(item => item.quantity > 0)"
+          :disabled="selectedColors.size === 0 || isLoading || ![...selectedColors.values()].some(item => item.quantities.some(q => q > 0))"
           @click="handleSubmit"
         >
           <template #default>
@@ -229,22 +286,48 @@ const handleClose = () => {
 .quote-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.quote-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quote-form::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.quote-form::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.quote-form::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .product-info {
   display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f8fafc;
-  border-radius: 0.5rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .product-info img {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   object-fit: contain;
-  border-radius: 0.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: white;
+  padding: 0.5rem;
 }
 
 .product-details {
@@ -278,29 +361,58 @@ const handleClose = () => {
 
 .color-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fafafa;
+}
+
+.color-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.color-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.color-grid::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.color-grid::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .color-button {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.375rem;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
   background: white;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .color-button:hover {
   border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .color-button.active {
   border-color: var(--primary-color);
-  background: #f0f9ff;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.2);
+  transform: translateY(-1px);
 }
 
 .color-preview {
@@ -361,24 +473,75 @@ select:focus {
 .selected-colors {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
   margin-top: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.selected-colors::-webkit-scrollbar {
+  width: 6px;
+}
+
+.selected-colors::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.selected-colors::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.selected-colors::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .selected-color-item {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
-  padding: 1rem;
+  padding: 1.5rem;
   background-color: #f8fafc;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.color-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.quantities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.quantity-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
 }
 
 .quantity-control {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.quantity-control input {
+  max-width: 120px;
 }
 
 .loading-spinner {

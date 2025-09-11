@@ -684,7 +684,6 @@ window.addEventListener('resize', () => {
       inset 0 -1px 0 rgba(0, 0, 0, 0.05);
     min-height: 40px;
     position: relative;
-    overflow: hidden;
 
     &::before {
       content: '';
@@ -742,13 +741,17 @@ window.addEventListener('resize', () => {
     background-color: var(--primary-color);
     color: white;
     font-size: 0.75rem;
-    min-width: 18px;
-    height: 18px;
-    border-radius: 9px;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 4px;
+    padding: 0 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 2px solid white;
+    z-index: 10;
   }
 
 }
