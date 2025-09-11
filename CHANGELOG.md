@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed carousel navigation arrows not being visible or functional
 - Added proper styling and positioning for carousel navigation buttons
 - Improved carousel navigation accessibility and responsive design
+- **Fixed product image carousel navigation buttons being disabled incorrectly** when multiple images are available
+- Corrected thumbnail carousel navigation logic to properly enable/disable buttons based on available images
 - **Resolved CataProm API connectivity issues** by implementing server-side proxy to bypass browser CORS restrictions
 - **Resolved StockSur API CORS issues** by replacing external proxy dependency (`allorigins.win`) with internal PHP proxy for better reliability and performance
 

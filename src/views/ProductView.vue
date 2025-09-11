@@ -401,7 +401,7 @@ const hideTooltip = () => {
             </div>
             <button
               class="nav-button next"
-              :disabled="currentImageIndex >= uniqueImages.length - visibleThumbnails"
+              :disabled="currentImageIndex + visibleThumbnails >= uniqueImages.length"
               @click="currentImageIndex = Math.min(uniqueImages.length - visibleThumbnails, currentImageIndex + 1)"
             >
               ›
