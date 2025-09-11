@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **CataProm API Proxy**: Implemented PHP proxy server to handle CataProm API calls from server-side, resolving IP/URL validation issues when calling from SPA
+- Added `VITE_API_CATAPROM_PROXY_URL` environment variable for proxy configuration
+- Created fallback system in `apiConfig.ts` to use proxy URL with direct API as backup
+
 ### Fixed
 - Fixed admin automatic daily API refresh functionality
 - Corrected `getDay()` function to properly compare full dates (YYYY-MM-DD) instead of just day numbers
@@ -14,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed carousel navigation arrows not being visible or functional
 - Added proper styling and positioning for carousel navigation buttons
 - Improved carousel navigation accessibility and responsive design
+- **Resolved CataProm API connectivity issues** by implementing server-side proxy to bypass browser CORS restrictions
 
 ### Enhanced
 - Modernized login modal with contemporary design and improved UX

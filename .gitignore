@@ -27,3 +27,6 @@ dist-ssr
 .env.production
 
 package-lock.json
+
+# CataProm Proxy - Archivos sensibles
+cataprom-proxy
