@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '@/types/common.d';
-import { ref, watch, defineAsyncComponent } from 'vue';
+import { ref, watch } from 'vue';
 import { useProductsStore } from '@/store';
 import { normalizeString } from '@/utils';
 import { useDebounce } from '@/composable/useDebounce';
-
-const RgLazyImage = defineAsyncComponent(() => import('./RgLazyImage.vue'));
 
 const props = defineProps<{
   modelValue: string;
@@ -108,14 +106,11 @@ watch(() => props.modelValue, (newValue) => {
       >
         <div class="suggestion-content">
           <span class="suggestion-name">{{ suggestion.name }}</span>
-          <RgLazyImage
+          <img
             v-if="suggestion.mainImage"
             :src="suggestion.mainImage"
             :alt="suggestion.name"
-            :width="32"
-            :height="32"
-            image-class="suggestion-image"
-            :eager="false"
+            class="suggestion-image"
           />
         </div>
       </div>
