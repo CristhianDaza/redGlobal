@@ -4,10 +4,9 @@ import { computed, defineAsyncComponent, ref } from 'vue';
 import TvButton from '@todovue/tv-button';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useMenuStore, useQuoteStore, useUserStore } from '@/store';
-import { useWhatsApp, useIsMobile } from '@/composable';
+import { useIsMobile } from '@/composable';
 import { NotificationService } from '../Notification/NotificationService';
 import mainLogo from '@/assets/images/main-logo.png'
-import { transformColPhone, CONSTANTS } from '@/utils'
 
 const RgAutocomplete = defineAsyncComponent(/* webpackChunkName: "rgAutocomplete" */ () => import('@/components/UI/RgAutocomplete.vue'));
 const RgLoginModal = defineAsyncComponent(/* webpackChunkName: "rgLoginModal" */ () => import('@/components/UI/RgLoginModal.vue'));
@@ -18,7 +17,6 @@ const menuStore = useMenuStore();
 const authStore = useAuthStore()
 const userStore = useUserStore();
 const quoteStore = useQuoteStore();
-const { whatsAppLink } = useWhatsApp();
 const { isSize878, isSize320 } = useIsMobile();
 
 const sidebarOpen = ref(false);
@@ -27,7 +25,6 @@ const searchQuery = ref('');
 const suggestions = ref<ProductsRedGlobal[]>([]);
 const showLoginModal = ref(false);
 const showQuoteCart = ref(false);
-
 const handleLogout = async () => {
   try {
     await authStore.logout();
@@ -164,9 +161,7 @@ window.addEventListener('resize', () => {
         </template>
       </div>
       <div class="navbar-actions">
-        <a :href="whatsAppLink" target="_blank">
-          <p><span class="material-icons">phone</span> {{ transformColPhone(CONSTANTS.NUMBER_WHATSAPP) }}</p>
-        </a>
+        <!-- Phone number removed, only WhatsApp floating button remains -->
       </div>
     </div>
   </nav>
@@ -866,6 +861,7 @@ window.addEventListener('resize', () => {
     left: 100%;
   }
 }
+
 
 @media (max-width: 768px) {
   .navbar-brand {
