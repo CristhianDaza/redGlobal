@@ -281,75 +281,44 @@ window.addEventListener('resize', () => {
 }
 
 .menu-item {
-  background: linear-gradient(145deg, transparent, transparent);
-  border: 2px solid transparent;
+  background: none;
+  border: none;
   padding: 0.75rem 1rem;
   color: var(--text-color);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 10px;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.5s ease;
-  }
+  transition: all 0.3s ease;
+  text-decoration: none;
 
   &::after {
     content: '';
     position: absolute;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     height: 2px;
     width: 0;
     background: var(--primary-color);
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 1px;
+    transition: width 0.3s ease;
   }
 }
 
 .menu-item:hover {
-  color: white;
-  background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
-  border: 2px solid var(--primary-color);
-  box-shadow: 
-    0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
-    0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-
-  &::before {
-    left: 100%;
-  }
+  color: var(--primary-color);
+  transform: none;
 
   &::after {
-    width: 80%;
-    background: rgba(255, 255, 255, 0.8);
+    width: 100%;
   }
 }
 
 .menu-item.router-link-exact-active {
-  color: white;
-  background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
-  border: 2px solid var(--primary-color);
-  box-shadow: 
-    0 4px 12px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  color: var(--primary-color);
   font-weight: 700;
 
   &::after {
-    width: 80%;
-    background: rgba(255, 255, 255, 0.8);
+    width: 100%;
   }
 }
 
@@ -824,41 +793,34 @@ window.addEventListener('resize', () => {
   gap: 0.75rem;
 }
 
-.menu-item {
+.sidebar-menu .menu-item {
   display: block;
   padding: 0.75rem 1rem;
   font-size: 1rem;
   color: #333;
   text-decoration: none;
-  border-radius: 10px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
-  border: 2px solid transparent;
+  border-radius: 8px;
 
-  &::before {
+  &::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.5s ease;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 0;
+    background: var(--primary-color);
+    transition: width 0.3s ease;
   }
 }
-.menu-item:hover {
-  background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
-  color: white;
-  border: 2px solid var(--primary-color);
-  box-shadow: 
-    0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
-    0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
 
-  &::before {
-    left: 100%;
+.sidebar-menu .menu-item:hover {
+  color: var(--primary-color);
+  background: rgba(var(--primary-color-rgb, 0, 123, 255), 0.05);
+
+  &::after {
+    width: 100%;
   }
 }
 
