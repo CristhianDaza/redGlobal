@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onUnmounted } from 'vue';
 import { useAuthStore } from '@/store';
+import RgButton from '@/components/UI/RgButton.vue';
 
 const props = defineProps<{
   isOpen: boolean
@@ -31,25 +32,22 @@ const closeModal = () => {
   emit('close');
 };
 
-const handleEscKey = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && props.isOpen) {
-    closeModal()
-  }
-}
+const modalRef = ref<HTMLDivElement>();
 
 watch(() => props.isOpen, (open) => {
   if (open) {
     document.body.style.overflow = 'hidden';
-    document.addEventListener('keydown', handleEscKey)
+    // Focus the modal for keyboard events
+    setTimeout(() => {
+      modalRef.value?.focus();
+    }, 100);
   } else {
     document.body.style.overflow = '';
-    document.removeEventListener('keydown', handleEscKey)
   }
 })
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleEscKey)
-  document.body.style.overflow = ''
+  document.body.style.overflow = '';
 })
 
 const handleSubmit = async () => {
@@ -72,17 +70,26 @@ const handleSubmit = async () => {
 
 <template>
   <Transition name="fade">
-    <div v-if="isOpen" class="modal-overlay">
-      <div class="modal-content" :class="{ 'modal-open': isOpen }">
+    <div v-if="isOpen" class="modal-overlay" @click.self="closeModal">
+      <div 
+        ref="modalRef"
+        class="modal-content" 
+        :class="{ 'modal-open': isOpen }"
+        tabindex="-1"
+        @keydown.esc="closeModal"
+      >
 
       <div class="modal-header">
-        <h2>Iniciar Sesión</h2>
+        <div class="logo-section">
+          <img src="@/assets/images/main-logo.png" alt="Red Global Promocional" class="company-logo" />
+          <h2>Iniciar Sesión</h2>
+        </div>
         <button class="close-button" @click="closeModal">
           <span class="material-icons">close</span>
         </button>
       </div>
       <div class="modal-body">
-        <form @submit.prevent="handleSubmit">
+        <form @submit.prevent>
           <div v-if="errorMessage" class="error-message">
             {{ errorMessage }}
           </div>
@@ -106,13 +113,19 @@ const handleSubmit = async () => {
               :disabled="authStore.loading"
             />
           </div>
-          <button
-            type="submit"
-            class="login-button"
+          <RgButton
+            type="default"
+            :text="authStore.loading ? 'Iniciando sesión...' : 'Ingresar'"
             :disabled="authStore.loading"
-          >
-            {{ authStore.loading ? 'Iniciando sesión...' : 'Ingresar' }}
-          </button>
+            :custom-style="{
+              backgroundColor: 'var(--primary-color, #ff4444)',
+              color: '#fff',
+              fontSize: '0.95rem',
+              fontWeight: '500'
+            }"
+            full
+            @click="handleSubmit"
+          />
         </form>
       </div>
       </div>
@@ -138,17 +151,24 @@ const handleSubmit = async () => {
 }
 
 .modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 2.5rem;
+  border-radius: 1.5rem;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 450px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transform: scale(0.95);
   opacity: 0;
   transition: all 0.3s ease-out;
   animation: slideIn 0.3s ease-out;
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+  outline: none;
 }
 
 .modal-content.modal-open {
@@ -160,24 +180,68 @@ const handleSubmit = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.company-logo {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .modal-header h2 {
   margin: 0;
-  color: #333;
+  color: #1a202c;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(135deg, var(--primary-color, #ff4444) 0%, #ff6b6b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .close-button {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   cursor: pointer;
   padding: 0.5rem;
-  transition: transform 0.2s ease;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .close-button:hover {
-  transform: rotate(90deg);
+  background: rgba(255, 68, 68, 0.1);
+  border-color: var(--primary-color, #ff4444);
+  transform: rotate(90deg) scale(1.1);
+}
+
+.close-button .material-icons {
+  color: #64748b;
+  font-size: 20px;
+}
+
+.close-button:hover .material-icons {
+  color: var(--primary-color, #ff4444);
 }
 
 .form-group {
@@ -192,59 +256,24 @@ const handleSubmit = async () => {
 
 .form-group input {
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #eee;
-  border-radius: 8px;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
   font-size: 1rem;
-  transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.login-button {
-  width: 100%;
-  padding: 0.85rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.login-button::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.3s ease-out, height 0.3s ease-out;
-}
-
-.login-button:hover:not(:disabled) {
-  background-color: #0056b3;
+  border-color: var(--primary-color, #ff4444);
+  box-shadow: 
+    0 0 0 3px rgba(255, 68, 68, 0.1),
+    0 4px 12px rgba(255, 68, 68, 0.15);
+  background: rgba(255, 255, 255, 0.95);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 86, 179, 0.2);
-}
-
-.login-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 .error-message {
@@ -257,13 +286,21 @@ const handleSubmit = async () => {
   border: 1px solid #fed7d7;
 }
 
-.login-button:active {
-  transform: translateY(0);
+/* Button container spacing and styling */
+.modal-body :deep(.button-container) {
+  margin-top: 0.5rem;
+  width: 100%;
 }
 
-.login-button:hover::after {
-  width: 300px;
-  height: 300px;
+.modal-body :deep(.modern-button) {
+  width: 100% !important;
+  font-size: 0.95rem !important;
+  padding: 0.85rem 1rem !important;
+}
+
+.modal-body :deep(.tv-btn-text) {
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
 }
 
 /* Animaciones de transición */

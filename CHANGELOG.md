@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added proper styling and positioning for carousel navigation buttons
 - Improved carousel navigation accessibility and responsive design
 
+### Enhanced
+- Modernized login modal with contemporary design and improved UX
+- Added company logo to login modal header for better brand recognition
+- Enhanced login modal with gradient backgrounds and glassmorphism effects
+- Improved form inputs with better focus states and animations
+- Enhanced ESC key functionality with multiple capture methods and focus management
+- Redesigned close button with modern styling and hover effects
+- Standardized login button to use app's consistent RgButton component
+- Increased company logo size from 80px to 120px for better visibility
+- Adjusted login button text size and styling for improved readability
+- Ensured button uses app's primary color scheme consistently
+
 ## [1.4.0] - 11/09/2025
 ### Added
 - Add lazy loading to imagen.
