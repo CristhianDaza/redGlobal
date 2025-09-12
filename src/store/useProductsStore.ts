@@ -134,6 +134,10 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
+    async checkShouldUpdate(): Promise<boolean> {
+      return await productsFirebase.shouldUpdate();
+    },
+
     setProductsToView(products: ProductsRedGlobal[]): void {
       this.productsToView = products
     },

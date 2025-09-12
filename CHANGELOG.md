@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 11/09/2025
+### Added
+- **Enhanced quantity table with estimated date**: Added "Fecha Estimada" column to the product quantity table using existing `dataTracking` field to display estimated arrival dates for products in transit
+- **Mobile-optimized quantity table**: Implemented responsive card-based layout for mobile devices that eliminates horizontal scrolling and improves readability on small screens
+
+### Fixed
+- **Fixed admin API call frequency issue**: Corrected logic where admin users were calling APIs multiple times per day instead of once daily
+- **Fixed timezone-based date comparison**: Modified `getDay()` function to use local timezone instead of UTC for proper daily update validation
+- **Optimized admin API calling logic**: Added explicit `shouldUpdate()` check in `App.vue` before calling `callServices()` for admin users
+- Admin users now properly respect the once-per-day API update schedule, preventing unnecessary API calls within the same day
+
 ## [1.5.0] - 11/09/2025
 ### Added
 - **CataProm API Proxy**: Implemented PHP proxy server to handle CataProm API calls from server-side, resolving IP/URL validation issues when calling from SPA
@@ -189,6 +200,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🎉 Initial stable release.
 
+[1.6.0]: https://github.com/CristhianDaza/redGlobal/pull/10/files
 [1.5.0]: https://github.com/CristhianDaza/redGlobal/pull/9/files
 [1.4.0]: https://github.com/CristhianDaza/redGlobal/pull/8/files
 [1.3.0]: https://github.com/CristhianDaza/redGlobal/pull/7/files

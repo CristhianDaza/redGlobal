@@ -96,21 +96,20 @@ onMounted(async () => {
     if (productsEmpty) {
       await storeProducts.getAllProducts(isAdmin);
     } else if (isAdmin) {
-      // For admin users, check if we need to update based on daily schedule
-      await storeProducts.callServices();
+      const shouldUpdate = await storeProducts.checkShouldUpdate();
+      if (shouldUpdate) {
+        await storeProducts.callServices();
+      }
     }
 
-    // Preload critical images after initial load
     if (storeProducts.products?.length) {
       const productImages = storeProducts.products
         .slice(0, 12)
         .map(p => p.mainImage)
         .filter(Boolean);
       
-      // Get category images from category store instead of menu
       const categoryImages: string[] = [];
       
-      // Preload in background without blocking UI
       preloadService.preloadCriticalImages([], categoryImages)
         .then(() => preloadService.preloadProductImages(productImages))
         .catch(error => logger.warn('Image preload failed', 'App.vue', error));
