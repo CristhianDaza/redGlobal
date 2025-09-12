@@ -524,7 +524,8 @@ const hideTooltip = () => {
           </div>
         </div>
         <div class="container-table-quantity">
-          <table class="product-table">
+          <!-- Desktop Table -->
+          <table class="product-table desktop-table">
             <thead>
               <tr>
                 <th>Color</th>
@@ -577,6 +578,60 @@ const hideTooltip = () => {
               </tr>
             </tbody>
           </table>
+
+          <!-- Mobile Cards -->
+          <div class="mobile-cards">
+            <div v-for="entry in product?.tableQuantity" :key="entry.colorName" class="mobile-card">
+              <div class="mobile-card-header">
+                <div class="color-cell">
+                  <span
+                    class="color-dot"
+                    :style="{ backgroundColor: formatColor(entry.color) }"
+                    ></span>
+                  <span class="color-name">{{ entry.colorName }}</span>
+                </div>
+                <div class="quantity-badge">
+                  {{ formatNumber(entry.quantity) }}
+                </div>
+              </div>
+              
+              <div class="mobile-card-content">
+                <div v-if="hasAnyTracking && entry.inTracking" class="mobile-row">
+                  <span class="mobile-label">En tránsito:</span>
+                  <span class="mobile-value">{{ formatNumber(entry.inTracking) }}</span>
+                </div>
+                
+                <div v-if="hasAnyTracking && entry.statusTracking" class="mobile-row">
+                  <span class="mobile-label">Estado:</span>
+                  <span :class="['status-badge', getStatusClass(entry.statusTracking)]">
+                    {{ entry.statusTracking }}
+                  </span>
+                </div>
+                
+                <div v-if="hasAnyTracking && entry.lastUpdateTracking" class="mobile-row">
+                  <span class="mobile-label">Última actualización:</span>
+                  <TvRelativeTime :date="entry.lastUpdateTracking" lang="es" class="mobile-date" />
+                </div>
+                
+                <div v-if="hasAnyTracking && entry.dataTracking" class="mobile-row">
+                  <span class="mobile-label">Fecha estimada:</span>
+                  <TvRelativeTime :date="entry.dataTracking" lang="es" class="mobile-date" />
+                </div>
+                
+                <div v-if="authStore.isAuthenticated()" class="mobile-row mobile-price">
+                  <span class="mobile-label">Precio:</span>
+                  <div v-if="isPriceLoading" class="price-skeleton-mobile"></div>
+                  <div v-else class="price-container-mobile">
+                    <span class="price-text">{{ showPricesWithIva
+                        ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
+                        : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
+                    }}</span>
+                    <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <SimilarProducts v-if="product" :current-product="product" />
       </div>
@@ -1320,6 +1375,103 @@ const hideTooltip = () => {
   box-sizing: border-box;
 }
 
+/* Mobile Cards - Hidden by default, shown on mobile */
+.mobile-cards {
+  display: none;
+}
+
+.mobile-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.mobile-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mobile-card-header .color-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.color-name {
+  font-weight: 600;
+  color: #374151;
+}
+
+.quantity-badge {
+  background: #3b82f6;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.mobile-card-content {
+  padding: 1rem;
+}
+
+.mobile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.mobile-row:last-child {
+  border-bottom: none;
+}
+
+.mobile-label {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.mobile-value {
+  font-weight: 600;
+  color: #374151;
+}
+
+.mobile-date {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.mobile-price {
+  background: #f9fafb;
+  margin: 0.5rem -1rem -1rem;
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.price-container-mobile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.price-skeleton-mobile {
+  width: 80px;
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
 @media (max-width: 1024px) {
   .product-main {
     grid-template-columns: 1fr;
@@ -1363,15 +1515,14 @@ const hideTooltip = () => {
     padding: 0 0.5rem;
   }
 
-  .product-table th,
-  .product-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.9rem;
-    white-space: normal;
+  /* Hide desktop table on mobile */
+  .desktop-table {
+    display: none;
   }
-  .product-table th:first-child,
-  .product-table td:first-child {
-    min-width: 120px;
+
+  /* Show mobile cards on mobile */
+  .mobile-cards {
+    display: block;
   }
 
   .zoom-toolbar {
