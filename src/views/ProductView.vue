@@ -532,6 +532,7 @@ const hideTooltip = () => {
                 <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
                 <th v-if="hasAnyTracking">Estado</th>
                 <th v-if="hasAnyTracking">Última<br />Actualización</th>
+                <th v-if="hasAnyTracking">Fecha<br />Estimada</th>
                 <th v-if="authStore.isAuthenticated()">Precio</th>
               </tr>
             </thead>
@@ -558,6 +559,10 @@ const hideTooltip = () => {
                 </td>
                 <td v-if="hasAnyTracking">
                   <TvRelativeTime v-if="entry.lastUpdateTracking" :date="entry.lastUpdateTracking" lang="es" />
+                </td>
+                <td v-if="hasAnyTracking">
+                  <TvRelativeTime v-if="entry.dataTracking" :date="entry.dataTracking" lang="es" />
+                  <span v-else>-</span>
                 </td>
                 <td v-if="authStore.isAuthenticated()">
                   <div v-if="isPriceLoading" class="price-skeleton"></div>
