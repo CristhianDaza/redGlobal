@@ -12,7 +12,11 @@ export const useUserStore = defineStore('user', () => {
   const getUsers = async () => {
     try {
       isLoadingUsers.value = true
-      users.value = await usersFirebase.getUsers()
+      const fetched = await usersFirebase.getUsers()
+      users.value = fetched.map(u => ({
+        ...u,
+        email: (u.email && typeof u.email === 'string') ? u.email.toLowerCase() : u.email
+      }))
       lastUpdateUsers.value = new Date().toISOString()
     } catch (error) {
       console.error('Error getting users:', error)

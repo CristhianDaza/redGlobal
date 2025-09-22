@@ -25,7 +25,7 @@ const currentQuote = computed(() => quoteStore.currentQuote)
 const hasItems = computed(() => currentQuote.value.length > 0)
 
 const userColor = computed(() => {
-  const user = userStore.users.find(u => u.email === authStore.user?.email)
+  const user = userStore.users.find(u => u.email === authStore.user?.email?.toLowerCase())
   return user?.primaryColor || '#ff4444'
 })
 

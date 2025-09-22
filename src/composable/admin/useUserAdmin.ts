@@ -20,7 +20,7 @@ export function useUserAdmin() {
   };
 
   const currentUser = computed(() => {
-    return users.value.find(u => u.email === authStore.user?.email);
+    return users.value.find(u => u.email === authStore.user?.email?.toLowerCase());
   });
 
   const handleSaveUser = async (formData: UserFormData) => {

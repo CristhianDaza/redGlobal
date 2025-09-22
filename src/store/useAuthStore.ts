@@ -26,7 +26,7 @@ onAuthStateChanged(auth, async (currentUser) => {
   if (currentUser) {
     const userDocs = await getDocs(
       query(collection(db, 'users'),
-      where('email', '==', currentUser.email))
+      where('id', '==', currentUser.uid))
     )
 
     if (!userDocs.empty) {
@@ -61,11 +61,12 @@ const login = async (email: string, password: string) => {
     loading.value = true
     error.value = null
 
-    await signInWithEmailAndPassword(auth, email, password)
+    await signInWithEmailAndPassword(auth, email.toLowerCase(), password)
 
+    const uid = auth.currentUser?.uid
     const userDocs = await getDocs(
       query(collection(db, 'users'),
-      where('email', '==', email))
+      where('id', '==', uid))
     )
 
     if (userDocs.empty) {
@@ -145,7 +146,7 @@ const login = async (email: string, password: string) => {
 
   const userRole = computed(() => {
     if (!user.value) return null;
-    const currentUser = userStore.users.find(u => u.email === user.value?.email);
+    const currentUser = userStore.users.find(u => u.email === user.value?.email?.toLowerCase());
     return currentUser?.role || null;
   })
 
@@ -155,7 +156,7 @@ const login = async (email: string, password: string) => {
 
   const currenLoggingUser = computed(() => {
     if (!user.value) return null
-    const currentUser = userStore.users.find(u => u.email === user.value?.email)
+    const currentUser = userStore.users.find(u => u.email === user.value?.email?.toLowerCase())
     return currentUser || null
   })
 

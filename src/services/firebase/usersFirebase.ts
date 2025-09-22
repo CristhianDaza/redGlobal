@@ -28,14 +28,14 @@ export const usersFirebase = {
           const currentUser = auth.currentUser
           if (currentUser) {
             try {
-              const userQuery = await getDocs(query(collection(db, 'users'), where('email', '==', currentUser.email)))
+              const userQuery = await getDocs(query(collection(db, 'users'), where('email', '==', currentUser.email?.toLowerCase())))
 
               if (userQuery.empty) {
                 const now = new Date().toISOString()
                 await addDoc(collection(db, 'users'), {
                   id: currentUser.uid,
                   name: currentUser.displayName || 'Admin',
-                  email: currentUser.email,
+                  email: currentUser.email?.toLowerCase(),
                   primaryColor: '#ff4444',
                   secondaryColor: '#ff4444',
                   priceIncrease: 0,
@@ -81,7 +81,7 @@ export const usersFirebase = {
       const auth = getAuth()
       let userCredential
       try {
-        userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password)
+        userCredential = await createUserWithEmailAndPassword(auth, user.email.toLowerCase(), user.password)
       } catch (error: any) {
         if (error.code === 'auth/email-already-in-use') {
           throw new Error('El email ya está registrado. Por favor, usa otro email.')
@@ -96,6 +96,7 @@ export const usersFirebase = {
       try {
         await addDoc(usersRef, {
           ...userData,
+          email: user.email.toLowerCase(),
           id: userCredential.user.uid,
           logo: user.logo || null,
           createdAt: now,
@@ -118,9 +119,17 @@ export const usersFirebase = {
   async updateUser(id: string, user: Partial<User>): Promise<void> {
     try {
       const userRef = doc(db, 'users', id)
-      await updateDoc(userRef, {
-        ...user, updatedAt: new Date().toISOString()
-      })
+      const updateData = {
+        ...user, 
+        updatedAt: new Date().toISOString()
+      }
+      
+      // Asegurar que el email esté en minúsculas si se está actualizando
+      if (updateData.email) {
+        updateData.email = updateData.email.toLowerCase()
+      }
+      
+      await updateDoc(userRef, updateData)
       
       cacheService.delete('api:FIREBASE_USERS:');
       logger.info('User updated and cache cleared', 'usersFirebase');

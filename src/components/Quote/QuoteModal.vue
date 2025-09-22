@@ -94,7 +94,7 @@ const removeQuantityField = (color: TableEntry, index: number) => {
 }
 
 const calculatePriceWithIncrease = (price: number) => {
-  const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
+  const currentUser = userStore.users.find(user => user.email === authStore.user?.email?.toLowerCase());
 
   if (currentUser?.priceIncrease) {
     const finalPrice = price * (1 + currentUser.priceIncrease / 100);

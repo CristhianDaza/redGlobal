@@ -14,7 +14,7 @@ const userStore = useUserStore()
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 
 const currentUserName = computed(() => {
-  const user = userStore.users.find(u => u.email === authStore.user?.email)
+  const user = userStore.users.find(u => u.email === authStore.user?.email?.toLowerCase())
   return user?.name || 'Usuario'
 })
 </script>

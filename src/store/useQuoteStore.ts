@@ -114,12 +114,12 @@ export const useQuoteStore = defineStore('quote', () => {
       if (!authStore.user || state.value.currentQuote.length === 0) return
 
       const userStore = useUserStore()
-      const currentUser = userStore.users.find((user: User) => user.email === authStore.user?.email)
+      const currentUser = userStore.users.find((user: User) => user.email === authStore.user?.email?.toLowerCase())
 
       const quote: Quote = {
         userId: authStore.user.uid,
         userName: currentUser?.name || 'Usuario',
-        userEmail: authStore.user.email || '',
+        userEmail: authStore.user.email?.toLowerCase() || '',
         status: QuoteStatus.PENDING,
         items: [...state.value.currentQuote],
         createdAt: new Date().toISOString(),
@@ -130,7 +130,7 @@ export const useQuoteStore = defineStore('quote', () => {
 
       const emailData = {
         name: currentUser?.name || 'Usuario',
-        email: authStore.user.email || '',
+        email: authStore.user.email?.toLowerCase() || '',
         id: quote.id,
       }
 

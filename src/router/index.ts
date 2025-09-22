@@ -78,7 +78,7 @@ router.beforeEach(async (to, _, next) => {
       await userStore.getUsers()
     }
 
-    const currentUser = userStore.users.find(u => u.email === authStore.user?.email)
+    const currentUser = userStore.users.find(u => u.email === authStore.user?.email?.toLowerCase())
     if (!currentUser?.active) {
       await authStore.logout()
       return next({ name: 'home' })

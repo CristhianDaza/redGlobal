@@ -59,7 +59,7 @@ const currentUserLogo = computed((): string | undefined => {
     return undefined;
   }
 
-  const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
+  const currentUser = userStore.users.find(user => user.email === authStore.user?.email?.toLowerCase());
 
   if (currentUser?.logo) {
     return currentUser.logo;

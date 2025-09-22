@@ -44,7 +44,7 @@ const handleTabChange = (tab: tabs) => {
 };
 
 const currentUser = computed(():UserFormData | undefined => {
-  return users.value.find(u => u.email === authStore.user?.email);
+  return users.value.find(u => u.email === authStore.user?.email?.toLowerCase());
 })
 
 const isAdmin = computed(() => {

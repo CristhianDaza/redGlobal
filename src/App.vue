@@ -25,7 +25,7 @@ const updateCustomColors = () => {
   const storeColor = colorStore.color?.[0]?.hex || fallbackColor;
 
   if (authStore.isAuthenticated()) {
-    const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
+    const currentUser = userStore.users.find(user => user.email === authStore.user?.email?.toLowerCase());
 
     const userColor = currentUser?.primaryColor || storeColor;
 

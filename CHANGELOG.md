@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- Normalized all user emails to lowercase across the application to prevent case-sensitivity conflicts.
+- Authentication and user validation in Firestore now use the Firebase Auth UID (`id` field) instead of email to avoid email casing issues.
+
+### Added
+- Lowercasing safeguards in the following flows/components:
+  - Auth login in `src/store/useAuthStore.ts` forces `email.toLowerCase()` before calling Firebase Auth.
+  - User creation in `src/services/firebase/usersFirebase.ts` saves emails in lowercase.
+  - User updates in `src/services/firebase/usersFirebase.ts` convert `email` to lowercase when present.
+  - Quotes flow (`src/store/useQuoteStore.ts`) stores `userEmail` and email sent to EmailJS in lowercase.
+  - `src/store/useUserStore.ts` normalizes all fetched users' emails to lowercase for backward compatibility with historical data.
+
+### Fixed
+- Inconsistent lookups where comparisons used the raw email value, leading to mismatches when Auth returned different casing. Updated to compare against `authStore.user?.email?.toLowerCase()` in:
+  - `src/App.vue` (theme color resolution)
+  - `src/components/UI/RgNavbar.vue` and `src/components/UI/RgFooter.vue` (current user logo)
+  - `src/views/ProductView.vue` and `src/components/Quote/QuoteModal.vue` (price increase calculation)
+  - `src/components/Quote/QuoteCart.vue` (button color)
+  - `src/composable/admin/useUserAdmin.ts` and `src/components/Admin/AdminSidebar.vue` (admin context)
+  - `src/views/AdminView.vue` and `src/router/index.ts` (admin guard and role checks)
+
 ## [1.6.0] - 11/09/2025
 ### Added
 - **Enhanced quantity table with estimated date**: Added "Fecha Estimada" column to the product quantity table using existing `dataTracking` field to display estimated arrival dates for products in transit
