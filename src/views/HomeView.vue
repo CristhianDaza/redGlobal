@@ -37,7 +37,6 @@ onMounted(async () => {
     await carouselStore.getCarousel();
   }
 
-  // Preload carousel images for better UX
   if (carouselStore.carousel?.length) {
     const carouselImages = carouselStore.carousel
       .map(slide => slide.imageUrl)

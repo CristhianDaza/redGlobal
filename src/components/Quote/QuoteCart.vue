@@ -186,7 +186,6 @@ const handleSubmitQuote = async () => {
         </div>
       </div>
 
-      <!-- Campo de notas del cliente -->
       <div class="client-notes-section">
         <label for="clientNotes" class="notes-label">Notas adicionales (opcional):</label>
         <textarea

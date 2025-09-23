@@ -90,7 +90,6 @@ router.beforeEach(async (to, _, next) => {
       return next({ name: 'home' })
     }
 
-    // Verificar roles permitidos si están definidos
     if (to.meta.allowedRoles && Array.isArray(to.meta.allowedRoles)) {
       if (!to.meta.allowedRoles.includes(currentUser.role)) {
         return next({ name: 'home' })

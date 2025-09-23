@@ -102,7 +102,6 @@ const login = async (email: string, password: string) => {
       type: 'success'
     })
     
-    // Redirigir según el rol del usuario
     if (userData.role === 'admin' || userData.role === 'advisor') {
       await router.push({ name: 'admin', query: { tab: 'advanced-quotes' } })
     } else {

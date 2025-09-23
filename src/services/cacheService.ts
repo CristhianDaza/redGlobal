@@ -88,7 +88,6 @@ class CacheService {
     this.cache.set(key, entry);
     logger.debug(`Cache set: ${key} (TTL: ${entry.ttl}ms)`, 'CacheService');
 
-    // Check if we need immediate cleanup
     if (this.cache.size > this.maxSize) {
       this.cleanup();
     }

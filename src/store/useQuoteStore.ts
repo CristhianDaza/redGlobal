@@ -272,7 +272,6 @@ export const useQuoteStore = defineStore('quote', () => {
     try {
       await quotesFirebase.updateQuoteField(id, field, value)
       
-      // Actualizar estado local
       const quoteIndex = state.value.quotes.findIndex(q => q.id === id)
       if (quoteIndex !== -1) {
         ;(state.value.quotes[quoteIndex] as any)[field] = value
@@ -330,7 +329,6 @@ export const useQuoteStore = defineStore('quote', () => {
     try {
       const exportData = await quotesFirebase.exportQuotes(filters)
       
-      // Convertir a CSV y descargar
       const csvContent = convertQuotesToCSV(exportData)
       downloadCSV(csvContent, 'cotizaciones.csv')
 

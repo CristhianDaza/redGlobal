@@ -520,7 +520,6 @@ const hideTooltip = () => {
           </div>
         </div>
         <div class="container-table-quantity">
-          <!-- Desktop Table -->
           <table class="product-table desktop-table">
             <thead>
               <tr>
@@ -575,7 +574,6 @@ const hideTooltip = () => {
             </tbody>
           </table>
 
-          <!-- Mobile Cards -->
           <div class="mobile-cards">
             <div v-for="entry in product?.tableQuantity" :key="entry.colorName" class="mobile-card">
               <div class="mobile-card-header">

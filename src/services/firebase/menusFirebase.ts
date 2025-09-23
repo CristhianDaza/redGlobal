@@ -31,7 +31,6 @@ export const menusFirebase = {
     const { id, ...menuData } = menuItem
     await addDoc(collection(db, 'menu'), menuData)
     
-    // Clear menu cache after creating new item
     cacheService.delete('api:FIREBASE_MENU:');
     logger.info('Menu item created and cache cleared', 'menusFirebase');
   },
@@ -41,7 +40,6 @@ export const menusFirebase = {
     const menuRef = doc(db, 'menu', id)
     await updateDoc(menuRef, menuData)
     
-    // Clear menu cache after updating item
     cacheService.delete('api:FIREBASE_MENU:');
     logger.info('Menu item updated and cache cleared', 'menusFirebase');
   },
@@ -50,7 +48,6 @@ export const menusFirebase = {
     const menuRef = doc(db, 'menu', id)
     await deleteDoc(menuRef)
     
-    // Clear menu cache after deleting item
     cacheService.delete('api:FIREBASE_MENU:');
     logger.info('Menu item deleted and cache cleared', 'menusFirebase');
   },

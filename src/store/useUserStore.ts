@@ -12,7 +12,7 @@ export const useUserStore = defineStore('user', () => {
   const getUsers = async () => {
     try {
       isLoadingUsers.value = true
-      const fetched = await usersFirebase.getUsers(false) // No incluir usuarios ocultos
+      const fetched = await usersFirebase.getUsers(false)
       users.value = fetched.map(u => ({
         ...u,
         email: (u.email && typeof u.email === 'string') ? u.email.toLowerCase() : u.email
@@ -32,11 +32,9 @@ export const useUserStore = defineStore('user', () => {
 
   const findUserByEmail = async (email: string): Promise<User | null> => {
     try {
-      // Buscar en usuarios visibles primero
       const visibleUser = users.value.find(u => u.email === email.toLowerCase())
       if (visibleUser) return visibleUser
 
-      // Si no se encuentra, buscar incluyendo usuarios ocultos
       const allUsers = await usersFirebase.getUsers(true)
       return allUsers.find(u => u.email?.toLowerCase() === email.toLowerCase()) || null
     } catch (error) {

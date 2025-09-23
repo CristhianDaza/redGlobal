@@ -37,7 +37,6 @@ const modalRef = ref<HTMLDivElement>();
 watch(() => props.isOpen, (open) => {
   if (open) {
     document.body.style.overflow = 'hidden';
-    // Focus the modal for keyboard events
     setTimeout(() => {
       modalRef.value?.focus();
     }, 100);

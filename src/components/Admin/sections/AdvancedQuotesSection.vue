@@ -10,7 +10,6 @@ const RgButton = defineAsyncComponent(() => import('@/components/UI/RgButton.vue
 
 const router = useRouter()
 
-// Composable
 const {
   quotes,
   updateQuoteStatus,
@@ -19,7 +18,6 @@ const {
   refreshData
 } = useAdvancedQuotes()
 
-// Estados y filtros locales
 const searchTerm = ref('')
 const statusFilter = ref<QuoteStatus | 'all'>('all')
 const priorityFilter = ref<string>('all')
@@ -29,7 +27,6 @@ const sortKey = ref<keyof Quote>('createdAt')
 const sortAsc = ref(false)
 const viewMode = ref<'table' | 'cards'>('cards')
 
-// Estados de cotización con colores y etiquetas
 const statusConfig = {
   pending: { label: 'Pendiente', color: '#f59e0b', bgColor: '#fef3c7' },
   in_review: { label: 'En Revisión', color: '#3b82f6', bgColor: '#dbeafe' },
@@ -48,11 +45,9 @@ const priorityConfig = {
   urgent: { label: 'Urgente', color: '#ef4444' }
 }
 
-// Filtros computados
 const filteredQuotes = computed(() => {
   let filtered = [...quotes.value]
 
-  // Filtro de búsqueda
   if (searchTerm.value) {
     const term = searchTerm.value.toLowerCase()
     filtered = filtered.filter(quote => 
@@ -63,17 +58,14 @@ const filteredQuotes = computed(() => {
     )
   }
 
-  // Filtro de estado
   if (statusFilter.value !== 'all') {
     filtered = filtered.filter(quote => quote.status === statusFilter.value)
   }
 
-  // Filtro de prioridad
   if (priorityFilter.value !== 'all') {
     filtered = filtered.filter(quote => quote.priority === priorityFilter.value)
   }
 
-  // Filtro de fecha
   if (dateFilter.value !== 'all') {
     const now = new Date()
     const filterDate = new Date()
@@ -111,7 +103,6 @@ const sortedQuotes = computed(() => {
   })
 })
 
-// Estadísticas computadas
 const stats = computed(() => {
   const filtered = filteredQuotes.value
   return {
@@ -129,7 +120,6 @@ const stats = computed(() => {
   }
 })
 
-// Funciones
 function changeSort(key: keyof Quote) {
   if (sortKey.value === key) {
     sortAsc.value = !sortAsc.value
@@ -180,7 +170,6 @@ function viewQuoteDetails(quote: Quote) {
   router.push({ name: 'quote-detail', params: { id: quote.id } })
 }
 
-// Cargar datos al montar el componente
 onMounted(async () => {
   await refreshData()
 })
@@ -188,7 +177,6 @@ onMounted(async () => {
 
 <template>
   <div class="advanced-quotes-section">
-    <!-- Acciones principales -->
     <div class="quotes-actions">
       <div class="actions-left">
         <p class="results-count">{{ stats.total }} cotizaciones encontradas</p>
@@ -204,7 +192,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Estadísticas rápidas -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">
@@ -247,7 +234,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Filtros avanzados -->
     <div class="filters-section">
       <div class="filters-row">
         <div class="filter-group">
@@ -298,7 +284,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Vista de tabla -->
     <div v-if="viewMode === 'table'" class="quotes-table-container">
       <table class="quotes-table">
         <thead>
@@ -406,7 +391,6 @@ onMounted(async () => {
       </table>
     </div>
 
-    <!-- Vista de tarjetas -->
     <div v-else class="quotes-cards-container">
       <div class="quotes-grid">
         <div v-for="quote in sortedQuotes" :key="quote.id" class="quote-card">
@@ -467,7 +451,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Estado vacío -->
     <div v-if="sortedQuotes.length === 0" class="empty-state">
       <div class="empty-icon">
         <span class="empty-icon-text">🔍</span>

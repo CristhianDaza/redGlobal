@@ -27,28 +27,23 @@ const formData = ref<UserFormData>({
   role: UserRole.CLIENT
 })
 
-// Computed para determinar si el rol actual es Asesor
 const isAdvisorRole = computed(() => formData.value.role === UserRole.ADVISOR)
 
-// Watch para configurar valores por defecto cuando se selecciona Asesor
 watch(() => formData.value.role, (newRole, oldRole) => {
   if (newRole === UserRole.ADVISOR) {
-    // Configurar valores por defecto para Asesor
     formData.value.priceIncrease = 0
     formData.value.primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()
     formData.value.secondaryColor = '#4a5568'
-    // Limpiar logo si había uno seleccionado
+
     selectedFile.value = null
     previewUrl.value = null
     formData.value.logo = ''
     
-    // Limpiar el input de archivo
     const fileInput = document.getElementById('logo') as HTMLInputElement
     if (fileInput) {
       fileInput.value = ''
     }
   } else if (oldRole === UserRole.ADVISOR) {
-    // Si se cambia desde Asesor a otro rol, restaurar valores por defecto
     formData.value.primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()
     formData.value.secondaryColor = '#4a5568'
   }

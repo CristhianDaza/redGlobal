@@ -14,13 +14,11 @@
       :loading="nativeLoading ? 'lazy' : 'eager'"
     />
     
-    <!-- Placeholder mientras carga -->
     <div v-if="isLoading" class="image-placeholder">
       <div class="placeholder-shimmer"></div>
       <span v-if="showLoadingText" class="loading-text">{{ loadingText }}</span>
     </div>
     
-    <!-- Fallback en caso de error -->
     <div v-if="hasError" class="image-error">
       <span class="material-icons">broken_image</span>
       <span v-if="showErrorText">{{ errorText }}</span>
@@ -86,10 +84,8 @@ const optimizedSrc = computed(() => {
     return props.fallbackSrc;
   }
 
-  // Si es una URL de Cloudinary, optimizarla
   if (isCloudinaryUrl.value) {
     try {
-      // Extraer public_id de la URL de Cloudinary
       const publicIdMatch = props.src.match(/\/v\d+\/(.+?)(?:\.|$)/);
       if (publicIdMatch && publicIdMatch[1]) {
         const publicId = publicIdMatch[1];
@@ -129,13 +125,11 @@ const handleError = () => {
   hasError.value = true;
   logger.warn('Image failed to load', 'RgLazyImage', { src: optimizedSrc.value });
   
-  // Si hay fallback y no es el mismo que ya está fallando
   if (props.fallbackSrc && optimizedSrc.value !== props.fallbackSrc) {
     // El computed optimizedSrc manejará el fallback automáticamente
   }
 };
 
-// Intersection Observer setup
 useIntersectionObserver(
   imageContainer,
   handleIntersection,
@@ -145,7 +139,6 @@ useIntersectionObserver(
   }
 );
 
-// Watch para cargar eager si es necesario
 watch(() => props.eager, (newEager) => {
   if (newEager && !shouldLoad.value) {
     shouldLoad.value = true;

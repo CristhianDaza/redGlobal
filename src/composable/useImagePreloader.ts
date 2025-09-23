@@ -25,7 +25,6 @@ export function useImagePreloader() {
       }
       
       if (loadingImages.value.has(src)) {
-        // Ya se está cargando, esperar a que termine
         const checkLoading = () => {
           if (loadedImages.value.has(src)) {
             resolve();
@@ -44,7 +43,6 @@ export function useImagePreloader() {
       const img = new Image();
       const { priority = 'low', crossOrigin, timeout = 10000 } = options;
       
-      // Configurar prioridad si es soportada
       if ('fetchPriority' in img) {
         (img as any).fetchPriority = priority;
       }
@@ -76,7 +74,6 @@ export function useImagePreloader() {
         reject(new Error(`Failed to load image: ${src}`));
       };
       
-      // Timeout para evitar cargas infinitas
       timeoutId = window.setTimeout(() => {
         cleanup();
         failedImages.value.add(src);

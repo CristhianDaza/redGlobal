@@ -22,7 +22,6 @@ export const productsFirebase = {
     
     await this.updateLastUpdate()
     
-    // Clear cache after saving new products
     cacheService.delete('api:FIREBASE_PRODUCTS:');
     cacheService.delete('api:FIREBASE_LAST_UPDATE:');
     

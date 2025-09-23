@@ -104,7 +104,6 @@ const {
   deleteAllCompletedQuotes
 } = useQuoteAdmin(isAdmin.value);
 
-// Estados para el sistema avanzado de cotizaciones
 const showAdvancedQuoteModal = ref(false);
 const selectedAdvancedQuote = ref<any>(null);
 
@@ -270,7 +269,7 @@ const loadingData = computed(() => {
     case 'menu': return menuLoading.value;
     case 'users': return userLoading.value;
     case 'quotes': return quoteLoading.value;
-    case 'advanced-quotes': return false; // El loading se maneja internamente en el composable
+    case 'advanced-quotes': return false;
     case 'cards': return isLoadingCard.value;
     case 'catalogs': return isLoadingCatalog.value;
     case 'carousel': return isLoadingCarousel.value;
@@ -286,7 +285,7 @@ onMounted(async () => {
     const initializeCorrectTab = () => {
       const queryTab = route.query.tab as tabs;
       const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors'];
-      
+
       if (queryTab && validTabs.includes(queryTab)) {
         if (isAdmin.value) {
           activeTab.value = queryTab;
@@ -298,7 +297,7 @@ onMounted(async () => {
         }
         return;
       }
-      
+
       activeTab.value = 'advanced-quotes';
       router.replace({ query: { tab: 'advanced-quotes' } });
     };
@@ -318,11 +317,9 @@ onMounted(async () => {
 
       if (route.query.quoteId) {
         const quoteId = route.query.quoteId as string;
-        // Verificar si estamos en la sección de cotizaciones avanzadas
         if (activeTab.value === 'advanced-quotes') {
           await handleOpenAdvancedQuoteFromUrl(quoteId);
         } else {
-          // Fallback para cotizaciones normales (si aún existen)
           await handleOpenQuoteDetails(quoteId);
         }
       }
@@ -406,45 +403,39 @@ const handleUpdateProducts = () => {
   showConfirmModal.value = true;
 };
 
-// Funciones para el sistema avanzado de cotizaciones
 const handleViewAdvancedQuote = (quote: any) => {
   selectedAdvancedQuote.value = quote;
   showAdvancedQuoteModal.value = true;
-  // Actualizar URL con quoteId
-  router.push({ 
-    query: { 
-      ...route.query, 
-      quoteId: quote.id 
-    } 
+  router.push({
+    query: {
+      ...route.query,
+      quoteId: quote.id
+    }
   });
 };
 
 const handleCloseAdvancedQuoteModal = () => {
   showAdvancedQuoteModal.value = false;
   selectedAdvancedQuote.value = null;
-  // Limpiar quoteId de la URL
   const newQuery = { ...route.query };
   delete newQuery.quoteId;
   router.push({ query: newQuery });
 };
 
 const handleUpdateQuoteStatus = async () => {
-  // Función manejada por el composable useAdvancedQuotes
 };
 
 const handleAddQuoteComment = async (data: { quoteId: string, comment: string, isInternal: boolean }) => {
   try {
-    // Importar el composable de cotizaciones avanzadas
     const { addQuoteComment } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
-    
+
     await addQuoteComment(data.quoteId, data.comment, data.isInternal);
-    
-    // Actualizar la cotización seleccionada si es la misma
+
     if (selectedAdvancedQuote.value && selectedAdvancedQuote.value.id === data.quoteId) {
       const { quotes } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
       const updatedQuote = quotes.value.find(q => q.id === data.quoteId);
       if (updatedQuote) {
-        selectedAdvancedQuote.value = { ...updatedQuote }; // Crear nueva referencia para forzar reactividad
+        selectedAdvancedQuote.value = { ...updatedQuote };
       }
     }
   } catch (error) {
@@ -454,17 +445,15 @@ const handleAddQuoteComment = async (data: { quoteId: string, comment: string, i
 
 const handleDeleteQuoteComment = async (data: { quoteId: string, commentIndex: number }) => {
   try {
-    // Importar el composable de cotizaciones avanzadas
     const { deleteQuoteComment } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
-    
+
     await deleteQuoteComment(data.quoteId, data.commentIndex);
-    
-    // Actualizar la cotización seleccionada si es la misma
+
     if (selectedAdvancedQuote.value && selectedAdvancedQuote.value.id === data.quoteId) {
       const { quotes } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
       const updatedQuote = quotes.value.find(q => q.id === data.quoteId);
       if (updatedQuote) {
-        selectedAdvancedQuote.value = { ...updatedQuote }; // Crear nueva referencia para forzar reactividad
+        selectedAdvancedQuote.value = { ...updatedQuote };
       }
     }
   } catch (error) {
@@ -473,32 +462,26 @@ const handleDeleteQuoteComment = async (data: { quoteId: string, commentIndex: n
 };
 
 const handleUpdateQuoteField = async () => {
-  // Función manejada por el composable useAdvancedQuotes
 };
 
-// Función para abrir cotización desde URL
 const handleOpenAdvancedQuoteFromUrl = async (quoteId: string) => {
   try {
-    // Importar el composable de cotizaciones avanzadas
     const { quotes, loadQuotes } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
-    
-    // Asegurar que las cotizaciones estén cargadas
+
     if (quotes.value.length === 0) {
       await loadQuotes();
     }
-    
-    // Buscar la cotización por ID
+
     const quote = quotes.value.find(q => q.id === quoteId);
-    
+
     if (quote) {
       selectedAdvancedQuote.value = quote;
       showAdvancedQuoteModal.value = true;
     } else {
       console.warn(`No se encontró la cotización con ID: ${quoteId}`);
-      // Limpiar el quoteId de la URL si no se encuentra
       const newQuery = { ...route.query };
       delete newQuery.quoteId;
-      router.replace({ query: newQuery });
+      await router.replace({ query: newQuery });
     }
   } catch (error) {
     console.error('Error al abrir cotización desde URL:', error);
@@ -527,12 +510,10 @@ watch(() => route.query.tab, (newTab) => {
   }
 });
 
-// Watcher para detectar cambios en quoteId en la URL
 watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
   if (newQuoteId && newQuoteId !== oldQuoteId && activeTab.value === 'advanced-quotes') {
     await handleOpenAdvancedQuoteFromUrl(newQuoteId as string);
   } else if (!newQuoteId && showAdvancedQuoteModal.value) {
-    // Si se quita el quoteId de la URL, cerrar el modal
     showAdvancedQuoteModal.value = false;
     selectedAdvancedQuote.value = null;
   }

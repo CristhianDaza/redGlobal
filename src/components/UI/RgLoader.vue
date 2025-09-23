@@ -1,7 +1,6 @@
 <template>
   <div class="loader-container">
     <div class="loader">
-      <!-- Loader principal con círculos concéntricos -->
       <div class="modern-loader">
         <div class="spinner-ring ring-1"></div>
         <div class="spinner-ring ring-2"></div>
@@ -9,14 +8,12 @@
         <div class="center-dot"></div>
       </div>
       
-      <!-- Puntos animados -->
       <div class="dots-container">
         <div class="dot dot-1"></div>
         <div class="dot dot-2"></div>
         <div class="dot dot-3"></div>
       </div>
       
-      <!-- Texto -->
       <div class="loader-text">
         <slot>Cargando...</slot>
       </div>

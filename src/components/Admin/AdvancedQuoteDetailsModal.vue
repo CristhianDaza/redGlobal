@@ -2,7 +2,6 @@
 import type { Quote, QuoteStatus } from '@/types/common.d'
 import { ref, computed, watch, onUnmounted } from 'vue'
 import TvRelativeTime from '@todovue/tv-relative-time'
-// import { useAdvancedQuotes } from '@/composable/admin/useAdvancedQuotes' // No usado en este componente
 import { formatPrice, formatNumber } from '@/utils/formatNumber'
 import RgButton from '@/components/UI/RgButton.vue'
 
@@ -19,14 +18,12 @@ const emit = defineEmits<{
   (e: 'updateField', data: { quoteId: string, field: string, value: any }): void
 }>()
 
-// Estados locales
 const activeTab = ref<'details' | 'comments' | 'history'>('details')
 const newComment = ref('')
 const isInternalComment = ref(false)
 const editingField = ref<string | null>(null)
 const tempValues = ref<Record<string, any>>({})
 
-// Estados de cotización
 const statusConfig = {
   pending: { label: 'Pendiente', color: '#f59e0b', bgColor: '#fef3c7' },
   in_review: { label: 'En Revisión', color: '#3b82f6', bgColor: '#dbeafe' },
@@ -45,13 +42,11 @@ const priorityConfig = {
   urgent: { label: 'Urgente', color: '#ef4444' }
 }
 
-// Computadas
 const totalValue = computed(() => {
   if (!props.quote?.items) return 0
   return props.quote.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
 })
 
-// Funciones
 function closeModal() {
   emit('close')
   activeTab.value = 'details'
@@ -130,14 +125,12 @@ function cancelEditing() {
   tempValues.value = {}
 }
 
-// Función para manejar ESC
 function handleEscKey(event: KeyboardEvent) {
   if (event.key === 'Escape' && props.isVisible) {
     closeModal()
   }
 }
 
-// Watchers
 watch(() => props.isVisible, (visible) => {
   if (visible) {
     document.addEventListener('keydown', handleEscKey)
@@ -149,7 +142,6 @@ watch(() => props.isVisible, (visible) => {
   }
 })
 
-// Cleanup al desmontar
 onUnmounted(() => {
   document.removeEventListener('keydown', handleEscKey)
   document.body.style.overflow = ''
@@ -159,13 +151,11 @@ onUnmounted(() => {
 <template>
   <div v-if="isVisible && quote" class="modal-overlay" @click.self="closeModal">
     <div class="modal-container">
-      <!-- Header simplificado -->
       <div class="modal-header">
         <h2>Cotización #{{ quote.id.slice(-6) }}</h2>
         <button @click="closeModal" class="close-button">✕</button>
       </div>
 
-      <!-- Tabs -->
       <div class="modal-tabs">
         <button 
           @click="activeTab = 'details'" 
@@ -190,12 +180,9 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <!-- Content -->
       <div class="modal-content">
-        <!-- Tab: Detalles -->
         <div v-if="activeTab === 'details'" class="tab-content">
           <div class="details-grid">
-            <!-- Información del cliente -->
             <div class="detail-section">
               <h3>Información del Cliente</h3>
               <div class="detail-item">
@@ -212,7 +199,6 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- Gestión de estado -->
             <div class="detail-section">
               <h3>Gestión</h3>
               <div class="detail-item">
@@ -269,7 +255,6 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- Productos cotizados -->
           <div class="products-section">
             <h3>Productos Cotizados</h3>
             <div class="products-list">
@@ -294,7 +279,6 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- Notas -->
           <div class="notes-section">
             <div class="note-item">
               <h4>Notas del Cliente</h4>
@@ -336,7 +320,6 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Tab: Comentarios -->
         <div v-if="activeTab === 'comments'" class="tab-content">
           <div class="comments-section">
             <div class="add-comment">
@@ -362,7 +345,6 @@ onUnmounted(() => {
                 <p>No hay comentarios aún</p>
               </div>
               
-              <!-- Lista de comentarios existentes -->
               <div v-else class="comments-container">
                 <div 
                   v-for="(comment, index) in quote.comments" 
@@ -395,7 +377,6 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Tab: Historial -->
         <div v-if="activeTab === 'history'" class="tab-content">
           <div class="history-section">
             <div class="empty-state" v-if="!quote.statusHistory?.length">

@@ -14,7 +14,6 @@ useHead({
 
 <template>
   <div class="mission-vision-container">
-    <!-- Professional SVG Background -->
     <svg class="background-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
       <defs>
         <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -33,7 +32,6 @@ useHead({
       <path d="M0,400 Q300,200 600,400 T1200,400 L1200,800 L0,800 Z" fill="var(--primary-color)" opacity="0.03"/>
     </svg>
 
-    <!-- Mission Section -->
     <section class="mission-section">
       <div class="content-wrapper">
         <div class="text-content">
@@ -58,7 +56,6 @@ useHead({
       </div>
     </section>
 
-    <!-- Vision Section -->
     <section class="vision-section">
       <div class="content-wrapper reverse">
         <div class="text-content">

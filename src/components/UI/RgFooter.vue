@@ -118,7 +118,6 @@ const closePrivacyModal = () => {
     <p>Design by <a href="https://co.linkedin.com/in/cristhiandaza" target="_blank" rel="noopener noreferrer">Cristhian Daza</a> With <span class="heart">💙</span></p>
   </div>
 
-  <!-- Privacy Policy Modal -->
   <PrivacyPolicyModal 
     :is-open="isPrivacyModalOpen" 
     @close="closePrivacyModal" 

@@ -25,7 +25,6 @@ export const usersFirebase = {
           idDoc: doc.id, ...doc.data()
         })) as User[]
 
-        // Filtrar usuarios ocultos si no se solicita incluirlos
         if (!includeHidden) {
           users = users.filter(user => !user.isHidden)
         }
@@ -85,7 +84,6 @@ export const usersFirebase = {
         throw new Error('La contraseña debe tener al menos 6 caracteres')
       }
 
-      // Crear una instancia secundaria de Firebase para no afectar la sesión actual
       const secondaryApp = initializeApp(firebaseConfig, 'secondary')
       const secondaryAuth = getSecondaryAuth(secondaryApp)
       
@@ -115,14 +113,11 @@ export const usersFirebase = {
           active: true
         })
         
-        // Cerrar sesión en la instancia secundaria para no afectar la sesión principal
         await signOut(secondaryAuth)
       } catch (error) {
-        // Si hay error guardando en Firestore, eliminar el usuario de Auth
         await userCredential.user.delete()
         throw new Error('Error al guardar los datos del usuario')
       } finally {
-        // Limpiar la instancia secundaria
         try {
           await deleteApp(secondaryApp)
         } catch (error) {

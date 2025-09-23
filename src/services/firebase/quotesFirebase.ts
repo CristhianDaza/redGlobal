@@ -8,7 +8,7 @@ export const quotesFirebase = {
     const cache = cacheService.cacheApiCall<Quote[]>(
       'FIREBASE_QUOTES',
       {},
-      API_CACHE_CONFIG.FIREBASE_USERS.ttl // Reutilizamos la configuración existente
+      API_CACHE_CONFIG.FIREBASE_USERS.ttl
     );
 
     return await cache.getOrSet(async () => {
@@ -24,7 +24,6 @@ export const quotesFirebase = {
               idDoc: docSnap.id,
             } as Quote
 
-            // Cargar comentarios para cada cotización
             try {
               const commentsRef = collection(db, 'quotes', docSnap.id, 'comments')
               const commentsQuery = query(commentsRef, orderBy('createdAt', 'desc'))
@@ -39,7 +38,6 @@ export const quotesFirebase = {
               quoteData.comments = []
             }
 
-            // Cargar historial de estados para cada cotización
             try {
               const historyRef = collection(db, 'quotes', docSnap.id, 'statusHistory')
               const historyQuery = query(historyRef, orderBy('changedAt', 'desc'))
@@ -126,7 +124,6 @@ export const quotesFirebase = {
 
   async updateQuoteStatus(quoteId: string, status: QuoteStatus, notes?: string, changedBy?: string, changedByName?: string, changedByRole?: string): Promise<void> {
     try {
-      // Buscar la cotización por ID para obtener el idDoc
       const quotes = await this.getQuotes()
       const quote = quotes.find(q => q.id === quoteId)
       
@@ -137,7 +134,6 @@ export const quotesFirebase = {
       const quoteRef = doc(db, 'quotes', quote.idDoc)
       const now = new Date().toISOString()
       
-      // Crear entrada de historial
       const historyEntry: QuoteStatusHistory = {
         status,
         changedBy: changedBy || 'System',
@@ -147,13 +143,10 @@ export const quotesFirebase = {
         notes
       }
 
-      // Actualizar el documento principal
       await updateDoc(quoteRef, {
         status,
         updatedAt: now
       })
-
-      // Agregar entrada al historial como subcolección
       const historyRef = collection(db, 'quotes', quote.idDoc, 'statusHistory')
       await addDoc(historyRef, historyEntry)
 
@@ -242,10 +235,8 @@ export const quotesFirebase = {
     }
   },
 
-  // Sistema de comentarios
   async addQuoteComment(quoteId: string, comment: Omit<QuoteComment, 'id' | 'createdAt'>): Promise<void> {
     try {
-      // Buscar la cotización por ID para obtener el idDoc
       const quotes = await this.getQuotes()
       const quote = quotes.find(q => q.id === quoteId)
       
@@ -260,7 +251,6 @@ export const quotesFirebase = {
 
       await addDoc(collection(db, 'quotes', quote.idDoc, 'comments'), commentData)
       
-      // Limpiar caché para que se recarguen los datos
       cacheService.delete('api:FIREBASE_QUOTES:');
       logger.info(`Comment added to quote ${quoteId}`, 'quotesFirebase');
     } catch (error) {
@@ -271,7 +261,6 @@ export const quotesFirebase = {
 
   async getQuoteComments(quoteId: string): Promise<QuoteComment[]> {
     try {
-      // Buscar la cotización por ID para obtener el idDoc
       const quotes = await this.getQuotes()
       const quote = quotes.find(q => q.id === quoteId)
       
@@ -296,7 +285,6 @@ export const quotesFirebase = {
 
   async deleteQuoteComment(quoteId: string, commentId: string): Promise<void> {
     try {
-      // Buscar la cotización por ID para obtener el idDoc
       const quotes = await this.getQuotes()
       const quote = quotes.find(q => q.id === quoteId)
       
@@ -307,7 +295,6 @@ export const quotesFirebase = {
       const commentRef = doc(db, 'quotes', quote.idDoc, 'comments', commentId)
       await deleteDoc(commentRef)
       
-      // Limpiar caché para que se recarguen los datos
       cacheService.delete('api:FIREBASE_QUOTES:');
       logger.info(`Comment ${commentId} deleted from quote ${quoteId}`, 'quotesFirebase');
     } catch (error) {
@@ -316,7 +303,6 @@ export const quotesFirebase = {
     }
   },
 
-  // Estadísticas y análisis
   async getQuoteStats(): Promise<{
     total: number;
     byStatus: Record<string, number>;
@@ -363,7 +349,6 @@ export const quotesFirebase = {
     }
   },
 
-  // Búsqueda avanzada
   async searchQuotes(searchTerm: string): Promise<Quote[]> {
     try {
       const quotes = await this.getQuotes()
@@ -382,7 +367,6 @@ export const quotesFirebase = {
     }
   },
 
-  // Exportación de datos
   async exportQuotes(filters?: {
     status?: QuoteStatus;
     priority?: string;

@@ -7,7 +7,6 @@ import { NotificationService } from '@/components/Notification/NotificationServi
 export function useAdvancedQuotes() {
   const authStore = useAuthStore()
   
-  // Estados reactivos
   const quotes = ref<Quote[]>([])
   const isLoading = ref(false)
   const isUpdating = ref(false)
@@ -21,7 +20,6 @@ export function useAdvancedQuotes() {
     conversionRate: 0
   })
 
-  // Computadas
   const currentUser = computed(() => authStore.currenLoggingUser)
   
   const quotesTotals = computed(() => {
@@ -48,7 +46,6 @@ export function useAdvancedQuotes() {
     }
   })
 
-  // Funciones principales
   const loadQuotes = async () => {
     try {
       isLoading.value = true
@@ -82,7 +79,6 @@ export function useAdvancedQuotes() {
       
       await quotesFirebase.updateQuoteStatus(quoteId, status, notes, changedBy, changedByName, changedByRole)
       
-      // Recargar las cotizaciones para obtener el historial actualizado
       await loadQuotes()
 
       NotificationService.push({
@@ -91,7 +87,6 @@ export function useAdvancedQuotes() {
         type: 'success'
       })
 
-      // Recargar estadísticas
       await loadQuoteStats()
     } catch (error) {
       console.error('Error updating quote status:', error)
@@ -110,7 +105,6 @@ export function useAdvancedQuotes() {
       isUpdating.value = true
       const updatedBy = currentUser.value?.name || 'Admin'
       
-      // Encontrar la cotización para obtener el idDoc
       const quote = quotes.value.find(q => q.id === quoteId)
       if (!quote) {
         throw new Error('Cotización no encontrada')
@@ -118,7 +112,6 @@ export function useAdvancedQuotes() {
       
       await quotesFirebase.updateQuoteField(quote.idDoc, 'priority', priority, updatedBy)
       
-      // Actualizar el estado local
       const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
       if (quoteIndex !== -1) {
         quotes.value[quoteIndex].priority = priority as any
@@ -147,7 +140,6 @@ export function useAdvancedQuotes() {
       isUpdating.value = true
       const updatedBy = currentUser.value?.name || 'Admin'
       
-      // Encontrar la cotización para obtener el idDoc
       const quote = quotes.value.find(q => q.id === quoteId)
       if (!quote) {
         throw new Error('Cotización no encontrada')
@@ -155,7 +147,6 @@ export function useAdvancedQuotes() {
       
       await quotesFirebase.updateQuoteField(quote.idDoc, field, value, updatedBy)
       
-      // Actualizar el estado local
       const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
       if (quoteIndex !== -1) {
         ;(quotes.value[quoteIndex] as any)[field] = value
@@ -184,7 +175,6 @@ export function useAdvancedQuotes() {
       isUpdating.value = true
       await quotesFirebase.deleteQuote(quoteId)
       
-      // Remover del estado local
       quotes.value = quotes.value.filter(q => q.id !== quoteId)
 
       NotificationService.push({
@@ -192,8 +182,6 @@ export function useAdvancedQuotes() {
         description: 'La cotización ha sido eliminada exitosamente',
         type: 'success'
       })
-
-      // Recargar estadísticas
       await loadQuoteStats()
     } catch (error) {
       console.error('Error deleting quote:', error)
@@ -207,7 +195,6 @@ export function useAdvancedQuotes() {
     }
   }
 
-  // Funciones de comentarios
   const loadQuoteComments = async (quoteId: string) => {
     try {
       quoteComments.value = await quotesFirebase.getQuoteComments(quoteId)
@@ -230,7 +217,6 @@ export function useAdvancedQuotes() {
 
       await quotesFirebase.addQuoteComment(quoteId, commentData)
       
-      // Recargar las cotizaciones para obtener los datos actualizados
       await loadQuotes()
 
       NotificationService.push({
@@ -250,7 +236,6 @@ export function useAdvancedQuotes() {
 
   const deleteQuoteComment = async (quoteId: string, commentIndex: number) => {
     try {
-      // Encontrar la cotización y el comentario
       const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
       if (quoteIndex === -1 || !quotes.value[quoteIndex].comments || !quotes.value[quoteIndex].comments![commentIndex]) {
         throw new Error('Comentario no encontrado')
@@ -259,10 +244,8 @@ export function useAdvancedQuotes() {
       const comment = quotes.value[quoteIndex].comments![commentIndex]
       const commentId = comment.id
 
-      // Eliminar de Firebase usando el ID del comentario
       await quotesFirebase.deleteQuoteComment(quoteId, commentId)
       
-      // Recargar las cotizaciones para obtener los datos actualizados
       await loadQuotes()
 
       NotificationService.push({
@@ -280,7 +263,6 @@ export function useAdvancedQuotes() {
     }
   }
 
-  // Funciones de búsqueda y filtrado
   const searchQuotes = async (searchTerm: string) => {
     try {
       isLoading.value = true
@@ -329,7 +311,6 @@ export function useAdvancedQuotes() {
     }
   }
 
-  // Funciones de exportación
   const exportQuotes = async (filters?: {
     status?: QuoteStatus;
     priority?: string;
@@ -339,7 +320,6 @@ export function useAdvancedQuotes() {
     try {
       const exportData = await quotesFirebase.exportQuotes(filters)
       
-      // Convertir a CSV
       const csvContent = convertQuotesToCSV(exportData)
       downloadCSV(csvContent, 'cotizaciones.csv')
 
@@ -358,7 +338,6 @@ export function useAdvancedQuotes() {
     }
   }
 
-  // Funciones auxiliares
   const convertQuotesToCSV = (quotes: Quote[]): string => {
     const headers = [
       'ID',
@@ -399,7 +378,6 @@ export function useAdvancedQuotes() {
     document.body.removeChild(link)
   }
 
-  // Funciones de utilidad
   const setSelectedQuote = (quote: Quote | null) => {
     selectedQuote.value = quote
     if (quote) {
@@ -415,7 +393,6 @@ export function useAdvancedQuotes() {
   }
 
   return {
-    // Estados
     quotes,
     isLoading,
     isUpdating,
@@ -424,7 +401,6 @@ export function useAdvancedQuotes() {
     quoteStats,
     quotesTotals,
     
-    // Funciones principales
     loadQuotes,
     loadQuoteStats,
     updateQuoteStatus,
@@ -432,20 +408,16 @@ export function useAdvancedQuotes() {
     updateQuoteField,
     deleteQuote,
     
-    // Comentarios
     loadQuoteComments,
     addQuoteComment,
     deleteQuoteComment,
     
-    // Búsqueda y filtrado
     searchQuotes,
     getQuotesByStatus,
     getQuotesByUser,
     
-    // Exportación
     exportQuotes,
     
-    // Utilidades
     setSelectedQuote,
     refreshData
   }

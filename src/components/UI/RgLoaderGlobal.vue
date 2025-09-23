@@ -16,7 +16,6 @@ let textInterval: number
 onMounted(() => {
   document.body.style.overflow = 'hidden'
   
-  // Cambiar texto cada 1.5 segundos
   textInterval = setInterval(() => {
     currentTextIndex.value = (currentTextIndex.value + 1) % loadingTexts.length
     currentText.value = loadingTexts[currentTextIndex.value]
@@ -34,27 +33,23 @@ onUnmounted(() => {
 <template>
   <div class="global-loader">
     <div class="loader-content">
-      <!-- Loader principal con múltiples círculos -->
       <div class="multi-circle-loader">
         <div class="circle circle-1"></div>
         <div class="circle circle-2"></div>
         <div class="circle circle-3"></div>
         <div class="circle circle-4"></div>
       </div>
-      
-      <!-- Loader secundario con puntos -->
+
       <div class="dots-loader">
         <div class="dot dot-1"></div>
         <div class="dot dot-2"></div>
         <div class="dot dot-3"></div>
       </div>
       
-      <!-- Texto dinámico -->
       <div class="loading-text">
         {{ currentText }}
       </div>
       
-      <!-- Logo o marca (opcional) -->
       <div class="brand-text">Red Global</div>
     </div>
   </div>

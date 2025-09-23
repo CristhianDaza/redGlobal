@@ -160,9 +160,6 @@ window.addEventListener('resize', () => {
           </div>
         </template>
       </div>
-      <div class="navbar-actions">
-        <!-- Phone number removed, only WhatsApp floating button remains -->
-      </div>
     </div>
   </nav>
   <div v-if="sidebarOpen" class="sidebar-overlay" @click.self="sidebarOpen = false">
