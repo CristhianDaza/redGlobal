@@ -28,6 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Complete UI Integration**: New admin section with sidebar navigation and modal system
   - **Documentation**: Comprehensive user guide with technical specifications and workflows
   - **Bug Fixes**: Corrected Firebase document ID references and replaced Material Icons with compatible icon set
+
+### Fixed
+- **Advanced Quote Modal Issues**: Resolved multiple critical issues in the advanced quotation modal:
+  - **Button Visibility**: Fixed cancel/delete buttons in client and internal notes sections that were not visible due to incorrect icon references (`close` → `cancel`)
+  - **Comment Reactivity**: Fixed comments not appearing immediately after adding by implementing forced reactivity with new object references in AdminView handlers
+  - **ESC Key Functionality**: Added keyboard event listener to close modal with ESC key, including proper cleanup and body overflow management
+  - **Modal Header**: Simplified problematic header by removing complex badge system and replacing with clean title and native close button
+  - **TypeScript Errors**: Fixed type casting issues in select elements with proper HTMLSelectElement type assertions
+  - **URL Quote Navigation**: Implemented complete URL-based quote navigation system allowing direct access to specific quotes via `&quoteId=` parameter in URLs, enabling email links to open specific quotations automatically
+- **Quote System Navigation**: Streamlined quotation navigation by removing duplicate "Cotizaciones" button and renaming "Cotizaciones Avanzadas" to "Cotizaciones" as the single entry point
+- **Quote Display Preferences**: Changed default view mode from table to cards view for better visual experience in quotation management
+- **Client Notes Integration**: Added optional client notes field in quote submission form, allowing customers to provide additional context when requesting quotations
 - **Hidden users functionality**: Added `isHidden` field to user records to create users that don't appear in admin listings. Hidden users are filtered out from all user lists while maintaining authentication functionality.
 - **Last login tracking for users**: Added `lastLogin` field to user records that automatically updates when users log in, with display in the admin users table showing relative time since last access. Includes automatic migration for existing users using their creation date as initial last login.
 - **Copy email functionality in admin users table**: Added copy button next to each user's email in the admin users table to quickly copy emails to clipboard with visual feedback notifications.
