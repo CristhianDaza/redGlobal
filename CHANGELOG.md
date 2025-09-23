@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- **Reordered quantity table columns**: Changed the order of columns in the product quantity table to show "Fecha Estimada" before "Última Actualización" for better information hierarchy when products are in transit.
 - Normalized all user emails to lowercase across the application to prevent case-sensitivity conflicts.
 - Authentication and user validation in Firestore now use the Firebase Auth UID (`id` field) instead of email to avoid email casing issues.
 

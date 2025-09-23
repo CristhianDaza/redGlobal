@@ -532,8 +532,8 @@ const hideTooltip = () => {
                 <th>Cantidades<br />disponible</th>
                 <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
                 <th v-if="hasAnyTracking">Estado</th>
-                <th v-if="hasAnyTracking">Última<br />Actualización</th>
                 <th v-if="hasAnyTracking">Fecha<br />Estimada</th>
+                <th v-if="hasAnyTracking">Última<br />Actualización</th>
                 <th v-if="authStore.isAuthenticated()">Precio</th>
               </tr>
             </thead>
@@ -559,11 +559,11 @@ const hideTooltip = () => {
                   <span v-else>-</span>
                 </td>
                 <td v-if="hasAnyTracking">
-                  <TvRelativeTime v-if="entry.lastUpdateTracking" :date="entry.lastUpdateTracking" lang="es" />
-                </td>
-                <td v-if="hasAnyTracking">
                   <TvRelativeTime v-if="entry.dataTracking" :date="entry.dataTracking" lang="es" />
                   <span v-else>-</span>
+                </td>
+                <td v-if="hasAnyTracking">
+                  <TvRelativeTime v-if="entry.lastUpdateTracking" :date="entry.lastUpdateTracking" lang="es" />
                 </td>
                 <td v-if="authStore.isAuthenticated()">
                   <div v-if="isPriceLoading" class="price-skeleton"></div>
@@ -608,14 +608,14 @@ const hideTooltip = () => {
                   </span>
                 </div>
                 
-                <div v-if="hasAnyTracking && entry.lastUpdateTracking" class="mobile-row">
-                  <span class="mobile-label">Última actualización:</span>
-                  <TvRelativeTime :date="entry.lastUpdateTracking" lang="es" class="mobile-date" />
-                </div>
-                
                 <div v-if="hasAnyTracking && entry.dataTracking" class="mobile-row">
                   <span class="mobile-label">Fecha estimada:</span>
                   <TvRelativeTime :date="entry.dataTracking" lang="es" class="mobile-date" />
+                </div>
+                
+                <div v-if="hasAnyTracking && entry.lastUpdateTracking" class="mobile-row">
+                  <span class="mobile-label">Última actualización:</span>
+                  <TvRelativeTime :date="entry.lastUpdateTracking" lang="es" class="mobile-date" />
                 </div>
                 
                 <div v-if="authStore.isAuthenticated()" class="mobile-row mobile-price">
