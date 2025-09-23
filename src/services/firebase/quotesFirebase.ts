@@ -39,11 +39,25 @@ export const quotesFirebase = {
               quoteData.comments = []
             }
 
+            // Cargar historial de estados para cada cotización
+            try {
+              const historyRef = collection(db, 'quotes', docSnap.id, 'statusHistory')
+              const historyQuery = query(historyRef, orderBy('changedAt', 'desc'))
+              const historySnapshot = await getDocs(historyQuery)
+              
+              quoteData.statusHistory = historySnapshot.docs.map(historyDoc => ({
+                ...historyDoc.data()
+              })) as QuoteStatusHistory[]
+            } catch (error) {
+              logger.warn(`Error loading status history for quote ${docSnap.id}`, 'quotesFirebase', error);
+              quoteData.statusHistory = []
+            }
+
             return quoteData
           })
         )
 
-        logger.info(`Fetched ${quotes.length} quotes with comments`, 'quotesFirebase');
+        logger.info(`Fetched ${quotes.length} quotes with comments and history`, 'quotesFirebase');
         return quotes
       } catch (error) {
         logger.error('Error getting quotes', 'quotesFirebase', error);
@@ -131,14 +145,15 @@ export const quotesFirebase = {
         notes
       }
 
-      // Obtener historial actual y agregar nueva entrada
-      const currentHistory = await this.getQuoteStatusHistory(quote.idDoc)
-      
+      // Actualizar el documento principal
       await updateDoc(quoteRef, {
         status,
-        updatedAt: now,
-        statusHistory: [...currentHistory, historyEntry]
+        updatedAt: now
       })
+
+      // Agregar entrada al historial como subcolección
+      const historyRef = collection(db, 'quotes', quote.idDoc, 'statusHistory')
+      await addDoc(historyRef, historyEntry)
 
       cacheService.delete('api:FIREBASE_QUOTES:');
       logger.info(`Quote ${quoteId} status updated to ${status}`, 'quotesFirebase');
@@ -187,10 +202,11 @@ export const quotesFirebase = {
     }
   },
 
-  async getQuoteStatusHistory(id: string): Promise<QuoteStatusHistory[]> {
+  async getQuoteStatusHistory(idDoc: string): Promise<QuoteStatusHistory[]> {
     try {
-      const quoteRef = doc(db, 'quotes', id)
-      const snapshot = await getDocs(query(collection(quoteRef, 'statusHistory'), orderBy('changedAt', 'desc')))
+      const historyRef = collection(db, 'quotes', idDoc, 'statusHistory')
+      const historyQuery = query(historyRef, orderBy('changedAt', 'desc'))
+      const snapshot = await getDocs(historyQuery)
       return snapshot.docs.map(doc => doc.data()) as QuoteStatusHistory[]
     } catch (error) {
       logger.error('Error getting quote status history', 'quotesFirebase', error);

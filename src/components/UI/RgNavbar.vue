@@ -226,7 +226,7 @@ window.addEventListener('resize', () => {
 
       <router-link
         v-if="authStore.isAuthenticated()"
-        :to="{ name: 'admin', query: { tab: 'quotes' } }"
+        :to="{ name: 'admin', query: { tab: 'advanced-quotes' } }"
         class="admin-link"
       >
         <span class="material-icons">admin_panel_settings</span>

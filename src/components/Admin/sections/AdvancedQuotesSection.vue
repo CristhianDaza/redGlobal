@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Quote, QuoteStatus } from '@/types/common.d'
-import { QuoteStatus as QuoteStatusEnum } from '@/types/common.d'
 import { defineAsyncComponent, computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import TvRelativeTime from '@todovue/tv-relative-time'
@@ -15,7 +14,6 @@ const {
   quotes,
   updateQuoteStatus,
   updateQuotePriority,
-  deleteQuote,
   exportQuotes,
   refreshData
 } = useAdvancedQuotes()
@@ -189,14 +187,13 @@ onMounted(async () => {
 
 <template>
   <div class="advanced-quotes-section">
-    <!-- Header con estadísticas -->
-    <div class="quotes-header">
-      <div class="header-title">
-        <h2>Gestión Avanzada de Cotizaciones</h2>
-        <p class="subtitle">{{ stats.total }} cotizaciones encontradas</p>
+    <!-- Acciones principales -->
+    <div class="quotes-actions">
+      <div class="actions-left">
+        <p class="results-count">{{ stats.total }} cotizaciones encontradas</p>
       </div>
       
-      <div class="header-actions">
+      <div class="actions-right">
         <RgButton @click="handleExportQuotes" icon="download" outlined>
           Exportar
         </RgButton>
@@ -401,25 +398,6 @@ onMounted(async () => {
               <div class="actions-cell">
                 <RgButton @click="viewQuoteDetails(quote)" icon="view" type="icon" size="small" outlined>
                 </RgButton>
-                <RgButton 
-                  v-if="quote.status !== 'completed'" 
-                  @click="handleUpdateQuoteStatus(quote, QuoteStatusEnum.COMPLETED)" 
-                  icon="check" 
-                  type="icon" 
-                  size="small"
-                  :customStyle="{ color: '#10b981', borderColor: '#10b981' }"
-                  outlined
-                >
-                </RgButton>
-                <RgButton 
-                  @click="deleteQuote(quote.id)" 
-                  icon="remove" 
-                  type="icon" 
-                  size="small" 
-                  :customStyle="{ color: '#ef4444', borderColor: '#ef4444' }"
-                  outlined
-                >
-                </RgButton>
               </div>
             </td>
           </tr>
@@ -483,21 +461,6 @@ onMounted(async () => {
             <RgButton @click="viewQuoteDetails(quote)" size="small" outlined>
               Ver Detalles
             </RgButton>
-            <RgButton 
-              v-if="quote.status !== 'completed'" 
-              @click="handleUpdateQuoteStatus(quote, QuoteStatusEnum.COMPLETED)" 
-              size="small"
-              :customStyle="{ backgroundColor: '#10b981', color: 'white' }"
-            >
-              Completar
-            </RgButton>
-            <RgButton 
-              @click="deleteQuote(quote.id)" 
-              size="small"
-              :customStyle="{ backgroundColor: '#ef4444', color: 'white' }"
-            >
-              Eliminar
-            </RgButton>
           </div>
         </div>
       </div>
@@ -524,31 +487,25 @@ onMounted(async () => {
   min-height: 100vh;
 }
 
-.quotes-header {
+.quotes-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
   background: white;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.header-title h2 {
+.actions-left .results-count {
   margin: 0;
-  color: #1f2937;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.subtitle {
-  margin: 0.25rem 0 0 0;
   color: #6b7280;
   font-size: 0.875rem;
+  font-weight: 500;
 }
 
-.header-actions {
+.actions-right {
   display: flex;
   gap: 0.75rem;
 }

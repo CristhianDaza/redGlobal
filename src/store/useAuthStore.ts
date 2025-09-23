@@ -101,7 +101,7 @@ const login = async (email: string, password: string) => {
       description: 'Has iniciado sesión exitosamente',
       type: 'success'
     })
-    await router.push({ name: 'admin', query: { tab: 'quotes' } })
+    await router.push({ name: 'admin', query: { tab: 'advanced-quotes' } })
     return true
 
   } catch (e: any) {

@@ -80,12 +80,8 @@ export function useAdvancedQuotes() {
       
       await quotesFirebase.updateQuoteStatus(quoteId, status, notes, changedBy)
       
-      // Actualizar el estado local
-      const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
-      if (quoteIndex !== -1) {
-        quotes.value[quoteIndex].status = status
-        quotes.value[quoteIndex].updatedAt = new Date().toISOString()
-      }
+      // Recargar las cotizaciones para obtener el historial actualizado
+      await loadQuotes()
 
       NotificationService.push({
         title: 'Estado actualizado',

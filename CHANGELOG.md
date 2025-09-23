@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- **Advanced Quotes Interface Optimization**: Streamlined the advanced quotations management interface for better user experience:
+  - **Simplified Header**: Removed redundant header section in AdvancedQuotesSection.vue and replaced with compact actions bar
+  - **Cleaner Actions Bar**: Condensed header to show only essential information (results count) and key actions (Export, View toggle)
+  - **Removed Obsolete Buttons**: Eliminated redundant "Complete" and "Delete" buttons from quote lists since these actions are now handled in the dedicated detail page
+  - **Consistent Navigation**: Updated all admin redirections to point directly to advanced quotes section (`/admin?tab=advanced-quotes`)
+  - **Code Cleanup**: Removed unused imports and functions (`QuoteStatusEnum`, `deleteQuote`) for cleaner codebase
+
+### Fixed
+- **Admin Navigation Consistency**: Fixed multiple navigation issues where users were redirected to wrong admin sections:
+  - **Login Redirect**: Updated authentication flow to redirect to advanced quotes instead of basic quotes
+  - **Navbar Admin Link**: Fixed admin panel link in navigation bar to go directly to advanced quotes
+  - **Quote Detail Navigation**: Fixed back button and error redirections in QuoteDetailView to return to advanced quotes
+  - **AdminHeader Conditional Display**: Added conditional rendering to hide AdminHeader specifically for advanced quotes section to prevent UI duplication
+
 ### Added
 - **Quote Detail Page Migration**: Migrated the advanced quotation modal to a dedicated full-page view with URL routing:
   - **New Route**: Added `/admin/quotes/:id` route for direct access to individual quotations

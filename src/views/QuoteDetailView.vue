@@ -55,7 +55,7 @@ const totalValue = computed(() => {
 })
 
 function goBack() {
-  router.push('/admin')
+  router.push('/admin?tab=advanced-quotes')
 }
 
 async function handleUpdateStatus(newStatus: QuoteStatus) {
@@ -116,7 +116,7 @@ onMounted(async () => {
   }
   
   if (!currentQuote.value) {
-    router.push('/admin')
+    router.push('/admin?tab=advanced-quotes')
   }
 })
 
@@ -222,16 +222,22 @@ watch(() => route.params.id, async (newId) => {
               <h3>Gestión</h3>
               <div class="detail-item">
                 <label>Estado:</label>
-                <select 
-                  :value="currentQuote.status" 
-                  @change="handleUpdateStatus(($event.target as HTMLSelectElement)?.value as QuoteStatus)"
-                  class="status-select"
-                  :disabled="isUpdating"
-                >
-                  <option v-for="(config, status) in statusConfig" :key="status" :value="status">
-                    {{ config.label }}
-                  </option>
-                </select>
+                <div class="status-field">
+                  <select 
+                    :value="currentQuote.status" 
+                    @change="handleUpdateStatus(($event.target as HTMLSelectElement)?.value as QuoteStatus)"
+                    class="status-select"
+                    :disabled="isUpdating"
+                  >
+                    <option v-for="(config, status) in statusConfig" :key="status" :value="status">
+                      {{ config.label }}
+                    </option>
+                  </select>
+                  <div v-if="isUpdating" class="updating-indicator">
+                    <div class="spinner"></div>
+                    <span>Actualizando...</span>
+                  </div>
+                </div>
               </div>
               
               <div class="detail-item">
@@ -672,11 +678,34 @@ watch(() => route.params.id, async (newId) => {
   gap: 0.25rem;
 }
 
+.status-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .status-select {
   padding: 0.5rem;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 0.875rem;
+}
+
+.updating-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 .products-section {
