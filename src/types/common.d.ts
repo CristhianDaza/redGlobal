@@ -128,6 +128,7 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   lastLogin?: string;
+  isHidden?: boolean;
 }
 
 export interface UserFormData extends Omit<User, 'id' | 'createdAt' | 'updatedAt'> {

@@ -8,7 +8,7 @@ import { getAuth as getSecondaryAuth } from 'firebase/auth'
 import { cacheService, API_CACHE_CONFIG, logger } from '@/services'
 
 export const usersFirebase = {
-  async getUsers(): Promise<User[]> {
+  async getUsers(includeHidden: boolean = false): Promise<User[]> {
     const cache = cacheService.cacheApiCall<User[]>(
       'FIREBASE_USERS',
       {},
@@ -21,9 +21,14 @@ export const usersFirebase = {
         
         const usersRef = collection(db, 'users')
         const snapshot = await getDocs(usersRef)
-        const users = snapshot.docs.map(doc => ({
+        let users = snapshot.docs.map(doc => ({
           idDoc: doc.id, ...doc.data()
         })) as User[]
+
+        // Filtrar usuarios ocultos si no se solicita incluirlos
+        if (!includeHidden) {
+          users = users.filter(user => !user.isHidden)
+        }
 
         if (users.length === 0) {
           const auth = getAuth()
