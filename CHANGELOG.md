@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `src/store/useUserStore.ts` normalizes all fetched users' emails to lowercase for backward compatibility with historical data.
 
 ### Fixed
+- **Primary color not updating on user login**: Fixed issue where the primary color would remain stuck on the previous user's color when logging in with a different user. Added watchers to automatically update colors when authentication state or user data changes.
 - **Admin routing with query parameters**: Fixed issue where accessing admin with specific tab query parameters (e.g., `/admin?tab=our-clients`) would always redirect to `quotes` tab. Now properly respects the requested tab for admin users and redirects non-admin users to `quotes` tab only.
 - Inconsistent lookups where comparisons used the raw email value, leading to mismatches when Auth returned different casing. Updated to compare against `authStore.user?.email?.toLowerCase()` in:
   - `src/App.vue` (theme color resolution)

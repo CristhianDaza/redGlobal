@@ -121,6 +121,29 @@ onMounted(async () => {
     loaderStore.hideLoader();
   }
 });
+
+watch(
+  () => authStore.user,
+  () => {
+    updateCustomColors();
+  }
+);
+
+watch(
+  () => userStore.users,
+  () => {
+    updateCustomColors();
+  },
+  { deep: true }
+);
+
+watch(
+  () => colorStore.color,
+  () => {
+    updateCustomColors();
+  },
+  { deep: true }
+);
 </script>
 
 <template>
