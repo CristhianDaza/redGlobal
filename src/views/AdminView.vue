@@ -76,7 +76,8 @@ const {
   handleSaveUser,
   handleEditUser,
   handleAddUser,
-  deleteUser
+  deleteUser,
+  sendPasswordReset
 } = useUserAdmin();
 
 const {
@@ -442,6 +443,7 @@ watch(() => route.query.tab, (newTab) => {
             @edit="handleEditUser"
             @delete="id => handleDeleteClick(id, 'users')"
             @toggle-status="handleToggleUserStatus"
+            @reset-password="sendPasswordReset"
           />
 
           <QuotesSection

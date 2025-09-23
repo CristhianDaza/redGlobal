@@ -123,8 +123,7 @@ export const usersFirebase = {
         ...user, 
         updatedAt: new Date().toISOString()
       }
-      
-      // Asegurar que el email esté en minúsculas si se está actualizando
+
       if (updateData.email) {
         updateData.email = updateData.email.toLowerCase()
       }

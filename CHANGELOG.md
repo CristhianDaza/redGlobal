@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authentication and user validation in Firestore now use the Firebase Auth UID (`id` field) instead of email to avoid email casing issues.
 
 ### Added
+- **Password reset functionality for admin users**: Added "Forgot Password" button in the admin users section that sends password recovery emails using Firebase Auth's `sendPasswordResetEmail` function.
 - Lowercasing safeguards in the following flows/components:
   - Auth login in `src/store/useAuthStore.ts` forces `email.toLowerCase()` before calling Firebase Auth.
   - User creation in `src/services/firebase/usersFirebase.ts` saves emails in lowercase.

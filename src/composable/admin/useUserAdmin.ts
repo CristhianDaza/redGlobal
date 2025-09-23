@@ -2,6 +2,9 @@ import type { User, UserFormData } from '@/types/common.d';
 import { ref, computed } from 'vue';
 import { useUserStore, useAuthStore } from '@/store';
 import { uploadImage } from '@/config';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/config';
+import { NotificationService } from '@/components/Notification/NotificationService';
 
 export function useUserAdmin() {
   const userStore = useUserStore();
@@ -92,6 +95,27 @@ export function useUserAdmin() {
       isLoading.value = false;
     }
   };
+
+  const sendPasswordReset = async (user: User) => {
+    try {
+      isLoading.value = true;
+      await sendPasswordResetEmail(auth, user.email);
+      NotificationService.push({
+        title: 'Correo enviado',
+        description: `Se ha enviado un correo de recuperación de contraseña a ${user.email}`,
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Error enviando correo de recuperación:', error);
+      NotificationService.push({
+        title: 'Error al enviar correo',
+        description: 'No se pudo enviar el correo de recuperación. Intenta nuevamente.',
+        type: 'error'
+      });
+    } finally {
+      isLoading.value = false;
+    }
+  };
   
   return {
     isLoading,
@@ -106,6 +130,7 @@ export function useUserAdmin() {
     handleEditUser,
     handleAddUser,
     deleteUser,
-    toggleUserStatus
+    toggleUserStatus,
+    sendPasswordReset
   };
 }

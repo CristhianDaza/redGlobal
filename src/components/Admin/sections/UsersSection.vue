@@ -16,6 +16,7 @@ defineEmits<{
   (e: 'edit', user: User): void
   (e: 'delete', id: string): void
   (e: 'toggle-status', user: User): void
+  (e: 'reset-password', user: User): void
 }>()
 
 const loadingUserId = ref<string | null>(null);
@@ -90,6 +91,17 @@ const loadingUserId = ref<string | null>(null);
               :customStyle="{
                 backgroundColor: user.active ? '#e53e3e' : '#4299e1',
                 color: '#ebf8ff',
+              }"
+            />
+            <RgButton
+              icon="account"
+              type="icon"
+              outlined
+              @click="$emit('reset-password', user)"
+              title="Enviar correo de recuperación de contraseña"
+              :customStyle="{
+                backgroundColor: '#f6ad55',
+                color: '#1a202c',
               }"
             />
           </td>
