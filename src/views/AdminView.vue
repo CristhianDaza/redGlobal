@@ -274,6 +274,26 @@ const loadingData = computed(() => {
 
 onMounted(async () => {
   try {
+    const initializeCorrectTab = () => {
+      const queryTab = route.query.tab as tabs;
+      const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors'];
+      
+      if (queryTab && validTabs.includes(queryTab)) {
+        if (isAdmin.value) {
+          activeTab.value = queryTab;
+          return;
+        }
+        activeTab.value = 'quotes';
+        if (queryTab !== 'quotes') {
+          router.replace({ query: { tab: 'quotes' } });
+        }
+        return;
+      }
+      
+      activeTab.value = 'quotes';
+      router.replace({ query: { tab: 'quotes' } });
+    };
+
     if (isAdmin.value) {
       await Promise.all([
         loadMenu(),
@@ -291,9 +311,11 @@ onMounted(async () => {
         const quoteId = route.query.quoteId as string;
         await handleOpenQuoteDetails(quoteId);
       }
-      return;
+    } else {
+      await loadQuotes();
     }
-    await loadQuotes();
+
+    initializeCorrectTab();
   } catch (error) {
     console.error('Error loading initial data:', error);
   }
