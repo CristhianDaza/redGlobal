@@ -135,7 +135,7 @@ watch(() => props.isVisible, (visible) => {
             </span>
           </div>
         </div>
-        <RgButton @click="closeModal" icon="close" type="icon" outlined />
+        <RgButton @click="closeModal" icon="cancel" type="icon" outlined />
       </div>
 
       <!-- Tabs -->
@@ -144,21 +144,21 @@ watch(() => props.isVisible, (visible) => {
           @click="activeTab = 'details'" 
           :class="['tab-button', { active: activeTab === 'details' }]"
         >
-          <span class="material-icons">info</span>
+          <span class="tab-icon">ℹ️</span>
           Detalles
         </button>
         <button 
           @click="activeTab = 'comments'" 
           :class="['tab-button', { active: activeTab === 'comments' }]"
         >
-          <span class="material-icons">comment</span>
+          <span class="tab-icon">💬</span>
           Comentarios
         </button>
         <button 
           @click="activeTab = 'history'" 
           :class="['tab-button', { active: activeTab === 'history' }]"
         >
-          <span class="material-icons">history</span>
+          <span class="tab-icon">📋</span>
           Historial
         </button>
       </div>
@@ -331,7 +331,7 @@ watch(() => props.isVisible, (visible) => {
             
             <div class="comments-list">
               <div class="empty-state" v-if="!quote.comments?.length">
-                <span class="material-icons">comment</span>
+                <span class="empty-icon">💬</span>
                 <p>No hay comentarios aún</p>
               </div>
             </div>
@@ -342,7 +342,7 @@ watch(() => props.isVisible, (visible) => {
         <div v-if="activeTab === 'history'" class="tab-content">
           <div class="history-section">
             <div class="empty-state" v-if="!quote.statusHistory?.length">
-              <span class="material-icons">history</span>
+              <span class="empty-icon">📋</span>
               <p>No hay historial disponible</p>
             </div>
           </div>
@@ -659,9 +659,15 @@ watch(() => props.isVisible, (visible) => {
   color: #9ca3af;
 }
 
-.empty-state .material-icons {
+.empty-state .empty-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
+  display: block;
+}
+
+.tab-icon {
+  font-size: 1rem;
+  margin-right: 0.5rem;
 }
 
 @media (max-width: 768px) {

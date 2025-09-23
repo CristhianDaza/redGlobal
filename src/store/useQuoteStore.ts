@@ -109,7 +109,7 @@ export const useQuoteStore = defineStore('quote', () => {
     })
   }
 
-  const submitQuote = async () => {
+  const submitQuote = async (clientNotes?: string) => {
     try {
       if (!authStore.user || state.value.currentQuote.length === 0) return
 
@@ -126,6 +126,7 @@ export const useQuoteStore = defineStore('quote', () => {
         updatedAt: new Date().toISOString(),
         id: crypto.randomUUID(),
         idDoc: '',
+        clientNotes: clientNotes,
       }
 
       const emailData = {

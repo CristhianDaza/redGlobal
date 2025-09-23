@@ -116,9 +116,9 @@ export const quotesFirebase = {
     }
   },
 
-  async updateQuoteField(id: string, field: string, value: any, updatedBy?: string): Promise<void> {
+  async updateQuoteField(idDoc: string, field: string, value: any, updatedBy?: string): Promise<void> {
     try {
-      const quoteRef = doc(db, 'quotes', id)
+      const quoteRef = doc(db, 'quotes', idDoc)
       const updateData: any = {
         [field]: value,
         updatedAt: new Date().toISOString()
@@ -130,7 +130,7 @@ export const quotesFirebase = {
 
       await updateDoc(quoteRef, updateData)
       cacheService.delete('api:FIREBASE_QUOTES:');
-      logger.info(`Quote ${id} field ${field} updated`, 'quotesFirebase');
+      logger.info(`Quote ${idDoc} field ${field} updated`, 'quotesFirebase');
     } catch (error) {
       logger.error('Error updating quote field', 'quotesFirebase', error);
       throw error

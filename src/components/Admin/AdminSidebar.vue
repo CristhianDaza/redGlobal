@@ -94,8 +94,8 @@ const currentUserName = computed(() => {
         <span>Asesores</span>
       </button>
       <button
-        :class="['nav-item', { active: activeTab === 'quotes' }]"
-        @click="$emit('tab-change', 'quotes')"
+        :class="['nav-item', { active: activeTab === 'advanced-quotes' }]"
+        @click="$emit('tab-change', 'advanced-quotes')"
       >
         <span class="material-icons">request_quote</span>
         <span>Cotizaciones</span>
@@ -106,7 +106,7 @@ const currentUserName = computed(() => {
           {{ pendingQuotes }}
         </span>
       </button>
-      <div class="divider"></div>
+      <div class="divider" v-if="isAdmin"></div>
       <RgButton
         v-if="isAdmin"
         @click="$emit('update-products')"
@@ -257,6 +257,15 @@ const currentUserName = computed(() => {
 
 .nav-item .material-icons {
   font-size: 1.25rem;
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .quote-badge {

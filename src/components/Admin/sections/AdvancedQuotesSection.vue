@@ -36,7 +36,7 @@ const dateFilter = ref<string>('all')
 const assignedFilter = ref<string>('all')
 const sortKey = ref<keyof Quote>('createdAt')
 const sortAsc = ref(false)
-const viewMode = ref<'table' | 'cards'>('table')
+const viewMode = ref<'table' | 'cards'>('cards')
 
 // Estados de cotización con colores y etiquetas
 const statusConfig = {
@@ -204,7 +204,7 @@ onMounted(async () => {
         <RgButton @click="handleExportQuotes" icon="download" outlined>
           Exportar
         </RgButton>
-        <RgButton @click="viewMode = viewMode === 'table' ? 'cards' : 'table'" icon="view_module" outlined>
+        <RgButton @click="viewMode = viewMode === 'table' ? 'cards' : 'table'" icon="view" outlined>
           {{ viewMode === 'table' ? 'Vista Tarjetas' : 'Vista Tabla' }}
         </RgButton>
       </div>
@@ -214,7 +214,7 @@ onMounted(async () => {
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">
-          <span class="material-icons">assessment</span>
+          <span class="stat-icon-text">📊</span>
         </div>
         <div class="stat-info">
           <h3>{{ stats.total }}</h3>
@@ -224,7 +224,7 @@ onMounted(async () => {
       
       <div class="stat-card">
         <div class="stat-icon">
-          <span class="material-icons">trending_up</span>
+          <span class="stat-icon-text">📈</span>
         </div>
         <div class="stat-info">
           <h3>{{ stats.conversionRate.toFixed(1) }}%</h3>
@@ -234,7 +234,7 @@ onMounted(async () => {
       
       <div class="stat-card">
         <div class="stat-icon">
-          <span class="material-icons">attach_money</span>
+          <span class="stat-icon-text">💰</span>
         </div>
         <div class="stat-info">
           <h3>${{ stats.avgValue.toLocaleString() }}</h3>
@@ -244,7 +244,7 @@ onMounted(async () => {
       
       <div class="stat-card">
         <div class="stat-icon">
-          <span class="material-icons">schedule</span>
+          <span class="stat-icon-text">⏳</span>
         </div>
         <div class="stat-info">
           <h3>{{ stats.byStatus.pending || 0 }}</h3>
@@ -311,14 +311,14 @@ onMounted(async () => {
           <tr>
             <th @click="changeSort('createdAt')" class="sortable">
               Fecha
-              <span class="material-icons sort-icon">
-                {{ sortKey === 'createdAt' ? (sortAsc ? 'keyboard_arrow_up' : 'keyboard_arrow_down') : 'unfold_more' }}
+              <span class="sort-icon">
+                {{ sortKey === 'createdAt' ? (sortAsc ? '↑' : '↓') : '↕' }}
               </span>
             </th>
             <th @click="changeSort('userName')" class="sortable">
               Cliente
-              <span class="material-icons sort-icon">
-                {{ sortKey === 'userName' ? (sortAsc ? 'keyboard_arrow_up' : 'keyboard_arrow_down') : 'unfold_more' }}
+              <span class="sort-icon">
+                {{ sortKey === 'userName' ? (sortAsc ? '↑' : '↓') : '↕' }}
               </span>
             </th>
             <th>Estado</th>
@@ -326,8 +326,8 @@ onMounted(async () => {
             <th>Items</th>
             <th @click="changeSort('estimatedValue')" class="sortable">
               Valor Est.
-              <span class="material-icons sort-icon">
-                {{ sortKey === 'estimatedValue' ? (sortAsc ? 'keyboard_arrow_up' : 'keyboard_arrow_down') : 'unfold_more' }}
+              <span class="sort-icon">
+                {{ sortKey === 'estimatedValue' ? (sortAsc ? '↑' : '↓') : '↕' }}
               </span>
             </th>
             <th>Acciones</th>
@@ -403,18 +403,26 @@ onMounted(async () => {
             
             <td>
               <div class="actions-cell">
-                <RgButton @click="$emit('view', quote)" icon="visibility" type="icon" size="small" outlined>
+                <RgButton @click="$emit('view', quote)" icon="view" type="icon" size="small" outlined>
                 </RgButton>
                 <RgButton 
                   v-if="quote.status !== 'completed'" 
                   @click="handleUpdateQuoteStatus(quote, QuoteStatusEnum.COMPLETED)" 
-                  icon="check_circle" 
+                  icon="check" 
                   type="icon" 
                   size="small"
-                  :customStyle="{ color: '#10b981' }"
+                  :customStyle="{ color: '#10b981', borderColor: '#10b981' }"
+                  outlined
                 >
                 </RgButton>
-                <RgButton @click="deleteQuote(quote.id)" icon="delete" type="icon" size="small" outlined>
+                <RgButton 
+                  @click="deleteQuote(quote.id)" 
+                  icon="remove" 
+                  type="icon" 
+                  size="small" 
+                  :customStyle="{ color: '#ef4444', borderColor: '#ef4444' }"
+                  outlined
+                >
                 </RgButton>
               </div>
             </td>
@@ -487,6 +495,13 @@ onMounted(async () => {
             >
               Completar
             </RgButton>
+            <RgButton 
+              @click="deleteQuote(quote.id)" 
+              size="small"
+              :customStyle="{ backgroundColor: '#ef4444', color: 'white' }"
+            >
+              Eliminar
+            </RgButton>
           </div>
         </div>
       </div>
@@ -495,7 +510,7 @@ onMounted(async () => {
     <!-- Estado vacío -->
     <div v-if="sortedQuotes.length === 0" class="empty-state">
       <div class="empty-icon">
-        <span class="material-icons">search_off</span>
+        <span class="empty-icon-text">🔍</span>
       </div>
       <h3>No se encontraron cotizaciones</h3>
       <p>Intenta ajustar los filtros o crear una nueva cotización</p>
@@ -661,6 +676,14 @@ onMounted(async () => {
   font-size: 16px;
   margin-left: 0.25rem;
   opacity: 0.5;
+}
+
+.stat-icon-text {
+  font-size: 24px;
+}
+
+.empty-icon-text {
+  font-size: 4rem;
 }
 
 .quotes-table td {

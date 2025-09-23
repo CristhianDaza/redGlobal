@@ -21,8 +21,10 @@ const MenuSection = defineAsyncComponent(/* webpackChunkName: "menuSection" */()
 const AdminHeader = defineAsyncComponent(/* webpackChunkName: "adminHeader" */() => import('@/components/Admin/AdminHeader.vue'));
 const UsersSection = defineAsyncComponent(/* webpackChunkName: "usersSection" */() => import('@/components/Admin/sections/UsersSection.vue'));
 const QuotesSection = defineAsyncComponent(/* webpackChunkName: "quotesSection" */() => import('@/components/Admin/sections/QuotesSection.vue'));
+const AdvancedQuotesSection = defineAsyncComponent(/* webpackChunkName: "advancedQuotesSection" */() => import('@/components/Admin/sections/AdvancedQuotesSection.vue'));
 const CategoriesSection = defineAsyncComponent(/* webpackChunkName: "categoriesSection" */() => import('@/components/Admin/sections/CategoriesSection.vue'));
 const QuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "quoteDetailsModal" */() => import('@/components/Admin/QuoteDetailsModal.vue'));
+const AdvancedQuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "advancedQuoteDetailsModal" */() => import('@/components/Admin/AdvancedQuoteDetailsModal.vue'));
 const CatalogsSection = defineAsyncComponent(/* webpackChunkName: "catalogsSection" */() => import('@/components/Admin/sections/CatalogsSection.vue'));
 const CarouselSection = defineAsyncComponent(/* webpackChunkName: "carouselSection" */() => import('@/components/Admin/sections/CarouselSection.vue'));
 const OurClientsSection = defineAsyncComponent(/* webpackChunkName: "ourClientsSection" */() => import('@/components/Admin/sections/OurClientsSection.vue'));
@@ -36,7 +38,7 @@ const storeProducts = useProductsStore();
 const userStore = useUserStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated());
 
-const activeTab = ref<tabs>('quotes');
+const activeTab = ref<tabs>('advanced-quotes');
 
 const handleTabChange = (tab: tabs) => {
   router.push({ query: { tab } });
@@ -99,6 +101,10 @@ const {
   canDeleteQuote,
   quoteStatus
 } = useQuoteAdmin(isAdmin.value);
+
+// Estados para el sistema avanzado de cotizaciones
+const showAdvancedQuoteModal = ref(false);
+const selectedAdvancedQuote = ref<any>(null);
 
 const {
   categoryCards,
@@ -262,6 +268,7 @@ const loadingData = computed(() => {
     case 'menu': return menuLoading.value;
     case 'users': return userLoading.value;
     case 'quotes': return quoteLoading.value;
+    case 'advanced-quotes': return false; // El loading se maneja internamente en el composable
     case 'cards': return isLoadingCard.value;
     case 'catalogs': return isLoadingCatalog.value;
     case 'carousel': return isLoadingCarousel.value;
@@ -276,22 +283,22 @@ onMounted(async () => {
   try {
     const initializeCorrectTab = () => {
       const queryTab = route.query.tab as tabs;
-      const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors'];
+      const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors'];
       
       if (queryTab && validTabs.includes(queryTab)) {
         if (isAdmin.value) {
           activeTab.value = queryTab;
           return;
         }
-        activeTab.value = 'quotes';
-        if (queryTab !== 'quotes') {
-          router.replace({ query: { tab: 'quotes' } });
+        activeTab.value = 'advanced-quotes';
+        if (queryTab !== 'advanced-quotes') {
+          router.replace({ query: { tab: 'advanced-quotes' } });
         }
         return;
       }
       
-      activeTab.value = 'quotes';
-      router.replace({ query: { tab: 'quotes' } });
+      activeTab.value = 'advanced-quotes';
+      router.replace({ query: { tab: 'advanced-quotes' } });
     };
 
     if (isAdmin.value) {
@@ -309,7 +316,13 @@ onMounted(async () => {
 
       if (route.query.quoteId) {
         const quoteId = route.query.quoteId as string;
-        await handleOpenQuoteDetails(quoteId);
+        // Verificar si estamos en la sección de cotizaciones avanzadas
+        if (activeTab.value === 'advanced-quotes') {
+          await handleOpenAdvancedQuoteFromUrl(quoteId);
+        } else {
+          // Fallback para cotizaciones normales (si aún existen)
+          await handleOpenQuoteDetails(quoteId);
+        }
       }
     } else {
       await loadQuotes();
@@ -322,7 +335,7 @@ onMounted(async () => {
 });
 
 watch(activeTab, (newTab) => {
-  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors'];
+  const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors'];
   const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
   if (tab) {
     router.replace({ query: { tab } });
@@ -373,10 +386,11 @@ const titleConfirm = computed(() => {
   return titleConfirmsMap[type] || titleConfirmsMap.default
 })
 
-const activeTabTitle = {
+const activeTabTitle: Record<tabs, string> = {
   menu: 'Menú',
   users: 'Usuarios',
   quotes: 'Cotizaciones',
+  'advanced-quotes': 'Cotizaciones',
   cards: 'Categorías',
   catalogs: 'Catálogos',
   carousel: 'Carrusel',
@@ -388,6 +402,72 @@ const activeTabTitle = {
 const handleUpdateProducts = () => {
   itemToConfirmModal.value = { id: '', type: 'update' };
   showConfirmModal.value = true;
+};
+
+// Funciones para el sistema avanzado de cotizaciones
+const handleViewAdvancedQuote = (quote: any) => {
+  selectedAdvancedQuote.value = quote;
+  showAdvancedQuoteModal.value = true;
+  // Actualizar URL con quoteId
+  router.push({ 
+    query: { 
+      ...route.query, 
+      quoteId: quote.id 
+    } 
+  });
+};
+
+const handleCloseAdvancedQuoteModal = () => {
+  showAdvancedQuoteModal.value = false;
+  selectedAdvancedQuote.value = null;
+  // Limpiar quoteId de la URL
+  const newQuery = { ...route.query };
+  delete newQuery.quoteId;
+  router.push({ query: newQuery });
+};
+
+const handleUpdateQuoteStatus = async (data: { quoteId: string, status: any, notes?: string }) => {
+  // Esta función será manejada por el composable useAdvancedQuotes
+  console.log('Update quote status:', data);
+};
+
+const handleAddQuoteComment = async (data: { quoteId: string, comment: string, isInternal: boolean }) => {
+  // Esta función será manejada por el composable useAdvancedQuotes
+  console.log('Add quote comment:', data);
+};
+
+const handleUpdateQuoteField = async (data: { quoteId: string, field: string, value: any }) => {
+  // Esta función será manejada por el composable useAdvancedQuotes
+  console.log('Update quote field:', data);
+};
+
+// Función para abrir cotización desde URL
+const handleOpenAdvancedQuoteFromUrl = async (quoteId: string) => {
+  try {
+    // Importar el composable de cotizaciones avanzadas
+    const { quotes, loadQuotes } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+    
+    // Asegurar que las cotizaciones estén cargadas
+    if (quotes.value.length === 0) {
+      await loadQuotes();
+    }
+    
+    // Buscar la cotización por ID
+    const quote = quotes.value.find(q => q.id === quoteId);
+    
+    if (quote) {
+      selectedAdvancedQuote.value = quote;
+      showAdvancedQuoteModal.value = true;
+    } else {
+      console.warn(`No se encontró la cotización con ID: ${quoteId}`);
+      // Limpiar el quoteId de la URL si no se encuentra
+      const newQuery = { ...route.query };
+      delete newQuery.quoteId;
+      router.replace({ query: newQuery });
+    }
+  } catch (error) {
+    console.error('Error al abrir cotización desde URL:', error);
+  }
 };
 
 useHead({
@@ -407,8 +487,19 @@ useHead({
 });
 
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color', 'advisors'].includes(newTab as tabs)) {
+  if (newTab && ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color', 'advisors'].includes(newTab as tabs)) {
     activeTab.value = newTab as tabs;
+  }
+});
+
+// Watcher para detectar cambios en quoteId en la URL
+watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
+  if (newQuoteId && newQuoteId !== oldQuoteId && activeTab.value === 'advanced-quotes') {
+    await handleOpenAdvancedQuoteFromUrl(newQuoteId as string);
+  } else if (!newQuoteId && showAdvancedQuoteModal.value) {
+    // Si se quita el quoteId de la URL, cerrar el modal
+    showAdvancedQuoteModal.value = false;
+    selectedAdvancedQuote.value = null;
   }
 });
 </script>
@@ -468,17 +559,9 @@ watch(() => route.query.tab, (newTab) => {
             @reset-password="sendPasswordReset"
           />
 
-          <QuotesSection
-            v-else-if="activeTab === 'quotes'"
-            :quotes="filteredQuotes"
-            :totals="{ total: totalQuotes, pending: pendingQuotes, completed: completedQuotes }"
-            :quoteStatus="quoteStatus"
-            :is-admin="isAdmin"
-            :canDeleteQuote="canDeleteQuote"
-            @view="handleViewQuote"
-            @complete="handleCompleteQuote"
-            @delete="id => handleDeleteClick(id, 'quotes')"
-            @download="downloadQuoteSummary"
+          <AdvancedQuotesSection
+            v-else-if="activeTab === 'advanced-quotes'"
+            @view="handleViewAdvancedQuote"
           />
 
           <CategoriesSection
@@ -572,6 +655,15 @@ watch(() => route.query.tab, (newTab) => {
           :quote-status="quoteStatus"
           @complete="handleCompleteQuote"
           @close="handleCloseQuoteDetails"
+        />
+
+        <AdvancedQuoteDetailsModal
+          :quote="selectedAdvancedQuote"
+          :is-visible="showAdvancedQuoteModal"
+          @close="handleCloseAdvancedQuoteModal"
+          @updateStatus="handleUpdateQuoteStatus"
+          @addComment="handleAddQuoteComment"
+          @updateField="handleUpdateQuoteField"
         />
 
         <CarouselForm

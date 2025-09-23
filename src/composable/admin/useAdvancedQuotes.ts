@@ -112,7 +112,13 @@ export function useAdvancedQuotes() {
       isUpdating.value = true
       const updatedBy = currentUser.value?.name || 'Admin'
       
-      await quotesFirebase.updateQuoteField(quoteId, 'priority', priority, updatedBy)
+      // Encontrar la cotización para obtener el idDoc
+      const quote = quotes.value.find(q => q.id === quoteId)
+      if (!quote) {
+        throw new Error('Cotización no encontrada')
+      }
+      
+      await quotesFirebase.updateQuoteField(quote.idDoc, 'priority', priority, updatedBy)
       
       // Actualizar el estado local
       const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
@@ -143,7 +149,13 @@ export function useAdvancedQuotes() {
       isUpdating.value = true
       const updatedBy = currentUser.value?.name || 'Admin'
       
-      await quotesFirebase.updateQuoteField(quoteId, field, value, updatedBy)
+      // Encontrar la cotización para obtener el idDoc
+      const quote = quotes.value.find(q => q.id === quoteId)
+      if (!quote) {
+        throw new Error('Cotización no encontrada')
+      }
+      
+      await quotesFirebase.updateQuoteField(quote.idDoc, field, value, updatedBy)
       
       // Actualizar el estado local
       const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
