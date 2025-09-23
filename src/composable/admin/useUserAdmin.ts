@@ -5,6 +5,7 @@ import { uploadImage } from '@/config';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '@/config';
 import { NotificationService } from '@/components/Notification/NotificationService';
+import { usersFirebase } from '@/services/firebase/usersFirebase';
 
 export function useUserAdmin() {
   const userStore = useUserStore();
@@ -20,6 +21,12 @@ export function useUserAdmin() {
 
   const loadUsers = async () => {
     await userStore.getUsers();
+    const migrationKey = 'lastLogin_migration_completed';
+    if (!localStorage.getItem(migrationKey)) {
+      await usersFirebase.migrateUsersLastLogin();
+      localStorage.setItem(migrationKey, 'true');
+      await userStore.getUsers();
+    }
   };
 
   const currentUser = computed(() => {

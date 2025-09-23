@@ -2,6 +2,7 @@
 import type { User } from '@/types/common';
 import { defineAsyncComponent, ref } from 'vue';
 import { NotificationService } from '@/components/Notification/NotificationService';
+import TvRelativeTime from '@todovue/tv-relative-time';
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
 
@@ -75,6 +76,7 @@ const copyToClipboard = async (email: string) => {
           <th>Correo</th>
           <th>Estado</th>
           <th>Rol</th>
+          <th>Último<br />Acceso</th>
           <th>Acciones</th>
         </tr>
         </thead>
@@ -97,6 +99,10 @@ const copyToClipboard = async (email: string) => {
             </span>
           </td>
           <td>{{ user.role === 'admin' ? 'Administrador' : 'Cliente' }}</td>
+          <td>
+            <TvRelativeTime v-if="user.lastLogin" :date="user.lastLogin" lang="es" />
+            <span v-else class="no-login">Nunca</span>
+          </td>
           <td class="actions">
             <RgButton
               icon="edit"
@@ -178,5 +184,11 @@ const copyToClipboard = async (email: string) => {
 
 .copy-btn .material-icons {
   font-size: 16px;
+}
+
+.no-login {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.875rem;
 }
 </style>

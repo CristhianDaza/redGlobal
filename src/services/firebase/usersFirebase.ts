@@ -170,4 +170,54 @@ export const usersFirebase = {
       throw error
     }
   },
+
+  async updateLastLogin(userId: string): Promise<void> {
+    try {
+      const usersQuery = await getDocs(query(collection(db, 'users'), where('id', '==', userId)))
+      if (!usersQuery.empty) {
+        const userDoc = usersQuery.docs[0]
+        await updateDoc(doc(db, 'users', userDoc.id), {
+          lastLogin: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        })
+        
+        cacheService.delete('api:FIREBASE_USERS:');
+        logger.info('User last login updated', 'usersFirebase');
+      }
+    } catch (error) {
+      logger.error('Error updating user last login', 'usersFirebase', error);
+    }
+  },
+
+  async migrateUsersLastLogin(): Promise<void> {
+    try {
+      logger.info('Starting users lastLogin migration', 'usersFirebase');
+      
+      const usersQuery = await getDocs(collection(db, 'users'))
+      const batch = []
+      
+      for (const userDoc of usersQuery.docs) {
+        const userData = userDoc.data()
+        
+        if (!userData.lastLogin) {
+          batch.push(
+            updateDoc(doc(db, 'users', userDoc.id), {
+              lastLogin: userData.createdAt || new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            })
+          )
+        }
+      }
+      
+      if (batch.length > 0) {
+        await Promise.all(batch)
+        cacheService.delete('api:FIREBASE_USERS:');
+        logger.info(`Migrated ${batch.length} users with lastLogin field`, 'usersFirebase');
+      } else {
+        logger.info('No users need lastLogin migration', 'usersFirebase');
+      }
+    } catch (error) {
+      logger.error('Error migrating users lastLogin', 'usersFirebase', error);
+    }
+  },
 }

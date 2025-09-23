@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authentication and user validation in Firestore now use the Firebase Auth UID (`id` field) instead of email to avoid email casing issues.
 
 ### Added
+- **Last login tracking for users**: Added `lastLogin` field to user records that automatically updates when users log in, with display in the admin users table showing relative time since last access. Includes automatic migration for existing users using their creation date as initial last login.
 - **Copy email functionality in admin users table**: Added copy button next to each user's email in the admin users table to quickly copy emails to clipboard with visual feedback notifications.
 - **Password reset functionality for admin users**: Added "Forgot Password" button in the admin users section that sends password recovery emails using Firebase Auth's `sendPasswordResetEmail` function.
 - Lowercasing safeguards in the following flows/components:

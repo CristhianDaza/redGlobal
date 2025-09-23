@@ -127,6 +127,7 @@ export interface User {
   role: UserRole;
   createdAt: string;
   updatedAt: string;
+  lastLogin?: string;
 }
 
 export interface UserFormData extends Omit<User, 'id' | 'createdAt' | 'updatedAt'> {

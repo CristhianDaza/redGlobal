@@ -13,6 +13,7 @@ import { useUserStore } from '@/store'
 import { NotificationService } from '@/components/Notification/NotificationService'
 import { getDocs, query, collection, where } from 'firebase/firestore'
 import { db } from '@/config'
+import { usersFirebase } from '@/services/firebase/usersFirebase'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<FirebaseUser | null>(null)
@@ -92,6 +93,8 @@ const login = async (email: string, password: string) => {
       })
       return false
     }
+
+    await usersFirebase.updateLastLogin(uid!)
 
     NotificationService.push({
       title: 'Inicio de sesión exitoso',
