@@ -67,8 +67,13 @@ export enum UserRole {
 
 export enum QuoteStatus {
   PENDING = 'pending',
+  IN_REVIEW = 'in_review',
+  QUOTED = 'quoted',
+  NEGOTIATING = 'negotiating',
+  APPROVED = 'approved',
   COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired'
 }
 
 export interface QuoteItem {
@@ -111,6 +116,37 @@ export interface Quote {
   createdAt: string
   updatedAt: string
   total?: number
+  priority?: 'low' | 'medium' | 'high' | 'urgent'
+  assignedTo?: string
+  dueDate?: string
+  estimatedValue?: number
+  actualValue?: number
+  conversionRate?: number
+  tags?: string[]
+  source?: string
+  lastContactDate?: string
+  followUpDate?: string
+  clientNotes?: string
+  internalNotes?: string
+  attachments?: string[]
+  statusHistory?: QuoteStatusHistory[]
+}
+
+export interface QuoteStatusHistory {
+  status: QuoteStatus
+  changedBy: string
+  changedAt: string
+  notes?: string
+}
+
+export interface QuoteComment {
+  id: string
+  quoteId: string
+  userId: string
+  userName: string
+  comment: string
+  isInternal: boolean
+  createdAt: string
 }
 
 export interface User {
