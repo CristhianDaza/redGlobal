@@ -40,6 +40,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/admin/quotes/:id',
+    component: () => import(/* webpackChunkName: "quoteDetailView" */ '../views/QuoteDetailView.vue'),
+    name: 'quote-detail',
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/contact',
     component: () => import(/* webpackChunkName: "contactView" */ '../views/ContactView.vue'),
     name: 'contact'

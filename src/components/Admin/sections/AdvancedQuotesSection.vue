@@ -2,29 +2,21 @@
 import type { Quote, QuoteStatus } from '@/types/common.d'
 import { QuoteStatus as QuoteStatusEnum } from '@/types/common.d'
 import { defineAsyncComponent, computed, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import TvRelativeTime from '@todovue/tv-relative-time'
 import { useAdvancedQuotes } from '@/composable/admin/useAdvancedQuotes'
 
 const RgButton = defineAsyncComponent(() => import('@/components/UI/RgButton.vue'))
 
-const emit = defineEmits<{
-  (e: 'view', quote: Quote): void
-}>()
+const router = useRouter()
 
 // Composable
 const {
   quotes,
-  isLoading,
-  isUpdating,
-  quoteStats,
-  quotesTotals,
-  loadQuotes,
-  loadQuoteStats,
   updateQuoteStatus,
   updateQuotePriority,
   deleteQuote,
   exportQuotes,
-  searchQuotes,
   refreshData
 } = useAdvancedQuotes()
 
@@ -183,6 +175,10 @@ function handleExportQuotes() {
     dateFrom: dateFilter.value === 'week' ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
     dateTo: dateFilter.value === 'today' ? new Date().toISOString() : undefined
   })
+}
+
+function viewQuoteDetails(quote: Quote) {
+  router.push({ name: 'quote-detail', params: { id: quote.id } })
 }
 
 // Cargar datos al montar el componente
@@ -403,7 +399,7 @@ onMounted(async () => {
             
             <td>
               <div class="actions-cell">
-                <RgButton @click="$emit('view', quote)" icon="view" type="icon" size="small" outlined>
+                <RgButton @click="viewQuoteDetails(quote)" icon="view" type="icon" size="small" outlined>
                 </RgButton>
                 <RgButton 
                   v-if="quote.status !== 'completed'" 
@@ -484,7 +480,7 @@ onMounted(async () => {
           </div>
           
           <div class="card-actions">
-            <RgButton @click="$emit('view', quote)" size="small" outlined>
+            <RgButton @click="viewQuoteDetails(quote)" size="small" outlined>
               Ver Detalles
             </RgButton>
             <RgButton 

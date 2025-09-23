@@ -6,10 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **Quote Detail Page Migration**: Migrated the advanced quotation modal to a dedicated full-page view with URL routing:
+  - **New Route**: Added `/admin/quotes/:id` route for direct access to individual quotations
+  - **Full-Page Interface**: Complete page with tabs for Details, Comments, and History instead of modal
+  - **URL Navigation**: Each quotation now has a unique URL for bookmarking and sharing
+  - **Real-time History Updates**: Status history automatically updates when changes are made without page refresh
+  - **Visual Feedback**: Added loading spinner and "Updating..." indicator during status changes
+  - **Improved Navigation**: Breadcrumb navigation with back button to admin panel
+
+### Fixed
+- **Quote Comments System**: Resolved critical issues with comment functionality:
+  - **ID Mapping**: Fixed inconsistencies between quote ID and Firebase document ID (`idDoc`) causing comment failures
+  - **Subcollection Access**: Corrected comment storage and retrieval from Firebase subcollections
+  - **Auto-reload**: Comments now reload automatically after adding/deleting for immediate visibility
+- **Quote Status Updates**: Fixed status update failures caused by ID mapping issues:
+  - **Proper ID Resolution**: Status updates now correctly resolve quote ID to document ID
+  - **History Tracking**: Status changes are properly saved to Firebase subcollections
+  - **Cache Management**: Improved cache invalidation after status updates
+- **Quote History Display**: Implemented automatic history updates:
+  - **Subcollection Storage**: Each status change is stored as a separate document in `statusHistory` subcollection
+  - **Real-time Loading**: History loads automatically with quotations and updates after changes
+  - **Chronological Order**: History entries are sorted by date (most recent first)
+
 ### Changed
 - **Reordered quantity table columns**: Changed the order of columns in the product quantity table to show "Fecha Estimada" before "Última Actualización" for better information hierarchy when products are in transit.
 - Normalized all user emails to lowercase across the application to prevent case-sensitivity conflicts.
 - Authentication and user validation in Firestore now use the Firebase Auth UID (`id` field) instead of email to avoid email casing issues.
+- **Quote Navigation**: Updated AdvancedQuotesSection to use router navigation instead of modal emit for better UX
 
 ### Added
 - **Advanced Quote Management System**: Complete overhaul of the quotation management system with enhanced features:

@@ -17,12 +17,33 @@ export const quotesFirebase = {
         
         const quotesRef = collection(db, 'quotes')
         const snapshot = await getDocs(quotesRef)
-        const quotes = snapshot.docs.map(doc => ({
-          ...doc.data(),
-          idDoc: doc.id,
-        })) as Quote[]
+        const quotes = await Promise.all(
+          snapshot.docs.map(async (docSnap) => {
+            const quoteData = {
+              ...docSnap.data(),
+              idDoc: docSnap.id,
+            } as Quote
 
-        logger.info(`Fetched ${quotes.length} quotes`, 'quotesFirebase');
+            // Cargar comentarios para cada cotización
+            try {
+              const commentsRef = collection(db, 'quotes', docSnap.id, 'comments')
+              const commentsQuery = query(commentsRef, orderBy('createdAt', 'desc'))
+              const commentsSnapshot = await getDocs(commentsQuery)
+              
+              quoteData.comments = commentsSnapshot.docs.map(commentDoc => ({
+                id: commentDoc.id,
+                ...commentDoc.data()
+              })) as QuoteComment[]
+            } catch (error) {
+              logger.warn(`Error loading comments for quote ${docSnap.id}`, 'quotesFirebase', error);
+              quoteData.comments = []
+            }
+
+            return quoteData
+          })
+        )
+
+        logger.info(`Fetched ${quotes.length} quotes with comments`, 'quotesFirebase');
         return quotes
       } catch (error) {
         logger.error('Error getting quotes', 'quotesFirebase', error);
@@ -89,9 +110,17 @@ export const quotesFirebase = {
     }
   },
 
-  async updateQuoteStatus(id: string, status: QuoteStatus, notes?: string, changedBy?: string): Promise<void> {
+  async updateQuoteStatus(quoteId: string, status: QuoteStatus, notes?: string, changedBy?: string): Promise<void> {
     try {
-      const quoteRef = doc(db, 'quotes', id)
+      // Buscar la cotización por ID para obtener el idDoc
+      const quotes = await this.getQuotes()
+      const quote = quotes.find(q => q.id === quoteId)
+      
+      if (!quote || !quote.idDoc) {
+        throw new Error(`Quote with ID ${quoteId} not found`)
+      }
+
+      const quoteRef = doc(db, 'quotes', quote.idDoc)
       const now = new Date().toISOString()
       
       // Crear entrada de historial
@@ -102,14 +131,17 @@ export const quotesFirebase = {
         notes
       }
 
+      // Obtener historial actual y agregar nueva entrada
+      const currentHistory = await this.getQuoteStatusHistory(quote.idDoc)
+      
       await updateDoc(quoteRef, {
         status,
         updatedAt: now,
-        statusHistory: [...(await this.getQuoteStatusHistory(id)), historyEntry]
+        statusHistory: [...currentHistory, historyEntry]
       })
 
       cacheService.delete('api:FIREBASE_QUOTES:');
-      logger.info(`Quote ${id} status updated to ${status}`, 'quotesFirebase');
+      logger.info(`Quote ${quoteId} status updated to ${status}`, 'quotesFirebase');
     } catch (error) {
       logger.error('Error updating quote status', 'quotesFirebase', error);
       throw error
@@ -195,12 +227,23 @@ export const quotesFirebase = {
   // Sistema de comentarios
   async addQuoteComment(quoteId: string, comment: Omit<QuoteComment, 'id' | 'createdAt'>): Promise<void> {
     try {
+      // Buscar la cotización por ID para obtener el idDoc
+      const quotes = await this.getQuotes()
+      const quote = quotes.find(q => q.id === quoteId)
+      
+      if (!quote || !quote.idDoc) {
+        throw new Error(`Quote with ID ${quoteId} not found`)
+      }
+
       const commentData = {
         ...comment,
         createdAt: new Date().toISOString()
       }
 
-      await addDoc(collection(db, 'quotes', quoteId, 'comments'), commentData)
+      await addDoc(collection(db, 'quotes', quote.idDoc, 'comments'), commentData)
+      
+      // Limpiar caché para que se recarguen los datos
+      cacheService.delete('api:FIREBASE_QUOTES:');
       logger.info(`Comment added to quote ${quoteId}`, 'quotesFirebase');
     } catch (error) {
       logger.error('Error adding quote comment', 'quotesFirebase', error);
@@ -210,7 +253,16 @@ export const quotesFirebase = {
 
   async getQuoteComments(quoteId: string): Promise<QuoteComment[]> {
     try {
-      const commentsRef = collection(db, 'quotes', quoteId, 'comments')
+      // Buscar la cotización por ID para obtener el idDoc
+      const quotes = await this.getQuotes()
+      const quote = quotes.find(q => q.id === quoteId)
+      
+      if (!quote || !quote.idDoc) {
+        logger.warn(`Quote with ID ${quoteId} not found for comments`, 'quotesFirebase');
+        return []
+      }
+
+      const commentsRef = collection(db, 'quotes', quote.idDoc, 'comments')
       const q = query(commentsRef, orderBy('createdAt', 'desc'))
       const snapshot = await getDocs(q)
       
@@ -226,8 +278,19 @@ export const quotesFirebase = {
 
   async deleteQuoteComment(quoteId: string, commentId: string): Promise<void> {
     try {
-      const commentRef = doc(db, 'quotes', quoteId, 'comments', commentId)
+      // Buscar la cotización por ID para obtener el idDoc
+      const quotes = await this.getQuotes()
+      const quote = quotes.find(q => q.id === quoteId)
+      
+      if (!quote || !quote.idDoc) {
+        throw new Error(`Quote with ID ${quoteId} not found`)
+      }
+
+      const commentRef = doc(db, 'quotes', quote.idDoc, 'comments', commentId)
       await deleteDoc(commentRef)
+      
+      // Limpiar caché para que se recarguen los datos
+      cacheService.delete('api:FIREBASE_QUOTES:');
       logger.info(`Comment ${commentId} deleted from quote ${quoteId}`, 'quotesFirebase');
     } catch (error) {
       logger.error('Error deleting quote comment', 'quotesFirebase', error);

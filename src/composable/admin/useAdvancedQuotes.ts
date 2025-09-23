@@ -232,21 +232,8 @@ export function useAdvancedQuotes() {
 
       await quotesFirebase.addQuoteComment(quoteId, commentData)
       
-      // Crear el comentario local con ID temporal
-      const newComment = {
-        id: crypto.randomUUID(),
-        ...commentData,
-        createdAt: new Date().toISOString()
-      }
-      
-      // Actualizar la cotización local agregando el comentario
-      const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
-      if (quoteIndex !== -1) {
-        if (!quotes.value[quoteIndex].comments) {
-          quotes.value[quoteIndex].comments = []
-        }
-        quotes.value[quoteIndex].comments!.unshift(newComment) // Agregar al inicio para mostrar más reciente primero
-      }
+      // Recargar las cotizaciones para obtener los datos actualizados
+      await loadQuotes()
 
       NotificationService.push({
         title: 'Comentario agregado',
@@ -277,8 +264,8 @@ export function useAdvancedQuotes() {
       // Eliminar de Firebase usando el ID del comentario
       await quotesFirebase.deleteQuoteComment(quoteId, commentId)
       
-      // Actualizar la cotización local removiendo el comentario
-      quotes.value[quoteIndex].comments!.splice(commentIndex, 1)
+      // Recargar las cotizaciones para obtener los datos actualizados
+      await loadQuotes()
 
       NotificationService.push({
         title: 'Comentario eliminado',
