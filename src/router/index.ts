@@ -40,6 +40,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, allowedRoles: ['admin', 'advisor'] }
   },
   {
+    path: '/admin/privacy-policy',
+    component: () => import(/* webpackChunkName: "adminView" */ '../views/AdminView.vue'),
+    name: 'admin-privacy-policy',
+    meta: { requiresAuth: true, allowedRoles: ['admin'] }
+  },
+  {
     path: '/admin/quotes/:id',
     component: () => import(/* webpackChunkName: "quoteDetailView" */ '../views/QuoteDetailView.vue'),
     name: 'quote-detail',

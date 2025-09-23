@@ -30,6 +30,7 @@ const CarouselSection = defineAsyncComponent(/* webpackChunkName: "carouselSecti
 const OurClientsSection = defineAsyncComponent(/* webpackChunkName: "ourClientsSection" */() => import('@/components/Admin/sections/OurClientsSection.vue'));
 const ColorSection = defineAsyncComponent(/* webpackChunkName: "colorSection" */() => import('@/components/Admin/sections/ColorSection.vue'));
 const AdvisorsSection = defineAsyncComponent(/* webpackChunkName: "advisorsSection" */() => import('@/components/Admin/sections/AdvisorsSection.vue'));
+const PrivacyPolicySection = defineAsyncComponent(/* webpackChunkName: "privacyPolicySection" */() => import('@/components/Admin/sections/PrivacyPolicySection.vue'));
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -283,14 +284,33 @@ const loadingData = computed(() => {
 onMounted(async () => {
   try {
     const initializeCorrectTab = () => {
+    
+      if (route.name === 'admin-privacy-policy') {
+        activeTab.value = 'privacy-policy';
+        router.replace({ query: { tab: 'privacy-policy' } });
+        return;
+      }
+
       const queryTab = route.query.tab as tabs;
-      const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors'];
+      const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors', 'privacy-policy'];
 
       if (queryTab && validTabs.includes(queryTab)) {
-        if (isAdmin.value) {
+        if (queryTab === 'privacy-policy') {
+          if (isAdmin.value) {
+            activeTab.value = queryTab;
+            return;
+          } else {
+            activeTab.value = 'advanced-quotes';
+            router.replace({ query: { tab: 'advanced-quotes' } });
+            return;
+          }
+        }
+        
+        if (isAdmin.value || (queryTab === 'advanced-quotes' && (isAdmin.value || isAdvisor.value))) {
           activeTab.value = queryTab;
           return;
         }
+        
         activeTab.value = 'advanced-quotes';
         if (queryTab !== 'advanced-quotes') {
           router.replace({ query: { tab: 'advanced-quotes' } });
@@ -299,7 +319,9 @@ onMounted(async () => {
       }
 
       activeTab.value = 'advanced-quotes';
-      router.replace({ query: { tab: 'advanced-quotes' } });
+      if (!route.query.tab) {
+        router.replace({ query: { tab: 'advanced-quotes' } });
+      }
     };
 
     if (isAdmin.value) {
@@ -327,19 +349,19 @@ onMounted(async () => {
       await loadQuotes();
     }
 
-    initializeCorrectTab();
+    setTimeout(() => {
+      initializeCorrectTab();
+    }, 100);
   } catch (error) {
     console.error('Error loading initial data:', error);
   }
 });
 
 watch(activeTab, (newTab) => {
-  const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors'];
+  const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors', 'privacy-policy'];
   const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
-  if (tab) {
-    router.replace({ query: { tab } });
-  } else {
-    router.replace({ name: 'admin' });
+  if (tab && route.query.tab !== tab) {
+    router.replace({ query: { tab: tab } });
   }
 });
 
@@ -396,6 +418,7 @@ const activeTabTitle: Record<tabs, string> = {
   'our-clients': 'Nuestros Clientes',
   color: 'Color Principal',
   advisors: 'Asesores',
+  'privacy-policy': 'Políticas de Privacidad',
 }
 
 const handleUpdateProducts = () => {
@@ -505,8 +528,38 @@ useHead({
 });
 
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color', 'advisors'].includes(newTab as tabs)) {
-    activeTab.value = newTab as tabs;
+  
+  if (newTab && ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color', 'advisors', 'privacy-policy'].includes(newTab as tabs)) {
+    if (newTab === 'privacy-policy') {
+      if (isAdmin.value) {
+        activeTab.value = newTab as tabs;
+      } else {
+        activeTab.value = 'advanced-quotes';
+      }
+      return;
+    }
+    
+    if (isAdmin.value || (newTab === 'advanced-quotes' && (isAdmin.value || isAdvisor.value))) {
+      activeTab.value = newTab as tabs;
+    } else {
+      activeTab.value = 'advanced-quotes';
+    }
+  }
+}, { immediate: true });
+
+watch(() => route.name, (newRouteName) => {
+  if (newRouteName === 'admin-privacy-policy') {
+    activeTab.value = 'privacy-policy';
+    router.replace({ query: { tab: 'privacy-policy' } });
+  }
+});
+
+watch(() => isAdmin.value, (newIsAdmin) => {
+  if (newIsAdmin) {
+    const queryTab = route.query.tab as tabs;
+    if (queryTab === 'privacy-policy') {
+      activeTab.value = 'privacy-policy';
+    }
   }
 });
 
@@ -621,6 +674,10 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
             :items="advisors"
             @edit="handleEditAdvisor"
             @delete="id => handleDeleteClick(id, 'advisors')"
+          />
+
+          <PrivacyPolicySection
+            v-if="activeTab === 'privacy-policy' && isAdmin"
           />
         </div>
 

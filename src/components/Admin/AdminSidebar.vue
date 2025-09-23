@@ -95,6 +95,14 @@ const currentUserName = computed(() => {
         <span>Asesores</span>
       </button>
       <button
+        v-if="isAdmin"
+        :class="['nav-item', { active: activeTab === 'privacy-policy' }]"
+        @click="$emit('tab-change', 'privacy-policy')"
+      >
+        <span class="material-icons">policy</span>
+        <span>Políticas de Privacidad</span>
+      </button>
+      <button
         v-if="isAdmin || isAdvisor"
         :class="['nav-item', { active: activeTab === 'advanced-quotes' }]"
         @click="$emit('tab-change', 'advanced-quotes')"

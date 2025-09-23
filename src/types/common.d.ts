@@ -276,4 +276,4 @@ export interface Advisor {
   telefono: string;
 }
 
-export type tabs = 'menu' | 'users' | 'quotes' | 'advanced-quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color' | 'advisors';
+export type tabs = 'menu' | 'users' | 'quotes' | 'advanced-quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color' | 'advisors' | 'privacy-policy';

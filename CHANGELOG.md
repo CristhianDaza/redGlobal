@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 🚀 Added
 
+* **Privacy Policy Management System**
+
+  * Complete privacy policy PDF management system for administrators.
+  * Migrated from Firebase Storage to Cloudinary for better performance and reliability.
+  * Real-time updates without page reload - modal automatically reflects changes when admin uploads/deletes policies.
+  * Admin-only section accessible via `/admin?tab=privacy-policy` with role-based access control.
+  * PDF upload with strict validation (PDF only, max 10MB) and automatic file replacement.
+  * Elegant confirmation modals replacing browser alerts for better UX.
+  * Toast notifications for upload/delete success feedback.
+  * Global state management with `useGlobalPrivacyPolicy` composable for cross-component reactivity.
+  * Cloudinary integration with fallback system and proper error handling.
+  * User-facing modal in footer with download functionality and loading states.
+  * Complete audit trail tracking who uploaded each document and when.
+  * Responsive design working on mobile and desktop devices.
+
 * **Code Quality and Performance Improvements**
 
   * Comprehensive code cleanup removing unnecessary comments and console.log statements.
@@ -97,6 +112,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## ♻️ Changed
 
+* **Privacy Policy System Migration**
+
+  * Completely migrated from Firebase Storage to Cloudinary for PDF storage.
+  * Removed all Firebase Storage dependencies and references from the codebase.
+  * Updated privacy policy modal to use global state management for automatic updates.
+  * Enhanced admin interface with modern confirmation modals instead of browser alerts.
+  * Streamlined code by removing unnecessary comments and debug statements.
+
 * **User Management Interface**
 
   * Moved role selection field to the beginning of user creation form for better workflow.
@@ -141,6 +164,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * Reordered columns: “Fecha Estimada” now appears before “Última Actualización”.
 
 ## 🛠 Fixed
+
+* **Privacy Policy System Issues**
+
+  * Fixed Cloudinary upload errors by correcting endpoint configuration and parameter handling.
+  * Resolved "Access control Blocked for delivery" issues with proper upload preset configuration.
+  * Fixed query parameter routing for direct access to privacy policy admin section.
+  * Corrected modal update mechanism to reflect changes without page reload.
+  * Fixed Firebase Storage import errors after migration to Cloudinary.
+  * Resolved TypeScript errors in privacy policy components and composables.
 
 * **TypeScript and Code Quality Issues**
 

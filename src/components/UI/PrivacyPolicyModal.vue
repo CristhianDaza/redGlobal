@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { onMounted, watch } from 'vue';
 import RgModal from '@/components/UI/RgModal.vue';
+import { useGlobalPrivacyPolicy } from '@/composable/useGlobalPrivacyPolicy';
 
 defineProps<{
   isOpen: boolean
@@ -9,13 +11,30 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>();
 
+const {
+  hasGlobalPolicy,
+  globalIsLoading,
+  globalLastUpdate,
+  loadGlobalPolicy,
+  downloadGlobalPolicy
+} = useGlobalPrivacyPolicy();
+
+onMounted(async () => {
+  await loadGlobalPolicy();
+});
+
 const handleClose = () => {
   emit('close');
 };
 
-const downloadPdf = () => {
-  // window.open('/politicas-tratamiento-datos.pdf', '_blank');
-  // PDF download will be available soon
+const handleDownloadPdf = async () => {
+  if (hasGlobalPolicy.value) {
+    try {
+      await downloadGlobalPolicy();
+    } catch (error) {
+      console.error('Error downloading policy:', error);
+    }
+  }
 };
 </script>
 
@@ -44,21 +63,31 @@ const downloadPdf = () => {
         </p>
         
         <p>
-          Usted, como titular de sus datos personales tratados por Red Global Promocional, 
           puede consultar el nuestras Políticas de Tratamiento de Datos Personales en el 
           siguiente documento:
         </p>
       </div>
 
       <div class="download-section">
+        <div v-if="globalIsLoading" class="loading-message">
+          <span class="material-icons">sync</span>
+          <p>Cargando información de políticas...</p>
+        </div>
+        
         <button 
+          v-else-if="hasGlobalPolicy"
           class="download-button"
-          @click="downloadPdf"
+          @click="handleDownloadPdf"
           title="Descargar PDF de Políticas de Tratamiento de Datos"
         >
           <span class="material-icons">download</span>
           Descarga nuestra Política de Tratamiento de Datos Personales
         </button>
+        
+        <div v-else class="no-policy-message">
+          <span class="material-icons">info</span>
+          <p>Actualmente no hay un documento de políticas disponible para descargar.</p>
+        </div>
       </div>
 
       <div class="contact-info">
@@ -189,6 +218,92 @@ const downloadPdf = () => {
   color: #2d3748;
 }
 
+.no-policy-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: #856404;
+}
+
+.no-policy-message .material-icons {
+  font-size: 1.5rem;
+  color: #f39c12;
+}
+
+.no-policy-message p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.loading-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: #1565c0;
+}
+
+.loading-message .material-icons {
+  font-size: 1.5rem;
+  color: #2196f3;
+  animation: spin 1s linear infinite;
+}
+
+.loading-message p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: #721c24;
+  margin-top: 1rem;
+}
+
+.error-message .material-icons {
+  font-size: 1.5rem;
+  color: #dc3545;
+}
+
+.error-message p {
+  margin: 0;
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.clear-error-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease;
+}
+
+.clear-error-btn:hover {
+  background: #c82333;
+}
+
 @media (max-width: 640px) {
   .company-header h3 {
     font-size: 1.25rem;
@@ -201,6 +316,12 @@ const downloadPdf = () => {
   
   .policy-text p {
     text-align: left;
+  }
+  
+  .no-policy-message,
+  .error-message {
+    flex-direction: column;
+    text-align: center;
   }
 }
 </style>
