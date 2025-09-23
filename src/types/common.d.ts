@@ -62,7 +62,8 @@ export interface ImagesRedGlobal {
 
 export enum UserRole {
   ADMIN = 'admin',
-  CLIENT = 'client'
+  CLIENT = 'client',
+  ADVISOR = 'advisor'
 }
 
 export enum QuoteStatus {
@@ -136,6 +137,8 @@ export interface Quote {
 export interface QuoteStatusHistory {
   status: QuoteStatus
   changedBy: string
+  changedByName: string
+  changedByRole: string
   changedAt: string
   notes?: string
 }

@@ -434,7 +434,17 @@ watch(() => route.params.id, async (newId) => {
                     </span>
                   </div>
                   <div class="history-meta">
-                    <span class="history-author">Por: {{ entry.changedBy }}</span>
+                    <span class="history-author">
+                      Por: {{ entry.changedByName || entry.changedBy }}
+                    </span>
+                    <span v-if="entry.changedByRole" class="history-role">
+                      ({{ 
+                        entry.changedByRole === 'admin' ? 'Administrador' : 
+                        entry.changedByRole === 'advisor' ? 'Asesor' : 
+                        entry.changedByRole === 'client' ? 'Cliente' : 
+                        'Sistema' 
+                      }})
+                    </span>
                   </div>
                   <div v-if="entry.notes" class="history-notes">
                     {{ entry.notes }}
@@ -698,6 +708,20 @@ watch(() => route.params.id, async (newId) => {
   gap: 0.5rem;
   font-size: 0.75rem;
   color: #6b7280;
+}
+
+.history-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.history-role {
+  font-weight: 500;
+  color: #4f46e5;
 }
 
 .spinner {

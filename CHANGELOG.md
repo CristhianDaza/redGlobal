@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 🚀 Added
 
+* **Advisor User Role System**
+
+  * New user role `ADVISOR` added to the system with specific permissions and restrictions.
+  * Advisors have access only to the quotations section, cannot modify system configurations.
+  * Automatic price increase set to 0% for advisors (they see real prices without markup).
+  * Logo upload and color customization disabled for advisor users.
+  * Enhanced user creation form with role selection moved to the beginning for better UX.
+  * Automatic field cleanup when switching between user roles.
+  * Role-based navigation and interface adaptation in admin panel.
+
+* **Enhanced Quote Tracking System**
+
+  * Expanded `QuoteStatusHistory` interface with detailed user information tracking.
+  * Added `changedByName` and `changedByRole` fields to track who modified quotations.
+  * Complete audit trail showing user name and role (Admin/Advisor/Client) in quote history.
+  * Real-time tracking of all quote modifications with user attribution.
+  * Enhanced quote detail view displaying modification history with user roles.
+
+* **Role-Based Access Control**
+
+  * Updated router with `allowedRoles` meta field for granular route permissions.
+  * Admin sidebar dynamically shows/hides sections based on user role.
+  * Automatic redirection to appropriate sections based on user role after login.
+  * Enhanced authentication store with `isAdvisor` and `canAccessQuotes` computed properties.
+
 * **Centralized Price Formatting System**
 
   * New utility module (`/src/utils/formatNumber.ts`) with Colombian locale support.
@@ -49,6 +74,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## ♻️ Changed
 
+* **User Management Interface**
+
+  * Moved role selection field to the beginning of user creation form for better workflow.
+  * Added automatic field cleanup when switching between user roles.
+  * Enhanced user list display to show advisor role properly.
+  * Improved form validation and user feedback for role-specific restrictions.
+
+* **Admin Panel Navigation**
+
+  * Sidebar navigation now adapts based on user role (Admin vs Advisor).
+  * Advisors see only quotations section, admins see all administrative sections.
+  * Enhanced breadcrumb navigation and role-based UI elements.
+
 * **Price Display Standardization**
 
   * All product, quotation, and modal components updated to use centralized formatting.
@@ -80,6 +118,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * Reordered columns: “Fecha Estimada” now appears before “Última Actualización”.
 
 ## 🛠 Fixed
+
+* **User Role Management**
+
+  * Fixed TypeScript type issues in role comparison logic.
+  * Corrected form field cleanup when switching between user roles.
+  * Fixed role-based route access and permissions validation.
+  * Resolved authentication redirection issues for different user roles.
+
+* **Quote Tracking System**
+
+  * Fixed missing user information in quote modification history.
+  * Corrected quote status update tracking with proper user attribution.
+  * Fixed role display in quote history (Admin/Advisor/Client labels).
+  * Resolved Firebase document ID consistency issues in quote tracking.
 
 * **Price Formatting Issues**
 

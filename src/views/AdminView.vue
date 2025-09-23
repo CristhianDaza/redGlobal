@@ -54,6 +54,15 @@ const isAdmin = computed(() => {
   return currentUser.value?.role === 'admin';
 })
 
+const isAdvisor = computed(() => {
+  if (!isAuthenticated.value) return false;
+  return currentUser.value?.role === 'advisor';
+})
+
+const canAccessQuotes = computed(() => {
+  return isAdmin.value || isAdvisor.value;
+})
+
 const {
   isLoading: menuLoading,
   menuItems,
@@ -547,6 +556,7 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
     <AdminSidebar
       :active-tab="activeTab"
       :is-admin="isAdmin"
+      :is-advisor="isAdvisor"
       :pending-quotes="pendingQuotesToAdmin"
       @update-products="handleUpdateProducts"
       @tab-change="handleTabChange"
@@ -576,14 +586,14 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
 
         <div v-else>
           <MenuSection
-            v-if="activeTab === 'menu'"
+            v-if="activeTab === 'menu' && isAdmin"
             :items="menuItems"
             @edit="handleEditMenuItem"
             @delete="id => handleDeleteClick(id, 'menu')"
           />
 
           <UsersSection
-            v-else-if="activeTab === 'users'"
+            v-else-if="activeTab === 'users' && isAdmin"
             :users="users"
             :total="totalUsers"
             :active="activeUsers"
@@ -595,47 +605,47 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
           />
 
           <AdvancedQuotesSection
-            v-else-if="activeTab === 'advanced-quotes'"
+            v-else-if="activeTab === 'advanced-quotes' && canAccessQuotes"
             @view="handleViewAdvancedQuote"
           />
 
           <CategoriesSection
-            v-else-if="activeTab === 'cards'"
+            v-else-if="activeTab === 'cards' && isAdmin"
             :cards="categoryCards"
             @edit="handleEditCard"
             @delete="id => handleDeleteClick(id, 'cards')"
           />
 
           <CatalogsSection
-            v-if="activeTab === 'catalogs'"
+            v-if="activeTab === 'catalogs' && isAdmin"
             :items="catalogs"
             @edit="handleEditCatalog"
             @delete="id => handleDeleteClick(id, 'catalogs')"
           />
 
           <CarouselSection
-            v-if="activeTab === 'carousel'"
+            v-if="activeTab === 'carousel' && isAdmin"
             :items="carousel"
             @edit="handleEditCarousel"
             @delete="id => handleDeleteClick(id, 'carousel')"
           />
 
           <OurClientsSection
-            v-if="activeTab === 'our-clients'"
+            v-if="activeTab === 'our-clients' && isAdmin"
             :items="ourClients"
             @edit="handleEditOurClient"
             @delete="id => handleDeleteClick(id, 'our-clients')"
           />
 
           <ColorSection
-            v-if="activeTab === 'color'"
+            v-if="activeTab === 'color' && isAdmin"
             :items="color"
             @edit="handleEditColor"
             @delete="id => handleDeleteClick(id, 'color')"
           />
 
           <AdvisorsSection
-            v-if="activeTab === 'advisors'"
+            v-if="activeTab === 'advisors' && isAdmin"
             :items="advisors"
             @edit="handleEditAdvisor"
             @delete="id => handleDeleteClick(id, 'advisors')"

@@ -5,6 +5,7 @@ import { useAuthStore, useUserStore } from '@/store'
 defineProps({
   activeTab: String,
   isAdmin: Boolean,
+  isAdvisor: Boolean,
   pendingQuotes: Number
 })
 
@@ -94,13 +95,14 @@ const currentUserName = computed(() => {
         <span>Asesores</span>
       </button>
       <button
+        v-if="isAdmin || isAdvisor"
         :class="['nav-item', { active: activeTab === 'advanced-quotes' }]"
         @click="$emit('tab-change', 'advanced-quotes')"
       >
         <span class="material-icons">request_quote</span>
         <span>Cotizaciones</span>
         <span
-          v-if="isAdmin && (pendingQuotes || 0) > 0"
+          v-if="(isAdmin || isAdvisor) && (pendingQuotes || 0) > 0"
           class="quote-badge"
         >
           {{ pendingQuotes }}

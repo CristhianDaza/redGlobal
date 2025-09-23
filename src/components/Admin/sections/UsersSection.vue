@@ -98,7 +98,13 @@ const copyToClipboard = async (email: string) => {
               {{ user.active ? 'Activo' : 'Inactivo' }}
             </span>
           </td>
-          <td>{{ user.role === 'admin' ? 'Administrador' : 'Cliente' }}</td>
+          <td>
+            {{ 
+              user.role === 'admin' ? 'Administrador' : 
+              user.role === 'advisor' ? 'Asesor' : 
+              'Cliente' 
+            }}
+          </td>
           <td>
             <TvRelativeTime v-if="user.lastLogin" :date="user.lastLogin" lang="es" />
             <span v-else class="no-login">Nunca</span>

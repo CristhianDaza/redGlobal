@@ -76,9 +76,11 @@ export function useAdvancedQuotes() {
   const updateQuoteStatus = async (quoteId: string, status: QuoteStatus, notes?: string) => {
     try {
       isUpdating.value = true
-      const changedBy = currentUser.value?.name || 'Admin'
+      const changedBy = currentUser.value?.id || 'system'
+      const changedByName = currentUser.value?.name || 'Sistema'
+      const changedByRole = currentUser.value?.role || 'system'
       
-      await quotesFirebase.updateQuoteStatus(quoteId, status, notes, changedBy)
+      await quotesFirebase.updateQuoteStatus(quoteId, status, notes, changedBy, changedByName, changedByRole)
       
       // Recargar las cotizaciones para obtener el historial actualizado
       await loadQuotes()

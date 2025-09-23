@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { User, UserFormData } from '@/types/common.d'
-import { ref, watch, defineAsyncComponent } from 'vue'
+import { ref, watch, computed, defineAsyncComponent } from 'vue'
 import { UserRole } from '@/types/common.d'
 import { NotificationService } from '../Notification/NotificationService';
 
@@ -25,6 +25,33 @@ const formData = ref<UserFormData>({
   priceIncrease: 0,
   active: true,
   role: UserRole.CLIENT
+})
+
+// Computed para determinar si el rol actual es Asesor
+const isAdvisorRole = computed(() => formData.value.role === UserRole.ADVISOR)
+
+// Watch para configurar valores por defecto cuando se selecciona Asesor
+watch(() => formData.value.role, (newRole, oldRole) => {
+  if (newRole === UserRole.ADVISOR) {
+    // Configurar valores por defecto para Asesor
+    formData.value.priceIncrease = 0
+    formData.value.primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()
+    formData.value.secondaryColor = '#4a5568'
+    // Limpiar logo si había uno seleccionado
+    selectedFile.value = null
+    previewUrl.value = null
+    formData.value.logo = ''
+    
+    // Limpiar el input de archivo
+    const fileInput = document.getElementById('logo') as HTMLInputElement
+    if (fileInput) {
+      fileInput.value = ''
+    }
+  } else if (oldRole === UserRole.ADVISOR) {
+    // Si se cambia desde Asesor a otro rol, restaurar valores por defecto
+    formData.value.primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()
+    formData.value.secondaryColor = '#4a5568'
+  }
 })
 
 const password = ref('')
@@ -166,6 +193,22 @@ const handleClose = () => {
         >
       </div>
 
+      <div class="form-group">
+        <label for="role">Rol del Usuario</label>
+        <select
+          id="role"
+          v-model="formData.role"
+          required
+        >
+          <option :value="UserRole.CLIENT">Cliente</option>
+          <option :value="UserRole.ADMIN">Administrador</option>
+          <option :value="UserRole.ADVISOR">Asesor</option>
+        </select>
+        <small v-if="isAdvisorRole" class="advisor-note">
+          Los asesores tienen acceso solo a cotizaciones y ven precios reales sin incrementos
+        </small>
+      </div>
+
       <div class="form-group" v-if="!user">
         <label for="password">Contraseña</label>
         <input
@@ -178,7 +221,7 @@ const handleClose = () => {
         >
       </div>
 
-      <div class="form-group">
+      <div class="form-group" v-if="!isAdvisorRole">
         <label for="logo">Logo</label>
         <input
           id="logo"
@@ -191,7 +234,7 @@ const handleClose = () => {
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" v-if="!isAdvisorRole">
         <label for="primaryColor">Color Principal</label>
         <input
           id="primaryColor"
@@ -211,7 +254,12 @@ const handleClose = () => {
           max="100"
           step="0.1"
           required
+          :disabled="isAdvisorRole"
+          :placeholder="isAdvisorRole ? 'Los asesores siempre ven el precio real (0%)' : ''"
         >
+        <small v-if="isAdvisorRole" class="advisor-note">
+          Los asesores siempre ven el precio real sin incrementos
+        </small>
       </div>
 
       <div class="form-group">
@@ -222,18 +270,6 @@ const handleClose = () => {
           >
           Usuario Activo
         </label>
-      </div>
-
-      <div class="form-group">
-        <label for="role">Rol del Usuario</label>
-        <select
-          id="role"
-          v-model="formData.role"
-          required
-        >
-          <option :value="UserRole.CLIENT">Cliente</option>
-          <option :value="UserRole.ADMIN">Administrador</option>
-        </select>
       </div>
     </form>
   </RgModal>
@@ -313,5 +349,18 @@ select:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.1);
+}
+
+.advisor-note {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+input:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
 }
 </style>

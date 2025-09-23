@@ -101,7 +101,13 @@ const login = async (email: string, password: string) => {
       description: 'Has iniciado sesión exitosamente',
       type: 'success'
     })
-    await router.push({ name: 'admin', query: { tab: 'advanced-quotes' } })
+    
+    // Redirigir según el rol del usuario
+    if (userData.role === 'admin' || userData.role === 'advisor') {
+      await router.push({ name: 'admin', query: { tab: 'advanced-quotes' } })
+    } else {
+      await router.push({ name: 'home' })
+    }
     return true
 
   } catch (e: any) {
@@ -157,6 +163,14 @@ const login = async (email: string, password: string) => {
     return userRole.value === UserRole.ADMIN;
   })
 
+  const isAdvisor = computed(() => {
+    return userRole.value === UserRole.ADVISOR;
+  })
+
+  const canAccessQuotes = computed(() => {
+    return userRole.value === UserRole.ADMIN || userRole.value === UserRole.ADVISOR;
+  })
+
   const currenLoggingUser = computed(() => {
     if (!user.value) return null
     const currentUser = userStore.users.find(u => u.email === user.value?.email?.toLowerCase())
@@ -172,6 +186,8 @@ const login = async (email: string, password: string) => {
     isAuthenticated,
     userRole,
     isAdmin,
+    isAdvisor,
+    canAccessQuotes,
     currenLoggingUser
   }
 })

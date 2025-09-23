@@ -37,13 +37,13 @@ const routes: RouteRecordRaw[] = [
     path: '/admin',
     component: () => import(/* webpackChunkName: "adminView" */ '../views/AdminView.vue'),
     name: 'admin',
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, allowedRoles: ['admin', 'advisor'] }
   },
   {
     path: '/admin/quotes/:id',
     component: () => import(/* webpackChunkName: "quoteDetailView" */ '../views/QuoteDetailView.vue'),
     name: 'quote-detail',
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, allowedRoles: ['admin', 'advisor'] }
   },
   {
     path: '/contact',
@@ -88,6 +88,13 @@ router.beforeEach(async (to, _, next) => {
     if (!currentUser?.active) {
       await authStore.logout()
       return next({ name: 'home' })
+    }
+
+    // Verificar roles permitidos si están definidos
+    if (to.meta.allowedRoles && Array.isArray(to.meta.allowedRoles)) {
+      if (!to.meta.allowedRoles.includes(currentUser.role)) {
+        return next({ name: 'home' })
+      }
     }
   }
 

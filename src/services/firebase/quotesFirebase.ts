@@ -124,7 +124,7 @@ export const quotesFirebase = {
     }
   },
 
-  async updateQuoteStatus(quoteId: string, status: QuoteStatus, notes?: string, changedBy?: string): Promise<void> {
+  async updateQuoteStatus(quoteId: string, status: QuoteStatus, notes?: string, changedBy?: string, changedByName?: string, changedByRole?: string): Promise<void> {
     try {
       // Buscar la cotización por ID para obtener el idDoc
       const quotes = await this.getQuotes()
@@ -141,6 +141,8 @@ export const quotesFirebase = {
       const historyEntry: QuoteStatusHistory = {
         status,
         changedBy: changedBy || 'System',
+        changedByName: changedByName || 'Sistema',
+        changedByRole: changedByRole || 'system',
         changedAt: now,
         notes
       }
