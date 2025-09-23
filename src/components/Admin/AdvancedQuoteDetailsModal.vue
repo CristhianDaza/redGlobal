@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Quote, QuoteStatus, QuoteComment } from '@/types/common.d'
-import { defineAsyncComponent, ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted, defineAsyncComponent } from 'vue'
 import TvRelativeTime from '@todovue/tv-relative-time'
 
 const RgButton = defineAsyncComponent(() => import('@/components/UI/RgButton.vue'))
@@ -14,6 +14,7 @@ const emit = defineEmits<{
   (e: 'close'): void
   (e: 'updateStatus', data: { quoteId: string, status: QuoteStatus, notes?: string }): void
   (e: 'addComment', data: { quoteId: string, comment: string, isInternal: boolean }): void
+  (e: 'deleteComment', data: { quoteId: string, commentIndex: number }): void
   (e: 'updateField', data: { quoteId: string, field: string, value: any }): void
 }>()
 
@@ -77,6 +78,32 @@ function addComment() {
   })
   
   newComment.value = ''
+  isInternalComment.value = false
+}
+
+function deleteComment(index: number) {
+  if (!props.quote) return
+  
+  emit('deleteComment', {
+    quoteId: props.quote.id,
+    commentIndex: index
+  })
+}
+
+function formatDate(dateString: string) {
+  if (!dateString) return ''
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch (error) {
+    return dateString
+  }
 }
 
 function startEditing(field: string, currentValue: any) {
@@ -102,40 +129,39 @@ function cancelEditing() {
   tempValues.value = {}
 }
 
-// Watchers
-watch(() => props.isVisible, (visible) => {
-  if (!visible) {
+// Función para manejar ESC
+function handleEscKey(event: KeyboardEvent) {
+  if (event.key === 'Escape' && props.isVisible) {
     closeModal()
   }
+}
+
+// Watchers
+watch(() => props.isVisible, (visible) => {
+  if (visible) {
+    document.addEventListener('keydown', handleEscKey)
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.removeEventListener('keydown', handleEscKey)
+    document.body.style.overflow = ''
+    closeModal()
+  }
+})
+
+// Cleanup al desmontar
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleEscKey)
+  document.body.style.overflow = ''
 })
 </script>
 
 <template>
   <div v-if="isVisible && quote" class="modal-overlay" @click.self="closeModal">
     <div class="modal-container">
-      <!-- Header -->
+      <!-- Header simplificado -->
       <div class="modal-header">
-        <div class="header-info">
-          <h2>Cotización #{{ quote.id.slice(-6) }}</h2>
-          <div class="header-meta">
-            <span 
-              class="status-badge"
-              :style="{ 
-                color: statusConfig[quote.status]?.color,
-                backgroundColor: statusConfig[quote.status]?.bgColor
-              }"
-            >
-              {{ statusConfig[quote.status]?.label }}
-            </span>
-            <span v-if="quote.priority" 
-              class="priority-badge"
-              :style="{ color: priorityConfig[quote.priority as keyof typeof priorityConfig]?.color }"
-            >
-              {{ priorityConfig[quote.priority as keyof typeof priorityConfig]?.label }}
-            </span>
-          </div>
-        </div>
-        <RgButton @click="closeModal" icon="cancel" type="icon" outlined />
+        <h2>Cotización #{{ quote.id.slice(-6) }}</h2>
+        <button @click="closeModal" class="close-button">✕</button>
       </div>
 
       <!-- Tabs -->
@@ -192,7 +218,7 @@ watch(() => props.isVisible, (visible) => {
                 <label>Estado:</label>
                 <select 
                   :value="quote.status" 
-                  @change="updateStatus($event.target.value as QuoteStatus)"
+                  @change="updateStatus(($event.target as HTMLSelectElement)?.value as QuoteStatus)"
                   class="status-select"
                 >
                   <option v-for="(config, status) in statusConfig" :key="status" :value="status">
@@ -211,7 +237,7 @@ watch(() => props.isVisible, (visible) => {
                   </select>
                   <div class="edit-actions">
                     <RgButton @click="saveField('priority')" icon="check" type="icon" size="small" />
-                    <RgButton @click="cancelEditing" icon="close" type="icon" size="small" outlined />
+                    <RgButton @click="cancelEditing" icon="cancel" type="icon" size="small" outlined />
                   </div>
                 </div>
                 <div v-else class="editable-field" @click="startEditing('priority', quote.priority || 'medium')">
@@ -279,7 +305,7 @@ watch(() => props.isVisible, (visible) => {
                 ></textarea>
                 <div class="edit-actions">
                   <RgButton @click="saveField('clientNotes')" icon="check" type="icon" size="small" />
-                  <RgButton @click="cancelEditing" icon="close" type="icon" size="small" outlined />
+                  <RgButton @click="cancelEditing" icon="cancel" type="icon" size="small" outlined />
                 </div>
               </div>
               <div v-else class="editable-field" @click="startEditing('clientNotes', quote.clientNotes || '')">
@@ -298,7 +324,7 @@ watch(() => props.isVisible, (visible) => {
                 ></textarea>
                 <div class="edit-actions">
                   <RgButton @click="saveField('internalNotes')" icon="check" type="icon" size="small" />
-                  <RgButton @click="cancelEditing" icon="close" type="icon" size="small" outlined />
+                  <RgButton @click="cancelEditing" icon="cancel" type="icon" size="small" outlined />
                 </div>
               </div>
               <div v-else class="editable-field" @click="startEditing('internalNotes', quote.internalNotes || '')">
@@ -333,6 +359,36 @@ watch(() => props.isVisible, (visible) => {
               <div class="empty-state" v-if="!quote.comments?.length">
                 <span class="empty-icon">💬</span>
                 <p>No hay comentarios aún</p>
+              </div>
+              
+              <!-- Lista de comentarios existentes -->
+              <div v-else class="comments-container">
+                <div 
+                  v-for="(comment, index) in quote.comments" 
+                  :key="index"
+                  class="comment-item"
+                  :class="{ 'internal-comment': comment.isInternal }"
+                >
+                  <div class="comment-header">
+                    <div class="comment-meta">
+                      <span class="comment-author">{{ comment.author || 'Usuario' }}</span>
+                      <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                      <span v-if="comment.isInternal" class="internal-badge">Interno</span>
+                    </div>
+                    <RgButton 
+                      @click="deleteComment(index)" 
+                      icon="remove" 
+                      type="icon" 
+                      size="small"
+                      :customStyle="{ color: '#ef4444', borderColor: '#ef4444' }"
+                      outlined
+                    >
+                    </RgButton>
+                  </div>
+                  <div class="comment-content">
+                    {{ comment.text }}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -384,6 +440,34 @@ watch(() => props.isVisible, (visible) => {
   align-items: center;
   padding: 1.5rem;
   border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+}
+
+.close-button:hover {
+  background: #f3f4f6;
+  color: #374151;
 }
 
 .header-info h2 {
@@ -668,6 +752,119 @@ watch(() => props.isVisible, (visible) => {
 .tab-icon {
   font-size: 1rem;
   margin-right: 0.5rem;
+}
+
+/* Estilos para comentarios */
+.comments-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.add-comment {
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.comment-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+  font-family: inherit;
+  margin-bottom: 1rem;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.comments-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.comment-item {
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.comment-item:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.comment-item.internal-comment {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.comment-date {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.internal-badge {
+  background: #f59e0b;
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.comment-content {
+  color: #374151;
+  line-height: 1.5;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
 }
 
 @media (max-width: 768px) {

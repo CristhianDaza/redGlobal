@@ -432,8 +432,43 @@ const handleUpdateQuoteStatus = async (data: { quoteId: string, status: any, not
 };
 
 const handleAddQuoteComment = async (data: { quoteId: string, comment: string, isInternal: boolean }) => {
-  // Esta función será manejada por el composable useAdvancedQuotes
-  console.log('Add quote comment:', data);
+  try {
+    // Importar el composable de cotizaciones avanzadas
+    const { addQuoteComment } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+    
+    await addQuoteComment(data.quoteId, data.comment, data.isInternal);
+    
+    // Actualizar la cotización seleccionada si es la misma
+    if (selectedAdvancedQuote.value && selectedAdvancedQuote.value.id === data.quoteId) {
+      const { quotes } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+      const updatedQuote = quotes.value.find(q => q.id === data.quoteId);
+      if (updatedQuote) {
+        selectedAdvancedQuote.value = { ...updatedQuote }; // Crear nueva referencia para forzar reactividad
+      }
+    }
+  } catch (error) {
+    console.error('Error adding quote comment:', error);
+  }
+};
+
+const handleDeleteQuoteComment = async (data: { quoteId: string, commentIndex: number }) => {
+  try {
+    // Importar el composable de cotizaciones avanzadas
+    const { deleteQuoteComment } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+    
+    await deleteQuoteComment(data.quoteId, data.commentIndex);
+    
+    // Actualizar la cotización seleccionada si es la misma
+    if (selectedAdvancedQuote.value && selectedAdvancedQuote.value.id === data.quoteId) {
+      const { quotes } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+      const updatedQuote = quotes.value.find(q => q.id === data.quoteId);
+      if (updatedQuote) {
+        selectedAdvancedQuote.value = { ...updatedQuote }; // Crear nueva referencia para forzar reactividad
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting quote comment:', error);
+  }
 };
 
 const handleUpdateQuoteField = async (data: { quoteId: string, field: string, value: any }) => {
@@ -663,6 +698,7 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
           @close="handleCloseAdvancedQuoteModal"
           @updateStatus="handleUpdateQuoteStatus"
           @addComment="handleAddQuoteComment"
+          @deleteComment="handleDeleteQuoteComment"
           @updateField="handleUpdateQuoteField"
         />
 

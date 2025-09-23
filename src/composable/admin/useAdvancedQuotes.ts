@@ -224,14 +224,29 @@ export function useAdvancedQuotes() {
         quoteId,
         userId: currentUser.value?.id || '',
         userName: currentUser.value?.name || 'Admin',
+        author: currentUser.value?.name || 'Admin',
+        text: comment,
         comment,
         isInternal
       }
 
       await quotesFirebase.addQuoteComment(quoteId, commentData)
       
-      // Recargar comentarios
-      await loadQuoteComments(quoteId)
+      // Crear el comentario local con ID temporal
+      const newComment = {
+        id: crypto.randomUUID(),
+        ...commentData,
+        createdAt: new Date().toISOString()
+      }
+      
+      // Actualizar la cotización local agregando el comentario
+      const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
+      if (quoteIndex !== -1) {
+        if (!quotes.value[quoteIndex].comments) {
+          quotes.value[quoteIndex].comments = []
+        }
+        quotes.value[quoteIndex].comments!.unshift(newComment) // Agregar al inicio para mostrar más reciente primero
+      }
 
       NotificationService.push({
         title: 'Comentario agregado',
@@ -243,6 +258,38 @@ export function useAdvancedQuotes() {
       NotificationService.push({
         title: 'Error al agregar comentario',
         description: 'No se pudo agregar el comentario.',
+        type: 'error'
+      })
+    }
+  }
+
+  const deleteQuoteComment = async (quoteId: string, commentIndex: number) => {
+    try {
+      // Encontrar la cotización y el comentario
+      const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
+      if (quoteIndex === -1 || !quotes.value[quoteIndex].comments || !quotes.value[quoteIndex].comments![commentIndex]) {
+        throw new Error('Comentario no encontrado')
+      }
+
+      const comment = quotes.value[quoteIndex].comments![commentIndex]
+      const commentId = comment.id
+
+      // Eliminar de Firebase usando el ID del comentario
+      await quotesFirebase.deleteQuoteComment(quoteId, commentId)
+      
+      // Actualizar la cotización local removiendo el comentario
+      quotes.value[quoteIndex].comments!.splice(commentIndex, 1)
+
+      NotificationService.push({
+        title: 'Comentario eliminado',
+        description: 'El comentario ha sido eliminado exitosamente',
+        type: 'success'
+      })
+    } catch (error) {
+      console.error('Error deleting quote comment:', error)
+      NotificationService.push({
+        title: 'Error al eliminar comentario',
+        description: 'No se pudo eliminar el comentario.',
         type: 'error'
       })
     }
@@ -403,6 +450,7 @@ export function useAdvancedQuotes() {
     // Comentarios
     loadQuoteComments,
     addQuoteComment,
+    deleteQuoteComment,
     
     // Búsqueda y filtrado
     searchQuotes,

@@ -130,6 +130,7 @@ export interface Quote {
   internalNotes?: string
   attachments?: string[]
   statusHistory?: QuoteStatusHistory[]
+  comments?: QuoteComment[]
 }
 
 export interface QuoteStatusHistory {
@@ -144,6 +145,8 @@ export interface QuoteComment {
   quoteId: string
   userId: string
   userName: string
+  author: string
+  text: string
   comment: string
   isInternal: boolean
   createdAt: string
