@@ -15,7 +15,7 @@ const handleClose = () => {
 
 const downloadPdf = () => {
   // window.open('/politicas-tratamiento-datos.pdf', '_blank');
-  console.log('PDF download will be available soon');
+  // PDF download will be available soon
 };
 </script>
 

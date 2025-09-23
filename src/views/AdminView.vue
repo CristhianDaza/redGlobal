@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import type { tabs } from '@/types/common.d'
+import { QuoteStatus, UserFormData, User } from '@/types/common.d'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
 import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useCarouselAdmin, useOurClientAdmin, useColorAdmin, useAdvisorsAdmin } from '@/composable';
-import { tabs, UserFormData, User } from "@/types/common";
 import { useHead } from '@vueuse/head';
 
 const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('@/components/Admin/MenuItemForm.vue'));
@@ -20,7 +21,6 @@ const AdminSidebar = defineAsyncComponent(/* webpackChunkName: "adminSidebar" */
 const MenuSection = defineAsyncComponent(/* webpackChunkName: "menuSection" */() => import('@/components/Admin/sections/MenuSection.vue'));
 const AdminHeader = defineAsyncComponent(/* webpackChunkName: "adminHeader" */() => import('@/components/Admin/AdminHeader.vue'));
 const UsersSection = defineAsyncComponent(/* webpackChunkName: "usersSection" */() => import('@/components/Admin/sections/UsersSection.vue'));
-const QuotesSection = defineAsyncComponent(/* webpackChunkName: "quotesSection" */() => import('@/components/Admin/sections/QuotesSection.vue'));
 const AdvancedQuotesSection = defineAsyncComponent(/* webpackChunkName: "advancedQuotesSection" */() => import('@/components/Admin/sections/AdvancedQuotesSection.vue'));
 const CategoriesSection = defineAsyncComponent(/* webpackChunkName: "categoriesSection" */() => import('@/components/Admin/sections/CategoriesSection.vue'));
 const QuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "quoteDetailsModal" */() => import('@/components/Admin/QuoteDetailsModal.vue'));
@@ -96,19 +96,12 @@ const {
   showQuoteDetailsModal,
   selectedQuote,
   loadQuotes,
-  filteredQuotes,
-  totalQuotes,
   pendingQuotes,
-  completedQuotes,
-  handleViewQuote,
   handleCloseQuoteDetails,
   handleOpenQuoteDetails,
   handleCompleteQuote,
-  downloadQuoteSummary,
   deleteQuote,
-  deleteAllCompletedQuotes,
-  canDeleteQuote,
-  quoteStatus
+  deleteAllCompletedQuotes
 } = useQuoteAdmin(isAdmin.value);
 
 // Estados para el sistema avanzado de cotizaciones
@@ -435,9 +428,8 @@ const handleCloseAdvancedQuoteModal = () => {
   router.push({ query: newQuery });
 };
 
-const handleUpdateQuoteStatus = async (data: { quoteId: string, status: any, notes?: string }) => {
-  // Esta función será manejada por el composable useAdvancedQuotes
-  console.log('Update quote status:', data);
+const handleUpdateQuoteStatus = async () => {
+  // Función manejada por el composable useAdvancedQuotes
 };
 
 const handleAddQuoteComment = async (data: { quoteId: string, comment: string, isInternal: boolean }) => {
@@ -480,9 +472,8 @@ const handleDeleteQuoteComment = async (data: { quoteId: string, commentIndex: n
   }
 };
 
-const handleUpdateQuoteField = async (data: { quoteId: string, field: string, value: any }) => {
-  // Esta función será manejada por el composable useAdvancedQuotes
-  console.log('Update quote field:', data);
+const handleUpdateQuoteField = async () => {
+  // Función manejada por el composable useAdvancedQuotes
 };
 
 // Función para abrir cotización desde URL
@@ -697,7 +688,7 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
           :is-open="showQuoteDetailsModal"
           :quote="selectedQuote"
           :is-admin="isAdmin"
-          :quote-status="quoteStatus"
+          :quote-status="QuoteStatus"
           @complete="handleCompleteQuote"
           @close="handleCloseQuoteDetails"
         />

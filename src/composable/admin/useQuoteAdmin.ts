@@ -1,15 +1,10 @@
 import type { QuoteAdmin } from '@/types/common.d'
+import { QuoteStatus } from '@/types/common.d'
 import { ref, computed } from 'vue';
 import * as XLSX from 'xlsx'
 import { useQuoteStore, useAuthStore } from '@/store';
 import { useRouter, useRoute } from 'vue-router';
 import { NotificationService } from '@/components/Notification/NotificationService.ts';
-
-const quoteStatus = {
-  PENDING: 'pending',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled'
-};
 
 export function useQuoteAdmin(isAdmin: boolean) {
   const quoteStore = useQuoteStore();
@@ -35,10 +30,10 @@ export function useQuoteAdmin(isAdmin: boolean) {
 
   const totalQuotes = computed(() => filteredQuotes.value.length);
   const pendingQuotes = computed(() =>
-    filteredQuotes.value.filter(q => q.status === quoteStatus.PENDING).length
+    filteredQuotes.value.filter(q => q.status === QuoteStatus.PENDING).length
   );
   const completedQuotes = computed(() =>
-    filteredQuotes.value.filter(q => q.status === quoteStatus.COMPLETED).length
+    filteredQuotes.value.filter(q => q.status === QuoteStatus.COMPLETED).length
   );
 
   const handleViewQuote = async (quote: QuoteAdmin) => {
@@ -71,9 +66,9 @@ export function useQuoteAdmin(isAdmin: boolean) {
 
   const handleCompleteQuote = async (quote: QuoteAdmin) => {
     try {
-      await quoteStore.updateQuoteStatus(quote.idDoc, quoteStatus.COMPLETED);
+      await quoteStore.updateQuoteStatus(quote.idDoc, QuoteStatus.COMPLETED);
       if (selectedQuote.value) {
-        selectedQuote.value.status = quoteStatus.COMPLETED;
+        selectedQuote.value.status = QuoteStatus.COMPLETED;
       }
       await loadQuotes();
     } catch (error) {
@@ -95,8 +90,8 @@ export function useQuoteAdmin(isAdmin: boolean) {
 
   const canDeleteQuote = (quote: QuoteAdmin): boolean => {
     const isCreator = quote.userEmail === authStore.user?.email
-    const isPending = quote.status === quoteStatus.PENDING
-    const isCompleted = quote.status === quoteStatus.COMPLETED
+    const isPending = quote.status === QuoteStatus.PENDING
+    const isCompleted = quote.status === QuoteStatus.COMPLETED
 
     return (isCreator && isPending) || (isAdmin && isCompleted)
   }
@@ -132,7 +127,7 @@ export function useQuoteAdmin(isAdmin: boolean) {
       'Fecha': new Date(q.createdAt).toLocaleString(),
       'Nombre': q.userName,
       'Correo': q.userEmail,
-      'Estado': q.status === quoteStatus.COMPLETED ? 'Completada' : 'Pendiente',
+      'Estado': q.status === QuoteStatus.COMPLETED ? 'Completada' : 'Pendiente',
       'Items': q.items.length,
       'Id': q.id
     }));
@@ -167,6 +162,6 @@ export function useQuoteAdmin(isAdmin: boolean) {
     deleteAllCompletedQuotes,
     downloadQuoteSummary,
     canDeleteQuote,
-    quoteStatus
+    QuoteStatus
   };
 }
