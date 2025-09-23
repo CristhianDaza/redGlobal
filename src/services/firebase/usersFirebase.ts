@@ -1,8 +1,10 @@
 import type { User, UserFormData } from '@/types/common.d'
 import { UserRole } from '@/types/common.d'
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
-import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth'
-import { db } from '@/config'
+import { createUserWithEmailAndPassword, getAuth, signOut } from 'firebase/auth'
+import { db, firebaseConfig } from '@/config'
+import { initializeApp, deleteApp } from 'firebase/app'
+import { getAuth as getSecondaryAuth } from 'firebase/auth'
 import { cacheService, API_CACHE_CONFIG, logger } from '@/services'
 
 export const usersFirebase = {
@@ -78,10 +80,13 @@ export const usersFirebase = {
         throw new Error('La contraseña debe tener al menos 6 caracteres')
       }
 
-      const auth = getAuth()
+      // Crear una instancia secundaria de Firebase para no afectar la sesión actual
+      const secondaryApp = initializeApp(firebaseConfig, 'secondary')
+      const secondaryAuth = getSecondaryAuth(secondaryApp)
+      
       let userCredential
       try {
-        userCredential = await createUserWithEmailAndPassword(auth, user.email.toLowerCase(), user.password)
+        userCredential = await createUserWithEmailAndPassword(secondaryAuth, user.email.toLowerCase(), user.password)
       } catch (error: any) {
         if (error.code === 'auth/email-already-in-use') {
           throw new Error('El email ya está registrado. Por favor, usa otro email.')
@@ -104,9 +109,20 @@ export const usersFirebase = {
           role: userData.role || UserRole.CLIENT,
           active: true
         })
+        
+        // Cerrar sesión en la instancia secundaria para no afectar la sesión principal
+        await signOut(secondaryAuth)
       } catch (error) {
+        // Si hay error guardando en Firestore, eliminar el usuario de Auth
         await userCredential.user.delete()
         throw new Error('Error al guardar los datos del usuario')
+      } finally {
+        // Limpiar la instancia secundaria
+        try {
+          await deleteApp(secondaryApp)
+        } catch (error) {
+          logger.warn('Error deleting secondary app instance', 'usersFirebase', error);
+        }
       }
     } catch (error) {
       logger.error('Error creating user', 'usersFirebase', error);

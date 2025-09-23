@@ -3,5 +3,6 @@ export { contactCards } from '@/config/contact';
 export {
   app,
   db,
-  auth
+  auth,
+  firebaseConfig
 } from '@/config/firebase';
