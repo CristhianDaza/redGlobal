@@ -15,13 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Advanced Quote Management System**: Complete overhaul of the quotation management system with enhanced features:
   - **Expanded Quote Status**: Added 8 comprehensive status levels (Pending, In Review, Quoted, Negotiating, Approved, Completed, Cancelled, Expired)
   - **Advanced Quote Fields**: Priority levels, assigned users, due dates, estimated/actual values, tags, source tracking, follow-up dates
-  - **Quote Comments System**: Internal and client-facing comments with timestamps
-  - **Status History Tracking**: Complete audit trail of status changes with user attribution
-  - **Advanced Filtering**: Search by client, email, product, status, priority, date ranges
+  - **Quote Comments System**: Internal and client-facing comments with timestamps and user attribution
+  - **Status History Tracking**: Complete audit trail of status changes with user attribution and notes
+  - **Advanced Filtering**: Search by client, email, product, status, priority, date ranges with real-time results
   - **Dual View Modes**: Table and card views for different workflow preferences
-  - **Real-time Statistics**: Conversion rates, average values, status distribution
-  - **Inline Editing**: Quick edit capabilities for priority, values, and notes
-  - **Export Functionality**: Filtered data export capabilities
+  - **Real-time Statistics**: Conversion rates, average values, status distribution, priority breakdown
+  - **Inline Editing**: Quick edit capabilities for priority, values, notes, and custom fields
+  - **Export Functionality**: Filtered data export to CSV with customizable date ranges and filters
+  - **Backend Services**: Complete Firebase integration with caching, logging, and error handling
+  - **Advanced Composables**: Reusable business logic with `useAdvancedQuotes` composable
+  - **Enhanced Store**: Extended `useQuoteStore` with new advanced functions and statistics
 - **Hidden users functionality**: Added `isHidden` field to user records to create users that don't appear in admin listings. Hidden users are filtered out from all user lists while maintaining authentication functionality.
 - **Last login tracking for users**: Added `lastLogin` field to user records that automatically updates when users log in, with display in the admin users table showing relative time since last access. Includes automatic migration for existing users using their creation date as initial last login.
 - **Copy email functionality in admin users table**: Added copy button next to each user's email in the admin users table to quickly copy emails to clipboard with visual feedback notifications.

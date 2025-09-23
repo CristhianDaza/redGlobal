@@ -1,18 +1,77 @@
-import type { Quote } from '@/types/common.d'
-import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, writeBatch } from 'firebase/firestore'
+import type { Quote, QuoteStatus, QuoteComment, QuoteStatusHistory } from '@/types/common.d'
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, writeBatch, query, where, orderBy, limit } from 'firebase/firestore'
 import { db } from '@/config'
+import { cacheService, API_CACHE_CONFIG, logger } from '@/services'
 
 export const quotesFirebase = {
   async getQuotes(): Promise<Quote[]> {
+    const cache = cacheService.cacheApiCall<Quote[]>(
+      'FIREBASE_QUOTES',
+      {},
+      API_CACHE_CONFIG.FIREBASE_USERS.ttl // Reutilizamos la configuración existente
+    );
+
+    return await cache.getOrSet(async () => {
+      try {
+        logger.info('Fetching quotes from Firebase', 'quotesFirebase');
+        
+        const quotesRef = collection(db, 'quotes')
+        const snapshot = await getDocs(quotesRef)
+        const quotes = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          idDoc: doc.id,
+        })) as Quote[]
+
+        logger.info(`Fetched ${quotes.length} quotes`, 'quotesFirebase');
+        return quotes
+      } catch (error) {
+        logger.error('Error getting quotes', 'quotesFirebase', error);
+        return []
+      }
+    });
+  },
+
+  async getQuotesByStatus(status: QuoteStatus): Promise<Quote[]> {
     try {
       const quotesRef = collection(db, 'quotes')
-      const snapshot = await getDocs(quotesRef)
+      const q = query(quotesRef, where('status', '==', status))
+      const snapshot = await getDocs(q)
       return snapshot.docs.map(doc => ({
         ...doc.data(),
         idDoc: doc.id,
       })) as Quote[]
     } catch (error) {
-      console.error('Error getting quotes:', error)
+      logger.error('Error getting quotes by status', 'quotesFirebase', error);
+      return []
+    }
+  },
+
+  async getQuotesByUser(userId: string): Promise<Quote[]> {
+    try {
+      const quotesRef = collection(db, 'quotes')
+      const q = query(quotesRef, where('userId', '==', userId), orderBy('createdAt', 'desc'))
+      const snapshot = await getDocs(q)
+      return snapshot.docs.map(doc => ({
+        ...doc.data(),
+        idDoc: doc.id,
+      })) as Quote[]
+    } catch (error) {
+      logger.error('Error getting quotes by user', 'quotesFirebase', error);
+      return []
+    }
+  },
+
+  async getRecentQuotes(limitCount: number = 10): Promise<Quote[]> {
+    try {
+      const quotesRef = collection(db, 'quotes')
+      const q = query(quotesRef, orderBy('createdAt', 'desc'), limit(limitCount))
+      const snapshot = await getDocs(q)
+      return snapshot.docs.map(doc => ({
+        ...doc.data(),
+        idDoc: doc.id,
+      })) as Quote[]
+    } catch (error) {
+      logger.error('Error getting recent quotes', 'quotesFirebase', error);
       return []
     }
   },
@@ -30,16 +89,80 @@ export const quotesFirebase = {
     }
   },
 
-  async updateQuoteStatus(id: string, status: string): Promise<void> {
+  async updateQuoteStatus(id: string, status: QuoteStatus, notes?: string, changedBy?: string): Promise<void> {
     try {
       const quoteRef = doc(db, 'quotes', id)
+      const now = new Date().toISOString()
+      
+      // Crear entrada de historial
+      const historyEntry: QuoteStatusHistory = {
+        status,
+        changedBy: changedBy || 'System',
+        changedAt: now,
+        notes
+      }
+
       await updateDoc(quoteRef, {
         status,
-        updatedAt: new Date().toISOString()
+        updatedAt: now,
+        statusHistory: [...(await this.getQuoteStatusHistory(id)), historyEntry]
       })
+
+      cacheService.delete('api:FIREBASE_QUOTES:');
+      logger.info(`Quote ${id} status updated to ${status}`, 'quotesFirebase');
     } catch (error) {
-      console.error('Error updating quote status:', error)
+      logger.error('Error updating quote status', 'quotesFirebase', error);
       throw error
+    }
+  },
+
+  async updateQuoteField(id: string, field: string, value: any, updatedBy?: string): Promise<void> {
+    try {
+      const quoteRef = doc(db, 'quotes', id)
+      const updateData: any = {
+        [field]: value,
+        updatedAt: new Date().toISOString()
+      }
+
+      if (updatedBy) {
+        updateData.lastUpdatedBy = updatedBy
+      }
+
+      await updateDoc(quoteRef, updateData)
+      cacheService.delete('api:FIREBASE_QUOTES:');
+      logger.info(`Quote ${id} field ${field} updated`, 'quotesFirebase');
+    } catch (error) {
+      logger.error('Error updating quote field', 'quotesFirebase', error);
+      throw error
+    }
+  },
+
+  async updateQuoteMultipleFields(id: string, updates: Partial<Quote>, updatedBy?: string): Promise<void> {
+    try {
+      const quoteRef = doc(db, 'quotes', id)
+      const updateData = {
+        ...updates,
+        updatedAt: new Date().toISOString(),
+        ...(updatedBy && { lastUpdatedBy: updatedBy })
+      }
+
+      await updateDoc(quoteRef, updateData)
+      cacheService.delete('api:FIREBASE_QUOTES:');
+      logger.info(`Quote ${id} multiple fields updated`, 'quotesFirebase');
+    } catch (error) {
+      logger.error('Error updating quote multiple fields', 'quotesFirebase', error);
+      throw error
+    }
+  },
+
+  async getQuoteStatusHistory(id: string): Promise<QuoteStatusHistory[]> {
+    try {
+      const quoteRef = doc(db, 'quotes', id)
+      const snapshot = await getDocs(query(collection(quoteRef, 'statusHistory'), orderBy('changedAt', 'desc')))
+      return snapshot.docs.map(doc => doc.data()) as QuoteStatusHistory[]
+    } catch (error) {
+      logger.error('Error getting quote status history', 'quotesFirebase', error);
+      return []
     }
   },
 
@@ -61,9 +184,153 @@ export const quotesFirebase = {
         batch.delete(docRef);
       });
       await batch.commit();
+      cacheService.delete('api:FIREBASE_QUOTES:');
+      logger.info(`Deleted ${ids.length} quotes`, 'quotesFirebase');
     } catch (error) {
-      console.error('Error deleting multiple quotes:', error);
+      logger.error('Error deleting multiple quotes', 'quotesFirebase', error);
       throw error;
     }
   },
+
+  // Sistema de comentarios
+  async addQuoteComment(quoteId: string, comment: Omit<QuoteComment, 'id' | 'createdAt'>): Promise<void> {
+    try {
+      const commentData = {
+        ...comment,
+        createdAt: new Date().toISOString()
+      }
+
+      await addDoc(collection(db, 'quotes', quoteId, 'comments'), commentData)
+      logger.info(`Comment added to quote ${quoteId}`, 'quotesFirebase');
+    } catch (error) {
+      logger.error('Error adding quote comment', 'quotesFirebase', error);
+      throw error
+    }
+  },
+
+  async getQuoteComments(quoteId: string): Promise<QuoteComment[]> {
+    try {
+      const commentsRef = collection(db, 'quotes', quoteId, 'comments')
+      const q = query(commentsRef, orderBy('createdAt', 'desc'))
+      const snapshot = await getDocs(q)
+      
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as QuoteComment[]
+    } catch (error) {
+      logger.error('Error getting quote comments', 'quotesFirebase', error);
+      return []
+    }
+  },
+
+  async deleteQuoteComment(quoteId: string, commentId: string): Promise<void> {
+    try {
+      const commentRef = doc(db, 'quotes', quoteId, 'comments', commentId)
+      await deleteDoc(commentRef)
+      logger.info(`Comment ${commentId} deleted from quote ${quoteId}`, 'quotesFirebase');
+    } catch (error) {
+      logger.error('Error deleting quote comment', 'quotesFirebase', error);
+      throw error
+    }
+  },
+
+  // Estadísticas y análisis
+  async getQuoteStats(): Promise<{
+    total: number;
+    byStatus: Record<string, number>;
+    byPriority: Record<string, number>;
+    avgValue: number;
+    conversionRate: number;
+  }> {
+    try {
+      const quotes = await this.getQuotes()
+      
+      const byStatus = quotes.reduce((acc, quote) => {
+        acc[quote.status] = (acc[quote.status] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+
+      const byPriority = quotes.reduce((acc, quote) => {
+        const priority = quote.priority || 'medium'
+        acc[priority] = (acc[priority] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+
+      const totalValue = quotes.reduce((sum, quote) => sum + (quote.estimatedValue || 0), 0)
+      const avgValue = quotes.length > 0 ? totalValue / quotes.length : 0
+      
+      const completedQuotes = quotes.filter(q => q.status === 'completed').length
+      const conversionRate = quotes.length > 0 ? (completedQuotes / quotes.length) * 100 : 0
+
+      return {
+        total: quotes.length,
+        byStatus,
+        byPriority,
+        avgValue,
+        conversionRate
+      }
+    } catch (error) {
+      logger.error('Error getting quote stats', 'quotesFirebase', error);
+      return {
+        total: 0,
+        byStatus: {},
+        byPriority: {},
+        avgValue: 0,
+        conversionRate: 0
+      }
+    }
+  },
+
+  // Búsqueda avanzada
+  async searchQuotes(searchTerm: string): Promise<Quote[]> {
+    try {
+      const quotes = await this.getQuotes()
+      const term = searchTerm.toLowerCase()
+      
+      return quotes.filter(quote => 
+        quote.userName.toLowerCase().includes(term) ||
+        quote.userEmail.toLowerCase().includes(term) ||
+        quote.id.toLowerCase().includes(term) ||
+        quote.items.some(item => item.productName.toLowerCase().includes(term)) ||
+        (quote.tags && quote.tags.some(tag => tag.toLowerCase().includes(term)))
+      )
+    } catch (error) {
+      logger.error('Error searching quotes', 'quotesFirebase', error);
+      return []
+    }
+  },
+
+  // Exportación de datos
+  async exportQuotes(filters?: {
+    status?: QuoteStatus;
+    priority?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<Quote[]> {
+    try {
+      let quotes = await this.getQuotes()
+
+      if (filters) {
+        if (filters.status) {
+          quotes = quotes.filter(q => q.status === filters.status)
+        }
+        if (filters.priority) {
+          quotes = quotes.filter(q => q.priority === filters.priority)
+        }
+        if (filters.dateFrom) {
+          quotes = quotes.filter(q => new Date(q.createdAt) >= new Date(filters.dateFrom!))
+        }
+        if (filters.dateTo) {
+          quotes = quotes.filter(q => new Date(q.createdAt) <= new Date(filters.dateTo!))
+        }
+      }
+
+      logger.info(`Exported ${quotes.length} quotes with filters`, 'quotesFirebase');
+      return quotes
+    } catch (error) {
+      logger.error('Error exporting quotes', 'quotesFirebase', error);
+      return []
+    }
+  }
 }

@@ -1,29 +1,34 @@
 <script setup lang="ts">
-import type { Quote, QuoteStatus, QuoteComment } from '@/types/common.d'
-import { defineAsyncComponent, computed, ref, watch } from 'vue'
+import type { Quote, QuoteStatus } from '@/types/common.d'
+import { QuoteStatus as QuoteStatusEnum } from '@/types/common.d'
+import { defineAsyncComponent, computed, ref, onMounted } from 'vue'
 import TvRelativeTime from '@todovue/tv-relative-time'
+import { useAdvancedQuotes } from '@/composable/admin/useAdvancedQuotes'
 
 const RgButton = defineAsyncComponent(() => import('@/components/UI/RgButton.vue'))
 
-const props = defineProps<{
-  quotes: Quote[]
-  totals: { total: number; pending: number; completed: number }
-  isAdmin: boolean
-}>()
-
 const emit = defineEmits<{
   (e: 'view', quote: Quote): void
-  (e: 'updateStatus', data: { quoteId: string, status: QuoteStatus, notes?: string }): void
-  (e: 'updatePriority', data: { quoteId: string, priority: string }): void
-  (e: 'addComment', data: { quoteId: string, comment: string, isInternal: boolean }): void
-  (e: 'assignQuote', data: { quoteId: string, assignedTo: string }): void
-  (e: 'setDueDate', data: { quoteId: string, dueDate: string }): void
-  (e: 'addTags', data: { quoteId: string, tags: string[] }): void
-  (e: 'delete', id: string): void
-  (e: 'export', filters: any): void
 }>()
 
-// Estados y filtros
+// Composable
+const {
+  quotes,
+  isLoading,
+  isUpdating,
+  quoteStats,
+  quotesTotals,
+  loadQuotes,
+  loadQuoteStats,
+  updateQuoteStatus,
+  updateQuotePriority,
+  deleteQuote,
+  exportQuotes,
+  searchQuotes,
+  refreshData
+} = useAdvancedQuotes()
+
+// Estados y filtros locales
 const searchTerm = ref('')
 const statusFilter = ref<QuoteStatus | 'all'>('all')
 const priorityFilter = ref<string>('all')
@@ -54,7 +59,7 @@ const priorityConfig = {
 
 // Filtros computados
 const filteredQuotes = computed(() => {
-  let filtered = [...props.quotes]
+  let filtered = [...quotes.value]
 
   // Filtro de búsqueda
   if (searchTerm.value) {
@@ -117,19 +122,19 @@ const sortedQuotes = computed(() => {
 
 // Estadísticas computadas
 const stats = computed(() => {
-  const quotes = filteredQuotes.value
+  const filtered = filteredQuotes.value
   return {
-    total: quotes.length,
+    total: filtered.length,
     byStatus: Object.keys(statusConfig).reduce((acc, status) => {
-      acc[status] = quotes.filter(q => q.status === status).length
+      acc[status] = filtered.filter(q => q.status === status).length
       return acc
     }, {} as Record<string, number>),
     byPriority: Object.keys(priorityConfig).reduce((acc, priority) => {
-      acc[priority] = quotes.filter(q => q.priority === priority).length
+      acc[priority] = filtered.filter(q => q.priority === priority).length
       return acc
     }, {} as Record<string, number>),
-    avgValue: quotes.reduce((sum, q) => sum + (q.estimatedValue || 0), 0) / quotes.length || 0,
-    conversionRate: quotes.filter(q => q.status === 'completed').length / quotes.length * 100 || 0
+    avgValue: filtered.reduce((sum, q) => sum + (q.estimatedValue || 0), 0) / filtered.length || 0,
+    conversionRate: filtered.filter(q => q.status === 'completed').length / filtered.length * 100 || 0
   }
 })
 
@@ -143,12 +148,12 @@ function changeSort(key: keyof Quote) {
   }
 }
 
-function updateQuoteStatus(quote: Quote, newStatus: QuoteStatus) {
-  emit('updateStatus', { quoteId: quote.id, status: newStatus })
+function handleUpdateQuoteStatus(quote: Quote, newStatus: QuoteStatus) {
+  updateQuoteStatus(quote.id, newStatus)
 }
 
-function updateQuotePriority(quote: Quote, newPriority: string) {
-  emit('updatePriority', { quoteId: quote.id, priority: newPriority })
+function handleUpdateQuotePriority(quote: Quote, newPriority: string) {
+  updateQuotePriority(quote.id, newPriority)
 }
 
 function getStatusColor(status: QuoteStatus) {
@@ -171,14 +176,19 @@ function clearFilters() {
   assignedFilter.value = 'all'
 }
 
-function exportQuotes() {
-  emit('export', {
-    search: searchTerm.value,
-    status: statusFilter.value,
-    priority: priorityFilter.value,
-    dateRange: dateFilter.value
+function handleExportQuotes() {
+  exportQuotes({
+    status: statusFilter.value !== 'all' ? statusFilter.value : undefined,
+    priority: priorityFilter.value !== 'all' ? priorityFilter.value : undefined,
+    dateFrom: dateFilter.value === 'week' ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
+    dateTo: dateFilter.value === 'today' ? new Date().toISOString() : undefined
   })
 }
+
+// Cargar datos al montar el componente
+onMounted(async () => {
+  await refreshData()
+})
 </script>
 
 <template>
@@ -191,7 +201,7 @@ function exportQuotes() {
       </div>
       
       <div class="header-actions">
-        <RgButton @click="exportQuotes" icon="download" outlined>
+        <RgButton @click="handleExportQuotes" icon="download" outlined>
           Exportar
         </RgButton>
         <RgButton @click="viewMode = viewMode === 'table' ? 'cards' : 'table'" icon="view_module" outlined>
@@ -342,7 +352,7 @@ function exportQuotes() {
             <td>
               <select 
                 :value="quote.status" 
-                @change="updateQuoteStatus(quote, $event.target.value as QuoteStatus)"
+                @change="handleUpdateQuoteStatus(quote, ($event.target as HTMLSelectElement).value as QuoteStatus)"
                 class="status-select"
                 :style="{ 
                   color: getStatusColor(quote.status),
@@ -358,7 +368,7 @@ function exportQuotes() {
             <td>
               <select 
                 :value="quote.priority || 'medium'" 
-                @change="updateQuotePriority(quote, $event.target.value)"
+                @change="handleUpdateQuotePriority(quote, ($event.target as HTMLSelectElement).value)"
                 class="priority-select"
                 :style="{ color: getPriorityColor(quote.priority) }"
               >
@@ -397,14 +407,14 @@ function exportQuotes() {
                 </RgButton>
                 <RgButton 
                   v-if="quote.status !== 'completed'" 
-                  @click="updateQuoteStatus(quote, 'completed')" 
+                  @click="handleUpdateQuoteStatus(quote, QuoteStatusEnum.COMPLETED)" 
                   icon="check_circle" 
                   type="icon" 
                   size="small"
                   :customStyle="{ color: '#10b981' }"
                 >
                 </RgButton>
-                <RgButton @click="$emit('delete', quote.id)" icon="delete" type="icon" size="small" outlined>
+                <RgButton @click="deleteQuote(quote.id)" icon="delete" type="icon" size="small" outlined>
                 </RgButton>
               </div>
             </td>
@@ -471,7 +481,7 @@ function exportQuotes() {
             </RgButton>
             <RgButton 
               v-if="quote.status !== 'completed'" 
-              @click="updateQuoteStatus(quote, 'completed')" 
+              @click="handleUpdateQuoteStatus(quote, QuoteStatusEnum.COMPLETED)" 
               size="small"
               :customStyle="{ backgroundColor: '#10b981', color: 'white' }"
             >
