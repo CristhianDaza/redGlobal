@@ -5,6 +5,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
 import { formatColor, formatNumber } from '@/utils'
+import { formatPrice, calculatePriceWithIncrease, calculatePriceWithIva } from '@/utils/formatNumber'
 import { useIsMobile } from '@/composable';
 import { useHead } from '@vueuse/head';
 
@@ -220,25 +221,20 @@ const hasAvailableQuantities = computed(() => {
   return product.value?.tableQuantity?.some(entry => entry.quantity > 0) ?? false;
 });
 
-const calculatePriceWithIncrease = (price: number) => {
+const calculatePriceWithUserIncrease = (price: number) => {
   if (!authStore.isAuthenticated()) {
     return price;
   }
 
   const currentUser = userStore.users.find(user => user.email === authStore.user?.email?.toLowerCase());
-
-  if (currentUser?.priceIncrease) {
-    const finalPrice = price * (1 + currentUser.priceIncrease / 100);
-    return Math.ceil(finalPrice);
-  }
-
-  return price;
+  const priceIncrease = currentUser?.priceIncrease || 0;
+  
+  return calculatePriceWithIncrease(price, priceIncrease);
 };
 
-const calculatePriceWithIva = (price: number) => {
-  const priceWithIncrease = calculatePriceWithIncrease(price);
-
-  return Math.ceil(priceWithIncrease * 1.19);
+const calculatePriceWithUserIncreaseAndIva = (price: number) => {
+  const priceWithIncrease = calculatePriceWithUserIncrease(price);
+  return calculatePriceWithIva(priceWithIncrease);
 };
 
 const loadProduct = async () => {
@@ -569,8 +565,8 @@ const hideTooltip = () => {
                   <div v-if="isPriceLoading" class="price-skeleton"></div>
                   <template v-else>
                     <span class="price-text">{{ showPricesWithIva
-                        ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
-                        : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
+                        ? formatPrice(calculatePriceWithUserIncreaseAndIva(Number(entry.price)))
+                        : formatPrice(calculatePriceWithUserIncrease(Number(entry.price)))
                     }}</span>
                     <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
                   </template>
@@ -623,8 +619,8 @@ const hideTooltip = () => {
                   <div v-if="isPriceLoading" class="price-skeleton-mobile"></div>
                   <div v-else class="price-container-mobile">
                     <span class="price-text">{{ showPricesWithIva
-                        ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
-                        : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
+                        ? formatPrice(calculatePriceWithUserIncreaseAndIva(Number(entry.price)))
+                        : formatPrice(calculatePriceWithUserIncrease(Number(entry.price)))
                     }}</span>
                     <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
                   </div>

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { Quote, QuoteStatus, QuoteComment } from '@/types/common.d'
-import { ref, computed, watch, onUnmounted, defineAsyncComponent } from 'vue'
+import type { Quote, QuoteStatus } from '@/types/common.d'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import TvRelativeTime from '@todovue/tv-relative-time'
-
-const RgButton = defineAsyncComponent(() => import('@/components/UI/RgButton.vue'))
+// import { useAdvancedQuotes } from '@/composable/admin/useAdvancedQuotes' // No usado en este componente
+import { formatPrice, formatNumber } from '@/utils/formatNumber'
+import RgButton from '@/components/UI/RgButton.vue'
 
 const props = defineProps<{
   quote: Quote | null
@@ -261,7 +262,7 @@ onUnmounted(() => {
                   </div>
                 </div>
                 <div v-else class="editable-field" @click="startEditing('estimatedValue', quote.estimatedValue || 0)">
-                  <span>${{ (quote.estimatedValue || 0).toLocaleString() }}</span>
+                  <span>{{ formatPrice(quote.estimatedValue || 0) }}</span>
                   <span class="material-icons edit-icon">edit</span>
                 </div>
               </div>
@@ -277,18 +278,18 @@ onUnmounted(() => {
                 <div class="product-info">
                   <h4>{{ item.productName }}</h4>
                   <p>Color: {{ item.colorName }}</p>
-                  <p>Cantidad: {{ item.quantity.toLocaleString() }}</p>
+                  <p>Cantidad: {{ formatNumber(item.quantity) }}</p>
                   <p v-if="item.includeMarking">Incluye marcación</p>
                 </div>
                 <div class="product-price">
-                  <span class="unit-price">${{ item.unitPrice.toLocaleString() }} c/u</span>
-                  <span class="total-price">${{ item.totalPrice.toLocaleString() }}</span>
+                  <span class="unit-price">{{ formatPrice(item.unitPrice) }} c/u</span>
+                  <span class="total-price">{{ formatPrice(item.totalPrice) }}</span>
                 </div>
               </div>
             </div>
             <div class="total-section">
               <div class="total-item">
-                <strong>Total: ${{ totalValue.toLocaleString() }}</strong>
+                <strong>Total: {{ formatPrice(totalValue) }}</strong>
               </div>
             </div>
           </div>

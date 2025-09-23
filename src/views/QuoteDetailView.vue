@@ -4,6 +4,7 @@ import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import TvRelativeTime from '@todovue/tv-relative-time'
 import { useAdvancedQuotes } from '@/composable/admin/useAdvancedQuotes'
+import { formatPrice, formatNumber } from '@/utils/formatNumber'
 
 const RgButton = defineAsyncComponent(() => import('@/components/UI/RgButton.vue'))
 
@@ -274,7 +275,7 @@ watch(() => route.params.id, async (newId) => {
                   </div>
                 </div>
                 <div v-else class="editable-field" @click="startEditing('estimatedValue', currentQuote.estimatedValue || 0)">
-                  <span>${{ (currentQuote.estimatedValue || 0).toLocaleString() }}</span>
+                  <span>{{ formatPrice(currentQuote.estimatedValue || 0) }}</span>
                   <span class="material-icons edit-icon">edit</span>
                 </div>
               </div>
@@ -289,18 +290,18 @@ watch(() => route.params.id, async (newId) => {
                 <div class="product-info">
                   <h4>{{ item.productName }}</h4>
                   <p>Color: {{ item.colorName }}</p>
-                  <p>Cantidad: {{ item.quantity.toLocaleString() }}</p>
+                  <p>Cantidad: {{ formatNumber(item.quantity) }}</p>
                   <p v-if="item.includeMarking">Incluye marcación</p>
                 </div>
                 <div class="product-price">
-                  <span class="unit-price">${{ item.unitPrice.toLocaleString() }} c/u</span>
-                  <span class="total-price">${{ item.totalPrice.toLocaleString() }}</span>
+                  <span class="unit-price">{{ formatPrice(item.unitPrice) }} c/u</span>
+                  <span class="total-price">{{ formatPrice(item.totalPrice) }}</span>
                 </div>
               </div>
             </div>
             <div class="total-section">
               <div class="total-item">
-                <strong>Total: ${{ totalValue.toLocaleString() }}</strong>
+                <strong>Total: {{ formatPrice(totalValue) }}</strong>
               </div>
             </div>
           </div>

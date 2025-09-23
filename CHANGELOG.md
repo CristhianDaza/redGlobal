@@ -6,101 +6,117 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Changed
-- **Advanced Quotes Interface Optimization**: Streamlined the advanced quotations management interface for better user experience:
-  - **Simplified Header**: Removed redundant header section in AdvancedQuotesSection.vue and replaced with compact actions bar
-  - **Cleaner Actions Bar**: Condensed header to show only essential information (results count) and key actions (Export, View toggle)
-  - **Removed Obsolete Buttons**: Eliminated redundant "Complete" and "Delete" buttons from quote lists since these actions are now handled in the dedicated detail page
-  - **Consistent Navigation**: Updated all admin redirections to point directly to advanced quotes section (`/admin?tab=advanced-quotes`)
-  - **Code Cleanup**: Removed unused imports and functions (`QuoteStatusEnum`, `deleteQuote`) for cleaner codebase
 
-### Fixed
-- **Admin Navigation Consistency**: Fixed multiple navigation issues where users were redirected to wrong admin sections:
-  - **Login Redirect**: Updated authentication flow to redirect to advanced quotes instead of basic quotes
-  - **Navbar Admin Link**: Fixed admin panel link in navigation bar to go directly to advanced quotes
-  - **Quote Detail Navigation**: Fixed back button and error redirections in QuoteDetailView to return to advanced quotes
-  - **AdminHeader Conditional Display**: Added conditional rendering to hide AdminHeader specifically for advanced quotes section to prevent UI duplication
+## 🚀 Added
 
-### Added
-- **Quote Detail Page Migration**: Migrated the advanced quotation modal to a dedicated full-page view with URL routing:
-  - **New Route**: Added `/admin/quotes/:id` route for direct access to individual quotations
-  - **Full-Page Interface**: Complete page with tabs for Details, Comments, and History instead of modal
-  - **URL Navigation**: Each quotation now has a unique URL for bookmarking and sharing
-  - **Real-time History Updates**: Status history automatically updates when changes are made without page refresh
-  - **Visual Feedback**: Added loading spinner and "Updating..." indicator during status changes
-  - **Improved Navigation**: Breadcrumb navigation with back button to admin panel
+* **Centralized Price Formatting System**
 
-### Fixed
-- **Quote Comments System**: Resolved critical issues with comment functionality:
-  - **ID Mapping**: Fixed inconsistencies between quote ID and Firebase document ID (`idDoc`) causing comment failures
-  - **Subcollection Access**: Corrected comment storage and retrieval from Firebase subcollections
-  - **Auto-reload**: Comments now reload automatically after adding/deleting for immediate visibility
-- **Quote Status Updates**: Fixed status update failures caused by ID mapping issues:
-  - **Proper ID Resolution**: Status updates now correctly resolve quote ID to document ID
-  - **History Tracking**: Status changes are properly saved to Firebase subcollections
-  - **Cache Management**: Improved cache invalidation after status updates
-- **Quote History Display**: Implemented automatic history updates:
-  - **Subcollection Storage**: Each status change is stored as a separate document in `statusHistory` subcollection
-  - **Real-time Loading**: History loads automatically with quotations and updates after changes
-  - **Chronological Order**: History entries are sorted by date (most recent first)
+  * New utility module (`/src/utils/formatNumber.ts`) with Colombian locale support.
+  * Business logic functions: `calculatePriceWithIncrease()`, `calculatePriceWithIva()`, `formatPriceWithBusinessLogic()`.
+  * Validation functions: `isValidPrice()` and `parseFormattedNumber()`.
+  * All prices now display as `$1.095.300` (Colombian peso format with thousands separators).
 
-### Changed
-- **Reordered quantity table columns**: Changed the order of columns in the product quantity table to show "Fecha Estimada" before "Última Actualización" for better information hierarchy when products are in transit.
-- Normalized all user emails to lowercase across the application to prevent case-sensitivity conflicts.
-- Authentication and user validation in Firestore now use the Firebase Auth UID (`id` field) instead of email to avoid email casing issues.
-- **Quote Navigation**: Updated AdvancedQuotesSection to use router navigation instead of modal emit for better UX
+* **Quote Detail Page Migration**
 
-### Added
-- **Advanced Quote Management System**: Complete overhaul of the quotation management system with enhanced features:
-  - **Expanded Quote Status**: Added 8 comprehensive status levels (Pending, In Review, Quoted, Negotiating, Approved, Completed, Cancelled, Expired)
-  - **Advanced Quote Fields**: Priority levels, assigned users, due dates, estimated/actual values, tags, source tracking, follow-up dates
-  - **Quote Comments System**: Internal and client-facing comments with timestamps and user attribution
-  - **Status History Tracking**: Complete audit trail of status changes with user attribution and notes
-  - **Advanced Filtering**: Search by client, email, product, status, priority, date ranges with real-time results
-  - **Dual View Modes**: Table and card views for different workflow preferences
-  - **Real-time Statistics**: Conversion rates, average values, status distribution, priority breakdown
-  - **Inline Editing**: Quick edit capabilities for priority, values, notes, and custom fields
-  - **Export Functionality**: Filtered data export to CSV with customizable date ranges and filters
-  - **Backend Services**: Complete Firebase integration with caching, logging, and error handling
-  - **Advanced Composables**: Reusable business logic with `useAdvancedQuotes` composable
-  - **Enhanced Store**: Extended `useQuoteStore` with new advanced functions and statistics
-  - **Complete UI Integration**: New admin section with sidebar navigation and modal system
-  - **Documentation**: Comprehensive user guide with technical specifications and workflows
-  - **Bug Fixes**: Corrected Firebase document ID references and replaced Material Icons with compatible icon set
+  * Added `/admin/quotes/:id` route for direct access to individual quotations.
+  * Dedicated full-page interface with tabs for Details, Comments, and History.
+  * Unique URLs for bookmarking and sharing.
+  * Real-time history updates and improved visual feedback.
+  * Breadcrumb navigation with back button to admin panel.
 
-### Fixed
-- **Advanced Quote Modal Issues**: Resolved multiple critical issues in the advanced quotation modal:
-  - **Button Visibility**: Fixed cancel/delete buttons in client and internal notes sections that were not visible due to incorrect icon references (`close` → `cancel`)
-  - **Comment Reactivity**: Fixed comments not appearing immediately after adding by implementing forced reactivity with new object references in AdminView handlers
-  - **ESC Key Functionality**: Added keyboard event listener to close modal with ESC key, including proper cleanup and body overflow management
-  - **Modal Header**: Simplified problematic header by removing complex badge system and replacing with clean title and native close button
-  - **TypeScript Errors**: Fixed type casting issues in select elements with proper HTMLSelectElement type assertions
-  - **URL Quote Navigation**: Implemented complete URL-based quote navigation system allowing direct access to specific quotes via `&quoteId=` parameter in URLs, enabling email links to open specific quotations automatically
-- **Quote System Navigation**: Streamlined quotation navigation by removing duplicate "Cotizaciones" button and renaming "Cotizaciones Avanzadas" to "Cotizaciones" as the single entry point
-- **Quote Display Preferences**: Changed default view mode from table to cards view for better visual experience in quotation management
-- **Client Notes Integration**: Added optional client notes field in quote submission form, allowing customers to provide additional context when requesting quotations
-- **Hidden users functionality**: Added `isHidden` field to user records to create users that don't appear in admin listings. Hidden users are filtered out from all user lists while maintaining authentication functionality.
-- **Last login tracking for users**: Added `lastLogin` field to user records that automatically updates when users log in, with display in the admin users table showing relative time since last access. Includes automatic migration for existing users using their creation date as initial last login.
-- **Copy email functionality in admin users table**: Added copy button next to each user's email in the admin users table to quickly copy emails to clipboard with visual feedback notifications.
-- **Password reset functionality for admin users**: Added "Forgot Password" button in the admin users section that sends password recovery emails using Firebase Auth's `sendPasswordResetEmail` function.
-- Lowercasing safeguards in the following flows/components:
-  - Auth login in `src/store/useAuthStore.ts` forces `email.toLowerCase()` before calling Firebase Auth.
-  - User creation in `src/services/firebase/usersFirebase.ts` saves emails in lowercase.
-  - User updates in `src/services/firebase/usersFirebase.ts` convert `email` to lowercase when present.
-  - Quotes flow (`src/store/useQuoteStore.ts`) stores `userEmail` and email sent to EmailJS in lowercase.
-  - `src/store/useUserStore.ts` normalizes all fetched users' emails to lowercase for backward compatibility with historical data.
+* **Advanced Quote Management System**
 
-### Fixed
-- **Admin session not preserved when creating users**: Fixed issue where creating a new user would automatically log out the admin and log in as the newly created user. Now uses a secondary Firebase Auth instance to create users without affecting the current admin session.
-- **Primary color not updating on user login**: Fixed issue where the primary color would remain stuck on the previous user's color when logging in with a different user. Added watchers to automatically update colors when authentication state or user data changes.
-- **Admin routing with query parameters**: Fixed issue where accessing admin with specific tab query parameters (e.g., `/admin?tab=our-clients`) would always redirect to `quotes` tab. Now properly respects the requested tab for admin users and redirects non-admin users to `quotes` tab only.
-- Inconsistent lookups where comparisons used the raw email value, leading to mismatches when Auth returned different casing. Updated to compare against `authStore.user?.email?.toLowerCase()` in:
-  - `src/App.vue` (theme color resolution)
-  - `src/components/UI/RgNavbar.vue` and `src/components/UI/RgFooter.vue` (current user logo)
-  - `src/views/ProductView.vue` and `src/components/Quote/QuoteModal.vue` (price increase calculation)
-  - `src/components/Quote/QuoteCart.vue` (button color)
-  - `src/composable/admin/useUserAdmin.ts` and `src/components/Admin/AdminSidebar.vue` (admin context)
-  - `src/views/AdminView.vue` and `src/router/index.ts` (admin guard and role checks)
+  * Expanded statuses: Pending, In Review, Quoted, Negotiating, Approved, Completed, Cancelled, Expired.
+  * New fields: priority levels, assigned users, due dates, estimated/actual values, tags, source tracking, follow-up dates.
+  * Comments system (internal + client-facing) with timestamps and user attribution.
+  * Full audit trail of status changes with notes.
+  * Advanced filtering (by client, email, product, status, etc.).
+  * Dual view modes (table & cards).
+  * Real-time statistics and conversion metrics.
+  * Inline editing for quick updates.
+  * Export to CSV with filters.
+  * Firebase integration with caching, logging, and error handling.
+  * New `useAdvancedQuotes` composable and extended `useQuoteStore`.
+  * Complete UI integration with sidebar navigation and modal system.
+  * Documentation included.
+
+* **Admin User Enhancements**
+
+  * Hidden users (`isHidden` field) that don’t appear in listings but keep authentication.
+  * Last login tracking with display in admin user table.
+  * Copy email button with clipboard + notifications.
+  * Password reset button for admin users via Firebase Auth.
+
+## ♻️ Changed
+
+* **Price Display Standardization**
+
+  * All product, quotation, and modal components updated to use centralized formatting.
+  * Preserved logic: user authentication, price increases, IVA toggle, and stock validation.
+
+* **Advanced Quotes Interface Optimization**
+
+  * Simplified header in `AdvancedQuotesSection.vue`.
+  * Compact actions bar with results count + essential actions.
+  * Removed obsolete buttons (“Complete” and “Delete”) now handled in detail page.
+  * Consistent navigation: admin redirects to `/admin?tab=advanced-quotes`.
+  * Code cleanup: removed unused enums and functions.
+
+* **Quote Navigation Improvements**
+
+  * AdvancedQuotesSection now uses router navigation instead of modal emit.
+  * Default view mode changed from table → cards.
+  * “Cotizaciones Avanzadas” renamed to “Cotizaciones” (single entry point).
+
+* **User & Authentication Standardization**
+
+  * All user emails normalized to lowercase.
+  * Firestore validation now uses Firebase Auth UID instead of email.
+  * Safeguards in Auth store, user creation/update, quotes flow, and admin context.
+  * Updated comparisons across app to always use lowercase emails.
+
+* **Quantity Table**
+
+  * Reordered columns: “Fecha Estimada” now appears before “Última Actualización”.
+
+## 🛠 Fixed
+
+* **Price Formatting Issues**
+
+  * Fixed inconsistent formats (`$3356` vs `$3.356`).
+  * Removed browser-dependent locale differences.
+  * Consolidated duplicate logic into utilities.
+
+* **Admin Navigation**
+
+  * Fixed redirects after login → advanced quotes.
+  * Navbar admin link now points to advanced quotes.
+  * QuoteDetailView back button and errors return to advanced quotes.
+  * AdminHeader hidden on advanced quotes to avoid UI duplication.
+
+* **Quote Comments & Status**
+
+  * Fixed ID mismatches between quote ID and Firebase document ID.
+  * Corrected Firebase subcollection access for comments and history.
+  * Auto-reload of comments after add/delete.
+  * Status updates properly saved to history and cache invalidation improved.
+  * History entries load automatically in chronological order.
+
+* **Advanced Quote Modal**
+
+  * Fixed missing icons (`close` → `cancel`) for cancel/delete buttons.
+  * Comments now reactive and update instantly.
+  * ESC key closes modal properly with cleanup.
+  * Simplified header with clean title + native close button.
+  * Fixed TypeScript select element casting errors.
+  * Implemented URL-based navigation (`&quoteId=`) for direct access via email links.
+
+* **Admin System Issues**
+
+  * Creating a user no longer logs out the admin (secondary Firebase Auth instance).
+  * Fixed primary color not updating on user login.
+  * Admin routing now respects query params (`/admin?tab=...`).
+  * Fixed inconsistent lookups with email casing in App.vue, Navbar, Footer, ProductView, QuoteModal, QuoteCart, AdminSidebar, AdminView, and router guard.
 
 ## [1.6.0] - 11/09/2025
 ### Added

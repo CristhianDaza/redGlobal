@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal, TableEntry, QuoteItem } from '@/types/common.d'
 import { ref, computed, defineAsyncComponent, watch, onUnmounted } from 'vue'
-import { useAuthStore, useUserStore, useQuoteStore } from '@/store'
+import { useAuthStore, useQuoteStore, useUserStore } from '@/store'
 import { formatColor } from '@/utils'
+import { calculatePriceWithIncrease } from '@/utils/formatNumber'
 
 const RgModal = defineAsyncComponent(/* webpackChunkName: "rgModal" */() => import('@/components/UI/RgModal.vue'))
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
@@ -93,15 +94,11 @@ const removeQuantityField = (color: TableEntry, index: number) => {
   }
 }
 
-const calculatePriceWithIncrease = (price: number) => {
+const calculatePriceWithUserIncrease = (price: number) => {
   const currentUser = userStore.users.find(user => user.email === authStore.user?.email?.toLowerCase());
-
-  if (currentUser?.priceIncrease) {
-    const finalPrice = price * (1 + currentUser.priceIncrease / 100);
-    return Math.ceil(finalPrice);
-  }
-
-  return price;
+  const priceIncrease = currentUser?.priceIncrease || 0;
+  
+  return calculatePriceWithIncrease(price, priceIncrease);
 }
 
 const handleSubmit = async () => {
@@ -110,7 +107,7 @@ const handleSubmit = async () => {
 
   try {
     for (const { color, quantities } of selectedColors.value.values()) {
-      const unitPrice = calculatePriceWithIncrease(Number(color.price));
+      const unitPrice = calculatePriceWithUserIncrease(Number(color.price));
       
       for (const quantity of quantities) {
         if (quantity > 0) {

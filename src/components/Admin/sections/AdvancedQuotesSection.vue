@@ -4,6 +4,7 @@ import { defineAsyncComponent, computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import TvRelativeTime from '@todovue/tv-relative-time'
 import { useAdvancedQuotes } from '@/composable/admin/useAdvancedQuotes'
+import { formatPrice } from '@/utils/formatNumber'
 
 const RgButton = defineAsyncComponent(() => import('@/components/UI/RgButton.vue'))
 
@@ -230,7 +231,7 @@ onMounted(async () => {
           <span class="stat-icon-text">💰</span>
         </div>
         <div class="stat-info">
-          <h3>${{ stats.avgValue.toLocaleString() }}</h3>
+          <h3>{{ formatPrice(stats.avgValue) }}</h3>
           <p>Valor Promedio</p>
         </div>
       </div>
@@ -388,7 +389,7 @@ onMounted(async () => {
             <td>
               <div class="value-cell">
                 <strong v-if="quote.estimatedValue">
-                  ${{ quote.estimatedValue.toLocaleString() }}
+                  {{ formatPrice(quote.estimatedValue) }}
                 </strong>
                 <span v-else class="no-value">Sin estimar</span>
               </div>
@@ -443,7 +444,7 @@ onMounted(async () => {
               </div>
               <div v-if="quote.estimatedValue" class="info-item">
                 <span class="material-icons">attach_money</span>
-                <span>${{ quote.estimatedValue.toLocaleString() }}</span>
+                <span>{{ formatPrice(quote.estimatedValue) }}</span>
               </div>
             </div>
             
