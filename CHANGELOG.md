@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 🚀 Added
 
+* **Enhanced Loading Experience**
+
+  * Redesigned global loader (`RgLoaderGlobal.vue`) with modern aesthetic and multiple color animations.
+  * Multi-layered circular animations with soft pastel colors (rose, aqua, sky blue, cream).
+  * Dynamic loading text that cycles through different messages every 1.5 seconds.
+  * Clean backdrop with blur effect and semi-transparent background for professional appearance.
+  * Updated local loader (`RgLoader.vue`) with concentric rings and animated dots for consistency.
+  * Responsive design optimized for all device sizes.
+  * Smooth animations using CSS transforms for optimal performance.
+
 * **Advisor User Role System**
 
   * New user role `ADVISOR` added to the system with specific permissions and restrictions.
