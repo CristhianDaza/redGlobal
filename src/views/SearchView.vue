@@ -7,7 +7,6 @@ import { useProductsStore } from '@/store/';
 import { useIsMobile } from "@/composable";
 
 const RgCard = defineAsyncComponent(/* webpackChunkName: "rgCard" */() => import('@/components/UI/RgCard.vue'));
-const RgEmptyState = defineAsyncComponent(/* webpackChunkName: "rgEmptyState" */() => import('@/components/UI/RgEmptyState.vue'));
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
 const RgLoader = defineAsyncComponent(/* webpackChunkName: "rgLoader" */() => import('@/components/UI/RgLoader.vue'));
 
@@ -88,14 +87,33 @@ const handlePageSizeChange = (event: Event) => {
 };
 
 const pageSizeOptions = computed(() => {
-  const options: number[] = [];
+  const options: { value: number; label: string }[] = [];
+  const totalProducts = productsLength.value;
+  
+  if (totalProducts === 0) {
+    return [
+      { value: 16, label: '16' },
+      { value: 32, label: '32' },
+      { value: 48, label: '48' },
+      { value: 64, label: '64' }
+    ];
+  }
+  
   let size = 16;
-
-  while (size <= 64) {
-    options.push(size);
+  
+  while (size <= Math.min(64, totalProducts)) {
+    options.push({ value: size, label: size.toString() });
     size += 16;
   }
 
+  const lastOption = options[options.length - 1];
+  if (totalProducts > lastOption.value) {
+    options.push({ 
+      value: totalProducts, 
+      label: `Todos (${totalProducts})` 
+    });
+  }
+  
   return options;
 });
 
@@ -151,140 +169,290 @@ watch(
 </script>
 
 <template>
-  <div class="search">
-    <template v-if="isLoading">
-      <RgLoader>Buscando productos...</RgLoader>
-    </template>
-    <template v-else-if="productsLength > 0">
-      <div class="search__container">
-        <div class="search__products">
-          <router-link
-            v-for="product in productsToShow"
-            :key="product.id"
-            :to="{ name: 'product', params: { id: product?.id } }"
-          >
-            <RgCard
-              :products-view="product"
-            />
-          </router-link>
+  <div class="search-view">
+    <div class="search-section">
+      <div class="section-header">
+        <h2>
+          <span class="material-icons">search</span>
+          Resultados de Búsqueda
+        </h2>
+        <p class="section-description" v-if="searchQuery">
+          Mostrando resultados para: <strong>"{{ searchQuery }}"</strong>
+        </p>
+        <p class="section-description" v-else>
+          Explora nuestro catálogo completo de productos promocionales
+        </p>
+      </div>
+
+      <template v-if="isLoading">
+        <div class="loading-section">
+          <div class="loading-container">
+            <RgLoader>Buscando productos...</RgLoader>
+            <p class="loading-text">Explorando nuestro catálogo para ti...</p>
+          </div>
         </div>
-        <div class="search__pagination-container">
-          <div class="search__pagination">
+      </template>
+
+      <template v-else-if="productsLength > 0">
+        <div class="results-info">
+          <div class="results-summary">
+            <div class="results-count">
+              <span class="material-icons">inventory_2</span>
+              <span class="count-text">
+                <strong>{{ productsLength }}</strong> productos encontrados
+              </span>
+            </div>
+            <div class="view-options">
+              <label for="pageSize" class="view-label">
+                <span class="material-icons">visibility</span>
+                Ver:
+              </label>
+              <select
+                id="pageSize"
+                v-model="pageSize"
+                class="page-size-select"
+                @change="handlePageSizeChange"
+              >
+                <option v-for="option in pageSizeOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+              <span class="view-suffix">por página</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="products-container">
+          <div class="products-grid">
+            <router-link
+              v-for="product in productsToShow"
+              :key="product.id"
+              :to="{ name: 'product', params: { id: product?.id } }"
+              class="product-link"
+            >
+              <div class="product-card-wrapper">
+                <RgCard :products-view="product" />
+              </div>
+            </router-link>
+          </div>
+        </div>
+
+        <!-- Información adicional cuando se muestran todos los productos -->
+        <div class="info-section" v-if="pageSize >= productsLength && productsLength > 16">
+          <div class="all-products-info">
+            <span class="material-icons">done_all</span>
+            <span>Mostrando todos los <strong>{{ productsLength }}</strong> productos encontrados</span>
+          </div>
+        </div>
+
+        <div class="pagination-section" v-if="totalPages > 1 && pageSize < productsLength">
+          <div class="pagination-info">
+            <span class="material-icons">info</span>
+            <span v-if="pageSize >= productsLength">
+              Mostrando todos los {{ productsLength }} productos
+            </span>
+            <span v-else>
+              Página {{ currentPage }} de {{ totalPages }} • Mostrando {{ Math.min(pageSize, productsLength - (currentPage - 1) * pageSize) }} de {{ productsLength }} productos
+            </span>
+          </div>
+          
+          <div class="pagination-controls">
             <RgButton
               :disabled="currentPage === 1"
               @click="handlePageChange(currentPage - 1)"
               icon="arrow-left"
+              outlined
               type="icon"
+              :customStyle="{
+                borderColor: 'var(--primary-color)',
+                color: 'var(--primary-color)',
+              }"
             />
+            
             <div class="page-numbers">
               <RgButton
                 v-for="page in getPageNumbers"
                 :key="page"
                 :class="{ active: page === currentPage }"
                 @click="handlePageChange(page)"
-                :custom-style="getButtonStyle(page)"
+                :customStyle="getButtonStyle(page)"
               >
                 {{ page }}
               </RgButton>
             </div>
+            
             <RgButton
               :disabled="currentPage === totalPages"
               @click="handlePageChange(currentPage + 1)"
               icon="arrow-right"
               type="icon"
+              :customStyle="{
+                backgroundColor: 'var(--primary-color)',
+                color: '#ffffff',
+              }"
             />
           </div>
-          <div class="page-size">
-            <label for="pageSize">Ver:</label>
-            <select
-              id="pageSize"
-              v-model="pageSize"
-              class="page-size-select"
-              @change="handlePageSizeChange"
+        </div>
+      </template>
+
+      <template v-else>
+        <div class="empty-state">
+          <div class="empty-icon">
+            <span class="material-icons">search_off</span>
+          </div>
+          <h3>No encontramos productos</h3>
+          <p v-if="searchQuery">
+            No encontramos productos que coincidan con <strong>"{{ searchQuery }}"</strong>.
+            Prueba con otras palabras clave o explora nuestro catálogo completo.
+          </p>
+          <p v-else>
+            No hay productos disponibles en este momento.
+          </p>
+          <div class="empty-actions">
+            <RgButton
+              icon="filter"
+              @click="() => router.push('/products')"
+              :customStyle="{
+                backgroundColor: 'var(--primary-color)',
+                color: '#ffffff',
+              }"
             >
-              <option
-                v-for="size in pageSizeOptions"
-                :key="size"
-                :value="size"
-              >
-                {{ size }}
-              </option>
-            </select>
-            <span>por página</span>
-            <span class="pagination-info">
-              • Página {{ currentPage }} de {{ totalPages }}
-            </span>
+              Ver Productos
+            </RgButton>
           </div>
         </div>
-      </div>
-    </template>
-    <template v-else>
-      <RgEmptyState
-        :title="'No encontramos productos'"
-        :message="'Lo sentimos, no encontramos productos que coincidan con tu búsqueda. Prueba con otras palabras clave o explora nuestro catálogo.'"
-        :show-actions="true"
-      />
-    </template>
+      </template>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.search {
-  padding: 0 2rem;
-  min-height: calc(100vh - 300px);
+.search-view {
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.search__container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+.search-section {
+  padding: 2rem;
+  max-width: 1400px;
   margin: 0 auto;
-  width: 100%;
-  max-width: 1200px;
 }
 
-.search__pagination-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  margin: 2rem 0;
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
 }
 
-.search__pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.page-numbers {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.pagination-info {
-  margin-left: 0.5rem;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.page-size {
+.section-header h2 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  color: #2d3748;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+.section-header .material-icons {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+}
+
+.section-description {
+  color: #718096;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.loading-section {
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.loading-container {
+  max-width: 400px;
+  margin: 0 auto;
+  background: white;
+  padding: 3rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.loading-text {
+  margin-top: 1rem;
+  color: #718096;
+  font-size: 1rem;
+}
+
+.results-info {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.results-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+.results-count {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #2d3748;
+  font-size: 1.1rem;
+}
+
+.results-count .material-icons {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+}
+
+.count-text {
+  font-weight: 500;
+}
+
+.view-options {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   font-size: 0.9rem;
-  color: #666;
+  color: #4a5568;
+}
+
+.view-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.view-label .material-icons {
+  font-size: 16px;
+  color: var(--primary-color);
 }
 
 .page-size-select {
-  padding: 0.3rem 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
   background-color: #fff;
-  color: #333;
+  color: #374151;
   font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
   outline: none;
   transition: all 0.3s ease;
@@ -296,129 +464,216 @@ watch(
 
 .page-size-select:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
 }
 
-.search__products {
+.view-suffix {
+  font-weight: 500;
+}
+
+.products-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-card-wrapper {
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.product-card-wrapper:hover {
+  transform: translateY(-4px);
+}
+
+.info-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.all-products-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.all-products-info .material-icons {
+  color: #10b981;
+  font-size: 1.25rem;
+}
+
+.pagination-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4a5568;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.pagination-info .material-icons {
+  color: var(--primary-color);
+  font-size: 16px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
   gap: 1rem;
-  padding: 1rem;
-  align-items: stretch;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-:deep(.page-numbers .tv-btn) {
-  min-width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: 8px;
-  background: #f8f9fa;
-  color: #495057;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+.page-numbers {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-:deep(.page-numbers .tv-btn::before) {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.5s;
-  pointer-events: none;
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
 }
 
-:deep(.page-numbers .tv-btn:hover::before) {
-  left: 100%;
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #a0aec0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
 }
 
-:deep(.search__pagination .tv-btn[type="icon"]) {
-  min-width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: 8px;
-  background: #f8f9fa;
-  color: #495057;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+.empty-icon .material-icons {
+  font-size: 2.5rem;
 }
 
-:deep(.search__pagination .tv-btn[type="icon"]::before) {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.5s;
-  pointer-events: none;
+.empty-state h3 {
+  color: #2d3748;
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
-:deep(.search__pagination .tv-btn[type="icon"]:hover::before) {
-  left: 100%;
+.empty-state p {
+  color: #718096;
+  margin: 0 0 2rem 0;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
 }
 
-:deep(.search__pagination .tv-btn[type="icon"]:hover:not(:disabled)) {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
-  transform: translateY(-1px);
+.empty-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
 }
 
-:deep(.search__pagination .tv-btn[type="icon"]:active:not(:disabled)) {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(255, 68, 68, 0.2);
-}
-
-:deep(.page-numbers .tv-btn.active) {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
-  transform: translateY(-1px);
-}
-
-:deep(.page-numbers .tv-btn:hover:not(.active):not(:disabled)) {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
-  transform: translateY(-1px);
-}
-
-:deep(.page-numbers .tv-btn:active:not(.active):not(:disabled)) {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(255, 68, 68, 0.2);
-}
-
-:deep(.tv-btn:disabled) {
-  opacity: 0.4;
-  cursor: not-allowed;
-  background: #f8f9fa !important;
-  color: #6c757d !important;
-  border-color: #e9ecef !important;
-  box-shadow: none !important;
-  transform: none !important;
+@media (max-width: 1024px) {
+  .results-summary {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
-  .search {
+  .search-section {
     padding: 1rem;
   }
-
-  .search__products {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  
+  .section-header {
+    padding: 1.5rem;
+  }
+  
+  .section-header h2 {
+    font-size: 2rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .products-container {
+    padding: 1.5rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1.5rem;
+  }
+  
+  .pagination-controls {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .view-options {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-header h2 {
+    font-size: 1.75rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .results-summary {
+    padding: 1rem;
+  }
+  
+  .pagination-section {
+    padding: 1.5rem;
   }
 }
 </style>
