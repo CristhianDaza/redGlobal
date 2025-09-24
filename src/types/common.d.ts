@@ -276,4 +276,12 @@ export interface Advisor {
   telefono: string;
 }
 
-export type tabs = 'menu' | 'users' | 'quotes' | 'advanced-quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color' | 'advisors' | 'privacy-policy';
+export interface MissionVisionImage {
+  id: string;
+  type: 'mission' | 'vision';
+  imageUrl: string;
+  uploadedAt: string;
+  uploadedBy: string;
+}
+
+export type tabs = 'menu' | 'users' | 'quotes' | 'advanced-quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color' | 'advisors' | 'privacy-policy' | 'mission-vision';

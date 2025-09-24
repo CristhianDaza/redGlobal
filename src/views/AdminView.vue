@@ -31,6 +31,7 @@ const OurClientsSection = defineAsyncComponent(/* webpackChunkName: "ourClientsS
 const ColorSection = defineAsyncComponent(/* webpackChunkName: "colorSection" */() => import('@/components/Admin/sections/ColorSection.vue'));
 const AdvisorsSection = defineAsyncComponent(/* webpackChunkName: "advisorsSection" */() => import('@/components/Admin/sections/AdvisorsSection.vue'));
 const PrivacyPolicySection = defineAsyncComponent(/* webpackChunkName: "privacyPolicySection" */() => import('@/components/Admin/sections/PrivacyPolicySection.vue'));
+const MissionVisionSection = defineAsyncComponent(/* webpackChunkName: "missionVisionSection" */() => import('@/components/Admin/sections/MissionVisionSection.vue'));
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -291,11 +292,17 @@ onMounted(async () => {
         return;
       }
 
+      if (route.name === 'admin-mission-vision') {
+        activeTab.value = 'mission-vision';
+        router.replace({ query: { tab: 'mission-vision' } });
+        return;
+      }
+
       const queryTab = route.query.tab as tabs;
-      const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors', 'privacy-policy'];
+      const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors', 'privacy-policy', 'mission-vision'];
 
       if (queryTab && validTabs.includes(queryTab)) {
-        if (queryTab === 'privacy-policy') {
+        if (queryTab === 'privacy-policy' || queryTab === 'mission-vision') {
           if (isAdmin.value) {
             activeTab.value = queryTab;
             return;
@@ -357,8 +364,8 @@ onMounted(async () => {
   }
 });
 
-watch(activeTab, (newTab) => {
-  const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors', 'privacy-policy'];
+watch(() => activeTab.value, (newTab) => {
+  const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors', 'privacy-policy', 'mission-vision'];
   const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
   if (tab && route.query.tab !== tab) {
     router.replace({ query: { tab: tab } });
@@ -419,6 +426,7 @@ const activeTabTitle: Record<tabs, string> = {
   color: 'Color Principal',
   advisors: 'Asesores',
   'privacy-policy': 'Políticas de Privacidad',
+  'mission-vision': 'Misión y Visión',
 }
 
 const handleUpdateProducts = () => {
@@ -529,8 +537,8 @@ useHead({
 
 watch(() => route.query.tab, (newTab) => {
   
-  if (newTab && ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color', 'advisors', 'privacy-policy'].includes(newTab as tabs)) {
-    if (newTab === 'privacy-policy') {
+  if (newTab && ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color', 'advisors', 'privacy-policy', 'mission-vision'].includes(newTab as tabs)) {
+    if (newTab === 'privacy-policy' || newTab === 'mission-vision') {
       if (isAdmin.value) {
         activeTab.value = newTab as tabs;
       } else {
@@ -552,6 +560,10 @@ watch(() => route.name, (newRouteName) => {
     activeTab.value = 'privacy-policy';
     router.replace({ query: { tab: 'privacy-policy' } });
   }
+  if (newRouteName === 'admin-mission-vision') {
+    activeTab.value = 'mission-vision';
+    router.replace({ query: { tab: 'mission-vision' } });
+  }
 });
 
 watch(() => isAdmin.value, (newIsAdmin) => {
@@ -559,6 +571,9 @@ watch(() => isAdmin.value, (newIsAdmin) => {
     const queryTab = route.query.tab as tabs;
     if (queryTab === 'privacy-policy') {
       activeTab.value = 'privacy-policy';
+    }
+    if (queryTab === 'mission-vision') {
+      activeTab.value = 'mission-vision';
     }
   }
 });
@@ -678,6 +693,10 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
 
           <PrivacyPolicySection
             v-if="activeTab === 'privacy-policy' && isAdmin"
+          />
+
+          <MissionVisionSection
+            v-if="activeTab === 'mission-vision' && isAdmin"
           />
         </div>
 

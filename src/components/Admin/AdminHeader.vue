@@ -77,7 +77,7 @@ const disabled = computed(() => {
 </script>
 
 <template>
-  <header class="main-header" v-if="activeTab !== 'advanced-quotes' && activeTab !== 'privacy-policy'">
+  <header class="main-header" v-if="activeTab !== 'advanced-quotes' && activeTab !== 'privacy-policy' && activeTab !== 'mission-vision'">
     <h1>
       {{ activeTabHeader }}
     </h1>
