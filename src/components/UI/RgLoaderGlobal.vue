@@ -15,7 +15,7 @@ let textInterval: number
 
 onMounted(() => {
   document.body.style.overflow = 'hidden'
-  
+
   textInterval = setInterval(() => {
     currentTextIndex.value = (currentTextIndex.value + 1) % loadingTexts.length
     currentText.value = loadingTexts[currentTextIndex.value]
@@ -45,12 +45,12 @@ onUnmounted(() => {
         <div class="dot dot-2"></div>
         <div class="dot dot-3"></div>
       </div>
-      
+
       <div class="loading-text">
         {{ currentText }}
       </div>
-      
-      <div class="brand-text">Red Global</div>
+
+      <div class="brand-text">Red Global Promocional</div>
     </div>
   </div>
 </template>
@@ -227,37 +227,37 @@ onUnmounted(() => {
     width: 60px;
     height: 60px;
   }
-  
+
   .circle-1 {
     width: 60px;
     height: 60px;
   }
-  
+
   .circle-2 {
     width: 45px;
     height: 45px;
     top: 7.5px;
     left: 7.5px;
   }
-  
+
   .circle-3 {
     width: 30px;
     height: 30px;
     top: 15px;
     left: 15px;
   }
-  
+
   .circle-4 {
     width: 15px;
     height: 15px;
     top: 22.5px;
     left: 22.5px;
   }
-  
+
   .loading-text {
     font-size: 1rem;
   }
-  
+
   .brand-text {
     font-size: 0.8rem;
   }
