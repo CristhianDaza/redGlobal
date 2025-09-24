@@ -8,7 +8,6 @@ import { useForm, rules } from '@/composable/useForm.ts';
 
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'));
 const RgFormField = defineAsyncComponent(/* webpackChunkName: "rgFormField" */() => import('@/components/UI/RgFormField.vue'));
-const InfoCard = defineAsyncComponent(/* webpackChunkName: "infoCard" */() => import('@/components/Contact/InfoCard.vue'));
 
 const {
   form,
@@ -94,154 +93,352 @@ useHead({
 </script>
 
 <template>
-  <div class="contact-page">
-    <div class="contact-header">
-      <h1>Contáctanos</h1>
-      <p class="subtitle">Estamos aquí para ayudarte con tus necesidades promocionales</p>
-    </div>
-
-    <div class="contact-content">
-      <div class="contact-info">
-        <InfoCard
-          v-for="card in contactCards"
-          :key="card.title"
-          :icon="card.icon"
-          :title="card.title"
-          :lines="card.lines"
-        />
+  <div class="contact-view">
+    <div class="contact-section">
+      <div class="section-header">
+        <h2>
+          <span class="material-icons">contact_support</span>
+          Contáctanos
+        </h2>
+        <p class="section-description">
+          Estamos aquí para ayudarte con tus necesidades promocionales. Contáctanos y recibe atención personalizada.
+        </p>
       </div>
 
-      <div class="contact-form-container">
-        <form @submit.prevent="handleSubmit" class="contact-form">
-          <h2>Envíanos un mensaje</h2>
+      <div class="contact-content">
+        <div class="contact-info">
+          <div class="info-header">
+            <h3>
+              <span class="material-icons">info</span>
+              Información de Contacto
+            </h3>
+            <p>Múltiples canales para comunicarte con nosotros</p>
+          </div>
+          
+          <div class="info-cards">
+            <div v-for="card in contactCards" :key="card.title" class="info-card">
+              <div class="card-icon">
+                <span class="material-icons">{{ card.icon }}</span>
+              </div>
+              <div class="card-content">
+                <h4>{{ card.title }}</h4>
+                <div class="card-lines">
+                  <p v-for="line in card.lines" :key="line" class="card-line">{{ line }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <div class="form-grid">
-            <RgFormField
-              v-model="form.name"
-              name="name"
-              label="Nombre completo"
-              placeholder="Tu nombre"
-              :errors="errors.name"
-              :touched="touched.has('name')"
-              required
-              @blur="touchField('name')"
-            />
-
-            <RgFormField
-              v-model="form.email"
-              name="email"
-              type="email"
-              label="Correo electrónico"
-              placeholder="tu@email.com"
-              :errors="errors.email"
-              :touched="touched.has('email')"
-              required
-              @blur="touchField('email')"
-            />
-
-            <RgFormField
-              v-model="form.phone"
-              name="phone"
-              type="tel"
-              label="Teléfono"
-              placeholder="Tu número de contacto"
-              :errors="errors.phone"
-              :touched="touched.has('phone')"
-              required
-              @blur="touchField('phone')"
-            />
-
-            <RgFormField
-              v-model="form.company"
-              name="company"
-              type="textarea"
-              label="Empresa"
-              placeholder="Nombre de tu empresa (opcional)"
-              :errors="errors.company"
-              :touched="touched.has('company')"
-              @blur="touchField('company')"
-            />
+        <div class="contact-form-section">
+          <div class="form-header">
+            <h3>
+              <span class="material-icons">send</span>
+              Envíanos un Mensaje
+            </h3>
+            <p>Completa el formulario y te responderemos pronto</p>
           </div>
 
-          <div class="form-field full-width">
-            <label for="message" class="form-label">
-              Mensaje
-              <span class="required">*</span>
-            </label>
-            <textarea
-              id="message"
-              v-model="form.message"
-              rows="4"
-              class="form-input"
-              placeholder="¿Cómo podemos ayudarte?"
-              :class="{ 'has-error': touched.has('message') && errors.message?.length }"
-              @blur="touchField('message')"
-            ></textarea>
-            <span v-if="touched.has('message') && errors.message?.length" class="error-message">
-              {{ errors.message[0] }}
-            </span>
-          </div>
+          <div class="form-container">
+            <form @submit.prevent="handleSubmit" class="contact-form">
+              <div v-if="showSuccessMessage" class="success-message">
+                <span class="material-icons">check_circle</span>
+                <span>Mensaje enviado exitosamente. Te contactaremos pronto.</span>
+              </div>
 
-          <div class="form-footer">
-            <RgButton
-              :text="isSubmitting ? 'Enviando...' : 'Enviar mensaje'"
-              :loading="isSubmitting"
-              :disabled="isSubmitting || !isValid"
-            />
+              <div class="form-grid">
+                <div class="form-group">
+                  <RgFormField
+                    v-model="form.name"
+                    name="name"
+                    label="Nombre completo"
+                    placeholder="Tu nombre"
+                    :errors="errors.name"
+                    :touched="touched.has('name')"
+                    required
+                    @blur="touchField('name')"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <RgFormField
+                    v-model="form.email"
+                    name="email"
+                    type="email"
+                    label="Correo electrónico"
+                    placeholder="tu@email.com"
+                    :errors="errors.email"
+                    :touched="touched.has('email')"
+                    required
+                    @blur="touchField('email')"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <RgFormField
+                    v-model="form.phone"
+                    name="phone"
+                    type="tel"
+                    label="Teléfono"
+                    placeholder="Tu número de contacto"
+                    :errors="errors.phone"
+                    :touched="touched.has('phone')"
+                    required
+                    @blur="touchField('phone')"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <RgFormField
+                    v-model="form.company"
+                    name="company"
+                    label="Empresa"
+                    placeholder="Nombre de tu empresa (opcional)"
+                    :errors="errors.company"
+                    :touched="touched.has('company')"
+                    @blur="touchField('company')"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="message" class="form-label">
+                  <span class="material-icons">message</span>
+                  Mensaje
+                  <span class="required">*</span>
+                </label>
+                <textarea
+                  id="message"
+                  v-model="form.message"
+                  rows="5"
+                  class="form-textarea"
+                  placeholder="¿Cómo podemos ayudarte? Describe tu proyecto o necesidad..."
+                  :class="{ 'has-error': touched.has('message') && errors.message?.length }"
+                  @blur="touchField('message')"
+                ></textarea>
+                <span v-if="touched.has('message') && errors.message?.length" class="error-message">
+                  <span class="material-icons">error</span>
+                  {{ errors.message[0] }}
+                </span>
+              </div>
+
+              <div class="form-actions">
+                <RgButton
+                  icon="calendar"
+                  :loading="isSubmitting"
+                  :disabled="isSubmitting || !isValid"
+                  :customStyle="{
+                    backgroundColor: 'var(--primary-color)',
+                    color: '#ffffff',
+                  }"
+                >
+                  {{ isSubmitting ? 'Enviando...' : 'Enviar Mensaje' }}
+                </RgButton>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.contact-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+.contact-view {
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.contact-header {
+.contact-section {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-header {
   text-align: center;
   margin-bottom: 3rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
 }
 
-.contact-header h1 {
+.section-header h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #2d3748;
   font-size: 2.5rem;
-  color: var(--primary-color);
-  margin-bottom: 1rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
 }
 
-.subtitle {
+.section-header .material-icons {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+}
+
+.section-description {
+  color: #718096;
   font-size: 1.1rem;
-  color: #64748b;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .contact-content {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr 1.5fr;
   gap: 3rem;
   align-items: start;
 }
 
 .contact-info {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.info-header {
+  padding: 2rem 2rem 1rem;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.info-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #2d3748;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.info-header .material-icons {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.info-header p {
+  color: #718096;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.info-cards {
+  padding: 2rem;
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
   gap: 1.5rem;
 }
 
-.contact-form-container {
-  background: white;
-  padding: 2rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f7fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
 }
 
-.contact-form h2 {
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+.card-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary-color), #4299e1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.card-content h4 {
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.card-lines {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.card-line {
+  color: #4a5568;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.contact-form-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.form-header {
+  padding: 2rem 2rem 1rem;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.form-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #2d3748;
   font-size: 1.5rem;
-  color: #1a202c;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.form-header .material-icons {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.form-header p {
+  color: #718096;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.form-container {
+  padding: 2rem;
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 12px;
   margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+.success-message .material-icons {
+  color: #10b981;
 }
 
 .form-grid {
@@ -251,20 +448,28 @@ useHead({
   margin-bottom: 1.5rem;
 }
 
-.form-field {
+.form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
 }
 
-.form-field.full-width {
+.form-group.full-width {
   grid-column: 1 / -1;
 }
 
 .form-label {
-  font-size: 0.875rem;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-label .material-icons {
+  font-size: 16px;
+  color: var(--primary-color);
 }
 
 .required {
@@ -272,64 +477,102 @@ useHead({
   margin-left: 0.25rem;
 }
 
-.form-input {
+.form-textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  transition: all 0.2s;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 120px;
+  transition: all 0.3s ease;
 }
 
-.form-input:focus {
+.form-textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
 }
 
-.form-input.has-error {
+.form-textarea.has-error {
   border-color: #dc2626;
 }
 
 .error-message {
-  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
   color: #dc2626;
+  margin-top: 0.5rem;
+  font-weight: 500;
 }
 
-.form-footer {
+.error-message .material-icons {
+  font-size: 14px;
+}
+
+.form-actions {
   margin-top: 2rem;
   display: flex;
   justify-content: flex-end;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+@media (max-width: 1024px) {
+  .contact-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
   }
 }
 
 @media (max-width: 768px) {
-  .contact-content {
-    grid-template-columns: 1fr;
+  .contact-section {
+    padding: 1rem;
   }
-
-  .contact-info {
-    grid-template-columns: repeat(2, 1fr);
+  
+  .section-header {
+    padding: 1.5rem;
   }
-
+  
+  .section-header h2 {
+    font-size: 2rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
   .form-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .info-cards {
+    padding: 1.5rem;
+  }
+  
+  .form-container {
+    padding: 1.5rem;
+  }
+  
+  .info-header,
+  .form-header {
+    padding: 1.5rem 1.5rem 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .contact-info {
-    grid-template-columns: 1fr;
+  .section-header h2 {
+    font-size: 1.75rem;
+  }
+  
+  .info-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .card-icon {
+    align-self: center;
   }
 }
 </style>
