@@ -1,6 +1,7 @@
 import { createWebHistory, createRouter, RouteRecordRaw } from 'vue-router';
 import { useAuthStore, useUserStore } from '@/store';
 import { waitUntil } from '@/utils/waitUntil'
+import { usersFirebase } from '@/services/firebase/usersFirebase'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -96,14 +97,34 @@ router.beforeEach(async (to, _, next) => {
       await userStore.getUsers()
     }
 
-    const currentUser = userStore.users.find(u => u.email === authStore.user?.email?.toLowerCase())
-    if (!currentUser?.active) {
+    let currentUser = userStore.users.find(u => u.email === authStore.user?.email?.toLowerCase())
+
+    // Intentar con tempHiddenUser si no se encontró en la lista visible
+    if (!currentUser && authStore.tempHiddenUser) {
+      currentUser = authStore.tempHiddenUser
+    }
+
+    // Búsqueda adicional en Firestore incluyendo ocultos si aún no se encontró
+    if (!currentUser && authStore.user?.email) {
+      try {
+        const allUsers = await usersFirebase.getUsers(true)
+        currentUser = allUsers.find(u => u.email === authStore.user!.email!.toLowerCase())
+      } catch (e) {
+        // si falla, continuar y permitir flujo (no forzar logout inmediato)
+      }
+    }
+
+    // Solo forzar logout si se encontró usuario y está explícitamente inactivo
+    if (currentUser && currentUser.active === false) {
       await authStore.logout()
       return next({ name: 'home' })
     }
 
+    // Si no se encontró usuario pero el auth ya pasó, permitir navegación (usuario oculto recién creado)
+
     if (to.meta.allowedRoles && Array.isArray(to.meta.allowedRoles)) {
-      if (!to.meta.allowedRoles.includes(currentUser.role)) {
+      const roleToCheck = currentUser?.role || authStore.userRole // fallback
+      if (!roleToCheck || !to.meta.allowedRoles.includes(roleToCheck)) {
         return next({ name: 'home' })
       }
     }

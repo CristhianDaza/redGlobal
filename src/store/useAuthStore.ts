@@ -22,6 +22,8 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null)
   loading.value = true
   const router = useRouter()
+  
+  const tempHiddenUser = ref<any>(null)
 
 onAuthStateChanged(auth, async (currentUser) => {
   if (currentUser) {
@@ -35,6 +37,7 @@ onAuthStateChanged(auth, async (currentUser) => {
       if (!userData.active) {
         await signOut(auth)
         user.value = null
+        tempHiddenUser.value = null
         NotificationService.push({
           title: 'Sesión cerrada',
           description: 'Tu cuenta ha sido desactivada. Contacta al administrador.',
@@ -44,7 +47,16 @@ onAuthStateChanged(auth, async (currentUser) => {
         loading.value = false
         return
       }
+      
+      if (userData.isHidden) {
+        tempHiddenUser.value = {
+          ...userData,
+          idDoc: userDocs.docs[0].id
+        };
+      }
     }
+  } else {
+    tempHiddenUser.value = null
   }
 
   user.value = currentUser
@@ -94,6 +106,13 @@ const login = async (email: string, password: string) => {
       return false
     }
 
+    if (userData.isHidden) {
+      tempHiddenUser.value = {
+        ...userData,
+        idDoc: userDocs.docs[0].id
+      };
+    }
+
     await usersFirebase.updateLastLogin(uid!)
 
     NotificationService.push({
@@ -128,6 +147,7 @@ const login = async (email: string, password: string) => {
       loading.value = true
       error.value = null
       await signOut(auth)
+      tempHiddenUser.value = null
       NotificationService.push({
         title: 'Cierre de sesión exitoso',
         description: 'Has cerrado sesión exitosamente',
@@ -154,7 +174,13 @@ const login = async (email: string, password: string) => {
 
   const userRole = computed(() => {
     if (!user.value) return null;
-    const currentUser = userStore.users.find(u => u.email === user.value?.email?.toLowerCase());
+    
+    let currentUser = userStore.users.find(u => u.email === user.value?.email?.toLowerCase());
+    
+    if (!currentUser && tempHiddenUser.value) {
+      return tempHiddenUser.value.role;
+    }
+    
     return currentUser?.role || null;
   })
 
@@ -172,7 +198,13 @@ const login = async (email: string, password: string) => {
 
   const currenLoggingUser = computed(() => {
     if (!user.value) return null
-    const currentUser = userStore.users.find(u => u.email === user.value?.email?.toLowerCase())
+    
+    let currentUser = userStore.users.find(u => u.email === user.value?.email?.toLowerCase())
+    
+    if (!currentUser && tempHiddenUser.value) {
+      return tempHiddenUser.value;
+    }
+    
     return currentUser || null
   })
 
@@ -187,6 +219,7 @@ const login = async (email: string, password: string) => {
     isAdmin,
     isAdvisor,
     canAccessQuotes,
-    currenLoggingUser
+    currenLoggingUser,
+    tempHiddenUser
   }
 })

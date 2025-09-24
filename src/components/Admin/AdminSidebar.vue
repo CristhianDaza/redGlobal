@@ -16,7 +16,9 @@ const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => im
 
 const currentUserName = computed(() => {
   const user = userStore.users.find(u => u.email === authStore.user?.email?.toLowerCase())
-  return user?.name || 'Usuario'
+  if (user) return user.name || 'Usuario'
+  if (authStore.tempHiddenUser) return authStore.tempHiddenUser.name || 'Usuario'
+  return 'Usuario'
 })
 </script>
 
@@ -205,7 +207,7 @@ const currentUserName = computed(() => {
   text-align: left;
   position: relative;
   outline: none;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.8),
     inset 0 -1px 0 rgba(0, 0, 0, 0.05);
@@ -227,7 +229,7 @@ const currentUserName = computed(() => {
   background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
   color: white;
   border: 2px solid var(--primary-color);
-  box-shadow: 
+  box-shadow:
     0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
     0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -245,7 +247,7 @@ const currentUserName = computed(() => {
 
 .nav-item:active {
   transform: translateY(-1px);
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
     0 1px 4px rgba(var(--primary-color-rgb, 0, 123, 255), 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -255,7 +257,7 @@ const currentUserName = computed(() => {
   background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
   color: white;
   border: 2px solid var(--primary-color);
-  box-shadow: 
+  box-shadow:
     0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
     0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -267,7 +269,7 @@ const currentUserName = computed(() => {
 
 .nav-item.active:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 8px 25px rgba(var(--primary-color-rgb, 0, 123, 255), 0.3),
     0 3px 10px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);

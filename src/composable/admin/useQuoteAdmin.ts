@@ -1,12 +1,13 @@
 import type { QuoteAdmin } from '@/types/common.d'
 import { QuoteStatus } from '@/types/common.d'
-import { ref, computed } from 'vue';
+import { ref, computed, type Ref } from 'vue';
 import * as XLSX from 'xlsx'
 import { useQuoteStore, useAuthStore } from '@/store';
 import { useRouter, useRoute } from 'vue-router';
 import { NotificationService } from '@/components/Notification/NotificationService.ts';
 
-export function useQuoteAdmin(isAdmin: boolean) {
+export function useQuoteAdmin(isAdmin: boolean | Ref<boolean>) {
+  const isAdminRef: Ref<boolean> = typeof isAdmin === 'object' ? isAdmin as Ref<boolean> : ref(isAdmin)
   const quoteStore = useQuoteStore();
   const authStore = useAuthStore();
   const router = useRouter();
@@ -21,7 +22,7 @@ export function useQuoteAdmin(isAdmin: boolean) {
 
   const filteredQuotes = computed(() => {
     const userEmail = authStore.user?.email
-    if (isAdmin) {
+    if (isAdminRef.value) {
       return quoteStore.quotes
     }
     return quoteStore.quotes.filter(quote => quote.userEmail === userEmail)
@@ -93,7 +94,7 @@ export function useQuoteAdmin(isAdmin: boolean) {
     const isPending = quote.status === QuoteStatus.PENDING
     const isCompleted = quote.status === QuoteStatus.COMPLETED
 
-    return (isCreator && isPending) || (isAdmin && isCompleted)
+    return (isCreator && isPending) || (isAdminRef.value && isCompleted)
   }
 
   const deleteAllCompletedQuotes = async () => {

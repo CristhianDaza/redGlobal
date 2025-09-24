@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
 import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useCarouselAdmin, useOurClientAdmin, useColorAdmin, useAdvisorsAdmin } from '@/composable';
 import { useHead } from '@vueuse/head';
+import { storeToRefs } from 'pinia'
 
 const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('@/components/Admin/MenuItemForm.vue'));
 const UserForm = defineAsyncComponent(/* webpackChunkName: "userForm" */() => import('@/components/Admin/UserForm.vue'));
@@ -34,6 +35,9 @@ const PrivacyPolicySection = defineAsyncComponent(/* webpackChunkName: "privacyP
 const MissionVisionSection = defineAsyncComponent(/* webpackChunkName: "missionVisionSection" */() => import('@/components/Admin/sections/MissionVisionSection.vue'));
 
 const authStore = useAuthStore();
+// Obtener refs reactivas del store (soporta admin oculto dinámico)
+const { isAdmin, isAdvisor, canAccessQuotes } = storeToRefs(authStore)
+
 const route = useRoute();
 const router = useRouter();
 const storeProducts = useProductsStore();
@@ -47,23 +51,22 @@ const handleTabChange = (tab: tabs) => {
   activeTab.value = tab;
 };
 
-const currentUser = computed(():UserFormData | undefined => {
-  return users.value.find(u => u.email === authStore.user?.email?.toLowerCase());
-})
+// Eliminado currentUser y computeds locales de roles para soportar usuarios ocultos
+// const currentUser = computed(():UserFormData | undefined => {
+//   return users.value.find(u => u.email === authStore.user?.email?.toLowerCase());
+// })
 
-const isAdmin = computed(() => {
-  if (!isAuthenticated.value) return false;
-  return currentUser.value?.role === 'admin';
-})
-
-const isAdvisor = computed(() => {
-  if (!isAuthenticated.value) return false;
-  return currentUser.value?.role === 'advisor';
-})
-
-const canAccessQuotes = computed(() => {
-  return isAdmin.value || isAdvisor.value;
-})
+// const isAdmin = computed(() => {
+//   if (!isAuthenticated.value) return false;
+//   return currentUser.value?.role === 'admin';
+// })
+// const isAdvisor = computed(() => {
+//   if (!isAuthenticated.value) return false;
+//   return currentUser.value?.role === 'advisor';
+// })
+// const canAccessQuotes = computed(() => {
+//   return isAdmin.value || isAdvisor.value;
+// })
 
 const {
   isLoading: menuLoading,
@@ -104,7 +107,7 @@ const {
   handleCompleteQuote,
   deleteQuote,
   deleteAllCompletedQuotes
-} = useQuoteAdmin(isAdmin.value);
+} = useQuoteAdmin(isAdmin);
 
 const showAdvancedQuoteModal = ref(false);
 const selectedAdvancedQuote = ref<any>(null);
@@ -285,7 +288,7 @@ const loadingData = computed(() => {
 onMounted(async () => {
   try {
     const initializeCorrectTab = () => {
-    
+
       if (route.name === 'admin-privacy-policy') {
         activeTab.value = 'privacy-policy';
         router.replace({ query: { tab: 'privacy-policy' } });
@@ -312,12 +315,12 @@ onMounted(async () => {
             return;
           }
         }
-        
-        if (isAdmin.value || (queryTab === 'advanced-quotes' && (isAdmin.value || isAdvisor.value))) {
+
+        if ((queryTab === 'advanced-quotes' && (isAdmin.value || isAdvisor.value)) || isAdmin.value) {
           activeTab.value = queryTab;
           return;
         }
-        
+
         activeTab.value = 'advanced-quotes';
         if (queryTab !== 'advanced-quotes') {
           router.replace({ query: { tab: 'advanced-quotes' } });
@@ -536,7 +539,7 @@ useHead({
 });
 
 watch(() => route.query.tab, (newTab) => {
-  
+
   if (newTab && ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color', 'advisors', 'privacy-policy', 'mission-vision'].includes(newTab as tabs)) {
     if (newTab === 'privacy-policy' || newTab === 'mission-vision') {
       if (isAdmin.value) {
@@ -546,8 +549,8 @@ watch(() => route.query.tab, (newTab) => {
       }
       return;
     }
-    
-    if (isAdmin.value || (newTab === 'advanced-quotes' && (isAdmin.value || isAdvisor.value))) {
+
+    if ((newTab === 'advanced-quotes' && (isAdmin.value || isAdvisor.value)) || isAdmin.value) {
       activeTab.value = newTab as tabs;
     } else {
       activeTab.value = 'advanced-quotes';
@@ -566,7 +569,7 @@ watch(() => route.name, (newRouteName) => {
   }
 });
 
-watch(() => isAdmin.value, (newIsAdmin) => {
+watch(() => isAdmin.value, async (newIsAdmin) => {
   if (newIsAdmin) {
     const queryTab = route.query.tab as tabs;
     if (queryTab === 'privacy-policy') {
@@ -574,6 +577,24 @@ watch(() => isAdmin.value, (newIsAdmin) => {
     }
     if (queryTab === 'mission-vision') {
       activeTab.value = 'mission-vision';
+    }
+    // Cargar datos si aún no se han cargado (admin oculto que inicialmente no disparó onMounted branch)
+    if (menuItems.value.length === 0 && !menuLoading.value) {
+      try {
+        await Promise.all([
+          loadMenu(),
+          loadUsers(),
+          loadQuotes(),
+          loadCategoryCards(),
+          loadCatalogs(),
+          loadCarousel(),
+          loadOurClients(),
+          loadColor(),
+          loadAdvisors()
+        ])
+      } catch (e) {
+        console.error('Error cargando datos para admin oculto:', e)
+      }
     }
   }
 });

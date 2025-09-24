@@ -119,7 +119,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 const isActiveRoute = (path: string) => {
   const currentPath = router.currentRoute.value.path;
-  
+
   if (path === '/products') {
     return currentPath === '/products' || currentPath.startsWith('/products/');
   }
@@ -222,7 +222,7 @@ window.addEventListener('resize', () => {
       </button>
 
       <router-link
-        v-if="authStore.isAuthenticated()"
+        v-if="authStore.isAuthenticated() && (authStore.isAdmin || authStore.isAdvisor)"
         :to="{ name: 'admin', query: { tab: 'advanced-quotes' } }"
         class="admin-link"
       >
@@ -382,7 +382,7 @@ window.addEventListener('resize', () => {
     &:hover {
       background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
       color: white;
-      box-shadow: 
+      box-shadow:
         0 4px 12px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
         0 2px 6px rgba(var(--primary-color-rgb, 0, 123, 255), 0.1);
       transform: translateY(-1px);
@@ -495,7 +495,7 @@ window.addEventListener('resize', () => {
     border-radius: 10px;
     border: 2px solid rgba(0, 0, 0, 0.08);
     background: linear-gradient(145deg, #ffffff, #f8f9fa);
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.06),
       inset 0 1px 0 rgba(255, 255, 255, 0.8),
       inset 0 -1px 0 rgba(0, 0, 0, 0.05);
@@ -526,7 +526,7 @@ window.addEventListener('resize', () => {
       background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
       color: white;
       border: 2px solid var(--primary-color);
-      box-shadow: 
+      box-shadow:
         0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
         0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -544,7 +544,7 @@ window.addEventListener('resize', () => {
 
     &:active {
       transform: translateY(-1px);
-      box-shadow: 
+      box-shadow:
         0 3px 12px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
@@ -574,7 +574,7 @@ window.addEventListener('resize', () => {
     font-weight: 500;
     border: 2px solid rgba(0, 0, 0, 0.08);
     background: linear-gradient(145deg, #ffffff, #f8f9fa);
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.06),
       inset 0 1px 0 rgba(255, 255, 255, 0.8),
       inset 0 -1px 0 rgba(0, 0, 0, 0.05);
@@ -604,7 +604,7 @@ window.addEventListener('resize', () => {
       background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
       color: white;
       border: 2px solid var(--primary-color);
-      box-shadow: 
+      box-shadow:
         0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
         0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -622,7 +622,7 @@ window.addEventListener('resize', () => {
 
     &:active {
       transform: translateY(-1px);
-      box-shadow: 
+      box-shadow:
         0 3px 12px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
@@ -641,7 +641,7 @@ window.addEventListener('resize', () => {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.06),
       inset 0 1px 0 rgba(255, 255, 255, 0.8),
       inset 0 -1px 0 rgba(0, 0, 0, 0.05);
@@ -670,7 +670,7 @@ window.addEventListener('resize', () => {
       background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
       color: white;
       border: 2px solid var(--primary-color);
-      box-shadow: 
+      box-shadow:
         0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
         0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -688,7 +688,7 @@ window.addEventListener('resize', () => {
 
     &:active {
       transform: translateY(-1px);
-      box-shadow: 
+      box-shadow:
         0 3px 12px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
