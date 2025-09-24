@@ -239,36 +239,6 @@ onMounted(async () => {
 
 <template>
   <div class="products-view">
-    <!-- Hero Section -->
-    <div class="hero-section">
-      <div class="hero-content">
-        <div class="hero-text">
-          <h1 class="hero-title">
-            <span class="material-icons hero-icon">inventory_2</span>
-            Nuestros Productos
-          </h1>
-          <p class="hero-description">
-            Descubre nuestra amplia gama de productos promocionales y regalos corporativos. 
-            Más de <strong>{{ totalSubcategories }}</strong> subcategorías organizadas en <strong>{{ categories.length }}</strong> categorías principales.
-          </p>
-        </div>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <div class="stat-number">{{ categories.length }}</div>
-            <div class="stat-label">Categorías</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">{{ totalSubcategories }}</div>
-            <div class="stat-label">Subcategorías</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">1000+</div>
-            <div class="stat-label">Productos</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Categories Section -->
     <div class="categories-section">
       <div class="section-header">
