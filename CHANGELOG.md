@@ -5,6 +5,182 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Got you, Cris. I reworked everything into a clean, English-only **CHANGELOG** (no dates), grouped, de-duplicated, and with consistent tone and formatting.
+
+---
+
+# Changelog
+
+## [1.7.0] - 23/09/2025
+
+### 🚀 Added
+
+* **Admin Styling Modernization (Global)**
+
+  * Unified visual system across all admin sections with consistent headers, cards, badges, spacing, rounded corners, shadows, and responsive grids.
+  * Shared UX patterns: clear hierarchy, semantic colors, informative empty states, hover feedback, and mobile-first layouts.
+
+* **Admin Sections – Visual Overhauls**
+
+  * **Users** (`/src/components/Admin/sections/UsersSection.vue`): descriptive header, gradient stat cards, avatar table with role/status badges, full responsiveness.
+  * **Categories** (`…/CategoriesSection.vue`): table → visual card grid, dynamic counters for active/inactive, larger previews, clearer grouping.
+  * **Color** (`…/ColorSection.vue`): large preview with overlay, HEX/RGB in monospace, UI samples (buttons/links/badges), theme coverage stats.
+  * **Menu** (`…/MenuSection.vue`): auto icons by route type, position badges, internal vs external links, navigation stats.
+  * **Catalogs** (`…/CatalogsSection.vue`): gallery cards with large images, overlays, link classification badges, empty state.
+  * **Carousel** (`…/CarouselSection.vue`): slide preview, position badges, optional links, playback/link stats.
+  * **Our Clients** (`…/OurClientsSection.vue`): logo gallery with grayscale filters, status badges, trust stats.
+  * **Advisors** (`…/AdvisorsSection.vue`): contact cards, WhatsApp integration, gradient avatars, support stats.
+
+* **Products Page Modernization**
+
+  * **`/products`**: hero with gradient, live stats for categories/subcategories/products, popular-categories section, and a fully modernized `CategoryList.vue` (dynamic Material icons, interactive headers, smooth transitions).
+
+* **Catalogs Page Modernization**
+
+  * **`/catalogs`**: premium hero, glassmorphism stats, elevated catalog cards with overlays, separate **View** vs **Download** actions, persuasive features section (quality, variety, advisory).
+
+* **Contact Page Modernization**
+
+  * **`/contact`**: structured contact info cards, modernized form (keeps `RgFormField`), improved validation/feedback, success messaging, two-column responsive layout.
+
+* **Search Page Modernization**
+
+  * **`/search`**: descriptive header, results summary card, modern product grid container, improved pagination with icons and contextual info, polished empty/loading states.
+
+* **Mission & Vision Image Management**
+
+  * Admin-only management (role-gated) with Cloudinary storage, drag-and-drop uploads, validation, placeholders fallback, audit trail, real-time updates, and `useGlobalMissionVision` state.
+
+* **Privacy Policy Management**
+
+  * Admin-only PDF management (role-gated) migrated to Cloudinary; strict validation, replacements, audit trail, global state (`useGlobalPrivacyPolicy`), user modal with download and loading states.
+
+* **Code Quality & Performance**
+
+  * TypeScript errors resolved; strict mode passes cleanly.
+  * Unused imports/variables removed; duplicate imports consolidated.
+  * Enums standardized across the app.
+  * `AdminView.vue` and `AdminHeader.vue` cleaned and correctly typed.
+
+* **Enhanced Loading Experience**
+
+  * New global loader (`RgLoaderGlobal.vue`) with multi-layer animations and dynamic messages; updated local loader (`RgLoader.vue`) with concentric rings; responsive and performant.
+
+* **Advisor Role**
+
+  * New `ADVISOR` role with restricted admin scope (quotations only), enforced 0% price increase, disabled logo/color customization, improved role selection UX and automatic field cleanup.
+
+* **Quote Tracking Enhancements**
+
+  * `QuoteStatusHistory` now records `changedByName` and `changedByRole`; full audit trail shown in quote detail.
+
+* **Role-Based Access Control**
+
+  * Router `meta.allowedRoles`, role-aware sidebar, post-login redirection by role, and auth store helpers (`isAdvisor`, `canAccessQuotes`).
+
+* **Centralized Price Formatting**
+
+  * `/src/utils/formatNumber.ts` with `es-CO` locale.
+  * Business logic: `calculatePriceWithIncrease`, `calculatePriceWithIva`, `formatPriceWithBusinessLogic`.
+  * Validation: `isValidPrice`, `parseFormattedNumber`.
+  * Unified display: `$1.095.300` (COP with thousand separators).
+
+* **Quote Detail Page Migration**
+
+  * Route `/admin/quotes/:id`, full-page tabs (Details/Comments/History), unique URLs, real-time history, breadcrumb/back to admin.
+
+* **Advanced Quote Management**
+
+  * Statuses: Pending, In Review, Quoted, Negotiating, Approved, Completed, Cancelled, Expired.
+  * Fields: priority, assignees, due dates, estimated/actual values, tags, source, follow-up.
+  * Internal/client comments, full audit trail, advanced filters, table & card views, real-time stats, inline edits, CSV export.
+  * Firebase integration (caching/logging/errors), `useAdvancedQuotes`, extended `useQuoteStore`, new admin UI & sidebar, docs included.
+
+* **Admin User Enhancements**
+
+  * Hidden users via `isHidden`, last-login tracking with relative time, copy-email action with toasts, admin password reset via Firebase Auth.
+
+### ♻️ Changed
+
+* **Privacy Policy Storage**
+
+  * Fully migrated PDFs from Firebase Storage to Cloudinary; removed all Storage references; modern confirm modals; global state updates.
+
+* **User Management UX**
+
+  * Role selection moved to the top; automatic field cleanup on role switch; better display/validation for advisor restrictions.
+
+* **Admin Navigation**
+
+  * Sidebar adapts to role (Admin vs Advisor); improved breadcrumbs and role-based UI.
+
+* **Price Display Standardization**
+
+  * All product/quotation/modal components use centralized formatting while preserving auth checks, per-user price increases, IVA toggles, stock rules.
+
+* **Advanced Quotes UI**
+
+  * Simplified header and compact action bar; removed obsolete “Complete/Delete” (now on detail page); admin redirects to `/admin?tab=advanced-quotes`; code cleanup.
+
+* **Quote Navigation**
+
+  * Router navigation replaces modal emits; default view: **cards**; “Cotizaciones Avanzadas” renamed to **“Cotizaciones”** (single entry point).
+
+* **User & Auth Normalization**
+
+  * All emails normalized to lowercase; Firestore validations now use Auth UID; comparisons consistently lowercased across app.
+
+* **Quantity Table**
+
+  * Columns reordered: **Estimated Date** before **Last Update**.
+
+### 🛠 Fixed
+
+* **Privacy Policy Flow**
+
+  * Corrected Cloudinary endpoints/params; resolved “Access control – Blocked for delivery” via proper preset; fixed query-param routing to admin tab; live modal refresh; removed leftover Firebase Storage imports; TypeScript fixes.
+
+* **TypeScript & Linting**
+
+  * Fixed `AdminHeader.vue` tab typings; duplicate `QuoteStatus` imports; unused handler params; standardized enum usage; removed stray logs; resolved type inconsistencies across components/composables.
+
+* **Role Handling**
+
+  * Correct role comparisons; form cleanup on role switch; route permissions; auth redirects by role.
+
+* **Quote Tracking**
+
+  * Added missing user info to history; proper attribution on status updates; consistent Firestore doc IDs.
+
+* **Price Formatting**
+
+  * Fixed `$3356` vs `$3.356`; removed browser-dependent locale variance; consolidated logic into utilities.
+
+* **Admin Navigation Consistency**
+
+  * Correct post-login redirect to advanced quotes; navbar admin link; back/error flows in `QuoteDetailView`; hide `AdminHeader` in advanced quotes to avoid duplication.
+
+* **Quote Comments & Status**
+
+  * Fixed quoteID↔docID mismatches; correct subcollection access; auto-reload comments; reliable history saves and cache invalidation; chronological history loading.
+
+* **Advanced Quote Modal**
+
+  * Replaced missing icons (`close` → `cancel`); comment reactivity fixed; ESC to close with cleanup; simplified header; select casting issues resolved; URL-based navigation via `&quoteId=`.
+
+* **Admin Session/Theme**
+
+  * Creating a user no longer swaps sessions (secondary Auth instance); primary color reacts to user changes; admin routing respects `?tab=`; lowercased email comparisons in App, Navbar, Footer, ProductView, QuoteModal, QuoteCart, AdminSidebar, AdminView, and router guard.
+
+### 📁 Touched Files (high level)
+
+* `src/views/ProductsView.vue`, `CatalogsView.vue`, `ContactView.vue`, `SearchView.vue`
+* `src/components/Admin/sections/*` (Users, Categories, Color, Menu, Catalogs, Carousel, OurClients, Advisors)
+* `src/components/UI/*` (loaders, cards, buttons, badges)
+* `src/utils/formatNumber.ts`
+* Stores/composables for quotes, auth, mission/vision, privacy policy
+* Router meta/guards and admin navigation
+
 ## [1.6.0] - 11/09/2025
 ### Added
 - **Enhanced quantity table with estimated date**: Added "Fecha Estimada" column to the product quantity table using existing `dataTracking` field to display estimated arrival dates for products in transit
@@ -200,6 +376,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🎉 Initial stable release.
 
+[1.7.0]: https://github.com/CristhianDaza/redGlobal/pull/11/files
 [1.6.0]: https://github.com/CristhianDaza/redGlobal/pull/10/files
 [1.5.0]: https://github.com/CristhianDaza/redGlobal/pull/9/files
 [1.4.0]: https://github.com/CristhianDaza/redGlobal/pull/8/files

@@ -12,7 +12,11 @@ export const useUserStore = defineStore('user', () => {
   const getUsers = async () => {
     try {
       isLoadingUsers.value = true
-      users.value = await usersFirebase.getUsers()
+      const fetched = await usersFirebase.getUsers(false)
+      users.value = fetched.map(u => ({
+        ...u,
+        email: (u.email && typeof u.email === 'string') ? u.email.toLowerCase() : u.email
+      }))
       lastUpdateUsers.value = new Date().toISOString()
     } catch (error) {
       console.error('Error getting users:', error)
@@ -23,6 +27,19 @@ export const useUserStore = defineStore('user', () => {
       })
     } finally {
       isLoadingUsers.value = false
+    }
+  }
+
+  const findUserByEmail = async (email: string): Promise<User | null> => {
+    try {
+      const visibleUser = users.value.find(u => u.email === email.toLowerCase())
+      if (visibleUser) return visibleUser
+
+      const allUsers = await usersFirebase.getUsers(true)
+      return allUsers.find(u => u.email?.toLowerCase() === email.toLowerCase()) || null
+    } catch (error) {
+      console.error('Error finding user by email:', error)
+      return null
     }
   }
 
@@ -88,6 +105,7 @@ export const useUserStore = defineStore('user', () => {
     isLoadingUsers,
     lastUpdateUsers,
     getUsers,
+    findUserByEmail,
     createUser,
     updateUser,
     deleteUser

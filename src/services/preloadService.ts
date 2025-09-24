@@ -2,10 +2,6 @@ import { logger } from './loggerService';
 import { cacheService } from './cacheService';
 
 class PreloadService {
-
-  /**
-   * Precargar imágenes críticas del carousel y categorías
-   */
   async preloadCriticalImages(carouselImages: string[], categoryImages: string[]): Promise<void> {
     const criticalImages = [...carouselImages.slice(0, 3), ...categoryImages.slice(0, 6)];
     
@@ -14,22 +10,15 @@ class PreloadService {
     await this.preloadImageBatch(criticalImages, 'high', 2);
   }
 
-  /**
-   * Precargar imágenes de productos populares
-   */
   async preloadProductImages(productImages: string[]): Promise<void> {
     if (productImages.length === 0) return;
     
     logger.info(`Preloading ${productImages.length} product images`, 'PreloadService');
     
-    // Precargar las primeras 8 imágenes de productos
     const priorityImages = productImages.slice(0, 8);
     await this.preloadImageBatch(priorityImages, 'low', 4);
   }
 
-  /**
-   * Precargar imágenes en lotes
-   */
   private async preloadImageBatch(
     images: string[], 
     priority: 'high' | 'low', 
@@ -47,12 +36,8 @@ class PreloadService {
     }
   }
 
-  /**
-   * Precargar una imagen individual
-   */
   private preloadSingleImage(src: string, priority: 'high' | 'low'): Promise<void> {
     return new Promise((resolve, reject) => {
-      // Verificar si ya está en cache
       const cacheKey = `preload:${src}`;
       if (cacheService.has(cacheKey)) {
         resolve();
@@ -61,7 +46,6 @@ class PreloadService {
 
       const img = new Image();
       
-      // Configurar prioridad si es soportada
       if ('fetchPriority' in img) {
         (img as any).fetchPriority = priority;
       }
@@ -73,7 +57,7 @@ class PreloadService {
 
       img.onload = () => {
         clearTimeout(timeout);
-        cacheService.set(cacheKey, true, 30 * 60 * 1000); // Cache por 30 minutos
+        cacheService.set(cacheKey, true, 30 * 60 * 1000);
         logger.debug(`Image preloaded: ${src}`, 'PreloadService');
         resolve();
       };
@@ -88,11 +72,7 @@ class PreloadService {
     });
   }
 
-  /**
-   * Precargar imágenes de forma inteligente basada en el viewport
-   */
   async intelligentPreload(images: string[]): Promise<void> {
-    // Detectar conexión lenta
     const connection = (navigator as any).connection;
     const isSlowConnection = connection && (
       connection.effectiveType === 'slow-2g' || 
@@ -102,23 +82,17 @@ class PreloadService {
 
     if (isSlowConnection) {
       logger.info('Slow connection detected, reducing preload', 'PreloadService');
-      // Solo precargar imágenes críticas
       await this.preloadImageBatch(images.slice(0, 3), 'low', 1);
     } else {
-      // Conexión normal, precargar más imágenes
       await this.preloadImageBatch(images.slice(0, 8), 'low', 3);
     }
   }
 
-  /**
-   * Limpiar cache de preload
-   */
   clearPreloadCache(): void {
-    // Limpiar entradas de preload del cache
     const stats = cacheService.getStats();
     logger.info(`Clearing preload cache. Current entries: ${stats.totalEntries}`, 'PreloadService');
     
-    // El cache service se encarga de la limpieza automática
+    cacheService.clear();
   }
 }
 

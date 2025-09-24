@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import type { tabs } from '@/types/common.d'
+import { QuoteStatus, UserFormData, User } from '@/types/common.d'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
 import { useCatalogAdmin, useCategoryAdmin, useMenuAdmin, useQuoteAdmin, useUserAdmin, useCarouselAdmin, useOurClientAdmin, useColorAdmin, useAdvisorsAdmin } from '@/composable';
-import { tabs, UserFormData, User } from "@/types/common";
 import { useHead } from '@vueuse/head';
 
 const MenuItemForm = defineAsyncComponent(/* webpackChunkName: "menuItemForm" */() => import('@/components/Admin/MenuItemForm.vue'));
@@ -20,14 +21,17 @@ const AdminSidebar = defineAsyncComponent(/* webpackChunkName: "adminSidebar" */
 const MenuSection = defineAsyncComponent(/* webpackChunkName: "menuSection" */() => import('@/components/Admin/sections/MenuSection.vue'));
 const AdminHeader = defineAsyncComponent(/* webpackChunkName: "adminHeader" */() => import('@/components/Admin/AdminHeader.vue'));
 const UsersSection = defineAsyncComponent(/* webpackChunkName: "usersSection" */() => import('@/components/Admin/sections/UsersSection.vue'));
-const QuotesSection = defineAsyncComponent(/* webpackChunkName: "quotesSection" */() => import('@/components/Admin/sections/QuotesSection.vue'));
+const AdvancedQuotesSection = defineAsyncComponent(/* webpackChunkName: "advancedQuotesSection" */() => import('@/components/Admin/sections/AdvancedQuotesSection.vue'));
 const CategoriesSection = defineAsyncComponent(/* webpackChunkName: "categoriesSection" */() => import('@/components/Admin/sections/CategoriesSection.vue'));
 const QuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "quoteDetailsModal" */() => import('@/components/Admin/QuoteDetailsModal.vue'));
+const AdvancedQuoteDetailsModal = defineAsyncComponent(/* webpackChunkName: "advancedQuoteDetailsModal" */() => import('@/components/Admin/AdvancedQuoteDetailsModal.vue'));
 const CatalogsSection = defineAsyncComponent(/* webpackChunkName: "catalogsSection" */() => import('@/components/Admin/sections/CatalogsSection.vue'));
 const CarouselSection = defineAsyncComponent(/* webpackChunkName: "carouselSection" */() => import('@/components/Admin/sections/CarouselSection.vue'));
 const OurClientsSection = defineAsyncComponent(/* webpackChunkName: "ourClientsSection" */() => import('@/components/Admin/sections/OurClientsSection.vue'));
 const ColorSection = defineAsyncComponent(/* webpackChunkName: "colorSection" */() => import('@/components/Admin/sections/ColorSection.vue'));
 const AdvisorsSection = defineAsyncComponent(/* webpackChunkName: "advisorsSection" */() => import('@/components/Admin/sections/AdvisorsSection.vue'));
+const PrivacyPolicySection = defineAsyncComponent(/* webpackChunkName: "privacyPolicySection" */() => import('@/components/Admin/sections/PrivacyPolicySection.vue'));
+const MissionVisionSection = defineAsyncComponent(/* webpackChunkName: "missionVisionSection" */() => import('@/components/Admin/sections/MissionVisionSection.vue'));
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -36,7 +40,7 @@ const storeProducts = useProductsStore();
 const userStore = useUserStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated());
 
-const activeTab = ref<tabs>('quotes');
+const activeTab = ref<tabs>('advanced-quotes');
 
 const handleTabChange = (tab: tabs) => {
   router.push({ query: { tab } });
@@ -44,12 +48,21 @@ const handleTabChange = (tab: tabs) => {
 };
 
 const currentUser = computed(():UserFormData | undefined => {
-  return users.value.find(u => u.email === authStore.user?.email);
+  return users.value.find(u => u.email === authStore.user?.email?.toLowerCase());
 })
 
 const isAdmin = computed(() => {
   if (!isAuthenticated.value) return false;
   return currentUser.value?.role === 'admin';
+})
+
+const isAdvisor = computed(() => {
+  if (!isAuthenticated.value) return false;
+  return currentUser.value?.role === 'advisor';
+})
+
+const canAccessQuotes = computed(() => {
+  return isAdmin.value || isAdvisor.value;
 })
 
 const {
@@ -76,7 +89,8 @@ const {
   handleSaveUser,
   handleEditUser,
   handleAddUser,
-  deleteUser
+  deleteUser,
+  sendPasswordReset
 } = useUserAdmin();
 
 const {
@@ -84,20 +98,16 @@ const {
   showQuoteDetailsModal,
   selectedQuote,
   loadQuotes,
-  filteredQuotes,
-  totalQuotes,
   pendingQuotes,
-  completedQuotes,
-  handleViewQuote,
   handleCloseQuoteDetails,
   handleOpenQuoteDetails,
   handleCompleteQuote,
-  downloadQuoteSummary,
   deleteQuote,
-  deleteAllCompletedQuotes,
-  canDeleteQuote,
-  quoteStatus
+  deleteAllCompletedQuotes
 } = useQuoteAdmin(isAdmin.value);
+
+const showAdvancedQuoteModal = ref(false);
+const selectedAdvancedQuote = ref<any>(null);
 
 const {
   categoryCards,
@@ -261,6 +271,7 @@ const loadingData = computed(() => {
     case 'menu': return menuLoading.value;
     case 'users': return userLoading.value;
     case 'quotes': return quoteLoading.value;
+    case 'advanced-quotes': return false;
     case 'cards': return isLoadingCard.value;
     case 'catalogs': return isLoadingCatalog.value;
     case 'carousel': return isLoadingCarousel.value;
@@ -273,6 +284,53 @@ const loadingData = computed(() => {
 
 onMounted(async () => {
   try {
+    const initializeCorrectTab = () => {
+    
+      if (route.name === 'admin-privacy-policy') {
+        activeTab.value = 'privacy-policy';
+        router.replace({ query: { tab: 'privacy-policy' } });
+        return;
+      }
+
+      if (route.name === 'admin-mission-vision') {
+        activeTab.value = 'mission-vision';
+        router.replace({ query: { tab: 'mission-vision' } });
+        return;
+      }
+
+      const queryTab = route.query.tab as tabs;
+      const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors', 'privacy-policy', 'mission-vision'];
+
+      if (queryTab && validTabs.includes(queryTab)) {
+        if (queryTab === 'privacy-policy' || queryTab === 'mission-vision') {
+          if (isAdmin.value) {
+            activeTab.value = queryTab;
+            return;
+          } else {
+            activeTab.value = 'advanced-quotes';
+            router.replace({ query: { tab: 'advanced-quotes' } });
+            return;
+          }
+        }
+        
+        if (isAdmin.value || (queryTab === 'advanced-quotes' && (isAdmin.value || isAdvisor.value))) {
+          activeTab.value = queryTab;
+          return;
+        }
+        
+        activeTab.value = 'advanced-quotes';
+        if (queryTab !== 'advanced-quotes') {
+          router.replace({ query: { tab: 'advanced-quotes' } });
+        }
+        return;
+      }
+
+      activeTab.value = 'advanced-quotes';
+      if (!route.query.tab) {
+        router.replace({ query: { tab: 'advanced-quotes' } });
+      }
+    };
+
     if (isAdmin.value) {
       await Promise.all([
         loadMenu(),
@@ -288,23 +346,29 @@ onMounted(async () => {
 
       if (route.query.quoteId) {
         const quoteId = route.query.quoteId as string;
-        await handleOpenQuoteDetails(quoteId);
+        if (activeTab.value === 'advanced-quotes') {
+          await handleOpenAdvancedQuoteFromUrl(quoteId);
+        } else {
+          await handleOpenQuoteDetails(quoteId);
+        }
       }
-      return;
+    } else {
+      await loadQuotes();
     }
-    await loadQuotes();
+
+    setTimeout(() => {
+      initializeCorrectTab();
+    }, 100);
   } catch (error) {
     console.error('Error loading initial data:', error);
   }
 });
 
-watch(activeTab, (newTab) => {
-  const validTabs = ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors'];
+watch(() => activeTab.value, (newTab) => {
+  const validTabs = ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel', 'our-clients', 'color', 'advisors', 'privacy-policy', 'mission-vision'];
   const tab = validTabs.includes(newTab as tabs) ? newTab : undefined;
-  if (tab) {
-    router.replace({ query: { tab } });
-  } else {
-    router.replace({ name: 'admin' });
+  if (tab && route.query.tab !== tab) {
+    router.replace({ query: { tab: tab } });
   }
 });
 
@@ -350,21 +414,109 @@ const titleConfirm = computed(() => {
   return titleConfirmsMap[type] || titleConfirmsMap.default
 })
 
-const activeTabTitle = {
+const activeTabTitle: Record<tabs, string> = {
   menu: 'Menú',
   users: 'Usuarios',
   quotes: 'Cotizaciones',
+  'advanced-quotes': 'Cotizaciones',
   cards: 'Categorías',
   catalogs: 'Catálogos',
   carousel: 'Carrusel',
   'our-clients': 'Nuestros Clientes',
   color: 'Color Principal',
   advisors: 'Asesores',
+  'privacy-policy': 'Políticas de Privacidad',
+  'mission-vision': 'Misión y Visión',
 }
 
 const handleUpdateProducts = () => {
   itemToConfirmModal.value = { id: '', type: 'update' };
   showConfirmModal.value = true;
+};
+
+const handleViewAdvancedQuote = (quote: any) => {
+  selectedAdvancedQuote.value = quote;
+  showAdvancedQuoteModal.value = true;
+  router.push({
+    query: {
+      ...route.query,
+      quoteId: quote.id
+    }
+  });
+};
+
+const handleCloseAdvancedQuoteModal = () => {
+  showAdvancedQuoteModal.value = false;
+  selectedAdvancedQuote.value = null;
+  const newQuery = { ...route.query };
+  delete newQuery.quoteId;
+  router.push({ query: newQuery });
+};
+
+const handleUpdateQuoteStatus = async () => {
+};
+
+const handleAddQuoteComment = async (data: { quoteId: string, comment: string, isInternal: boolean }) => {
+  try {
+    const { addQuoteComment } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+
+    await addQuoteComment(data.quoteId, data.comment, data.isInternal);
+
+    if (selectedAdvancedQuote.value && selectedAdvancedQuote.value.id === data.quoteId) {
+      const { quotes } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+      const updatedQuote = quotes.value.find(q => q.id === data.quoteId);
+      if (updatedQuote) {
+        selectedAdvancedQuote.value = { ...updatedQuote };
+      }
+    }
+  } catch (error) {
+    console.error('Error adding quote comment:', error);
+  }
+};
+
+const handleDeleteQuoteComment = async (data: { quoteId: string, commentIndex: number }) => {
+  try {
+    const { deleteQuoteComment } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+
+    await deleteQuoteComment(data.quoteId, data.commentIndex);
+
+    if (selectedAdvancedQuote.value && selectedAdvancedQuote.value.id === data.quoteId) {
+      const { quotes } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+      const updatedQuote = quotes.value.find(q => q.id === data.quoteId);
+      if (updatedQuote) {
+        selectedAdvancedQuote.value = { ...updatedQuote };
+      }
+    }
+  } catch (error) {
+    console.error('Error deleting quote comment:', error);
+  }
+};
+
+const handleUpdateQuoteField = async () => {
+};
+
+const handleOpenAdvancedQuoteFromUrl = async (quoteId: string) => {
+  try {
+    const { quotes, loadQuotes } = await import('@/composable/admin/useAdvancedQuotes').then(m => m.useAdvancedQuotes());
+
+    if (quotes.value.length === 0) {
+      await loadQuotes();
+    }
+
+    const quote = quotes.value.find(q => q.id === quoteId);
+
+    if (quote) {
+      selectedAdvancedQuote.value = quote;
+      showAdvancedQuoteModal.value = true;
+    } else {
+      console.warn(`No se encontró la cotización con ID: ${quoteId}`);
+      const newQuery = { ...route.query };
+      delete newQuery.quoteId;
+      await router.replace({ query: newQuery });
+    }
+  } catch (error) {
+    console.error('Error al abrir cotización desde URL:', error);
+  }
 };
 
 useHead({
@@ -384,8 +536,54 @@ useHead({
 });
 
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && ['menu', 'users', 'quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color', 'advisors'].includes(newTab as tabs)) {
-    activeTab.value = newTab as tabs;
+  
+  if (newTab && ['menu', 'users', 'quotes', 'advanced-quotes', 'cards', 'catalogs', 'carousel','our-clients', 'color', 'advisors', 'privacy-policy', 'mission-vision'].includes(newTab as tabs)) {
+    if (newTab === 'privacy-policy' || newTab === 'mission-vision') {
+      if (isAdmin.value) {
+        activeTab.value = newTab as tabs;
+      } else {
+        activeTab.value = 'advanced-quotes';
+      }
+      return;
+    }
+    
+    if (isAdmin.value || (newTab === 'advanced-quotes' && (isAdmin.value || isAdvisor.value))) {
+      activeTab.value = newTab as tabs;
+    } else {
+      activeTab.value = 'advanced-quotes';
+    }
+  }
+}, { immediate: true });
+
+watch(() => route.name, (newRouteName) => {
+  if (newRouteName === 'admin-privacy-policy') {
+    activeTab.value = 'privacy-policy';
+    router.replace({ query: { tab: 'privacy-policy' } });
+  }
+  if (newRouteName === 'admin-mission-vision') {
+    activeTab.value = 'mission-vision';
+    router.replace({ query: { tab: 'mission-vision' } });
+  }
+});
+
+watch(() => isAdmin.value, (newIsAdmin) => {
+  if (newIsAdmin) {
+    const queryTab = route.query.tab as tabs;
+    if (queryTab === 'privacy-policy') {
+      activeTab.value = 'privacy-policy';
+    }
+    if (queryTab === 'mission-vision') {
+      activeTab.value = 'mission-vision';
+    }
+  }
+});
+
+watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
+  if (newQuoteId && newQuoteId !== oldQuoteId && activeTab.value === 'advanced-quotes') {
+    await handleOpenAdvancedQuoteFromUrl(newQuoteId as string);
+  } else if (!newQuoteId && showAdvancedQuoteModal.value) {
+    showAdvancedQuoteModal.value = false;
+    selectedAdvancedQuote.value = null;
   }
 });
 </script>
@@ -398,6 +596,7 @@ watch(() => route.query.tab, (newTab) => {
     <AdminSidebar
       :active-tab="activeTab"
       :is-admin="isAdmin"
+      :is-advisor="isAdvisor"
       :pending-quotes="pendingQuotesToAdmin"
       @update-products="handleUpdateProducts"
       @tab-change="handleTabChange"
@@ -427,14 +626,14 @@ watch(() => route.query.tab, (newTab) => {
 
         <div v-else>
           <MenuSection
-            v-if="activeTab === 'menu'"
+            v-if="activeTab === 'menu' && isAdmin"
             :items="menuItems"
             @edit="handleEditMenuItem"
             @delete="id => handleDeleteClick(id, 'menu')"
           />
 
           <UsersSection
-            v-else-if="activeTab === 'users'"
+            v-else-if="activeTab === 'users' && isAdmin"
             :users="users"
             :total="totalUsers"
             :active="activeUsers"
@@ -442,61 +641,62 @@ watch(() => route.query.tab, (newTab) => {
             @edit="handleEditUser"
             @delete="id => handleDeleteClick(id, 'users')"
             @toggle-status="handleToggleUserStatus"
+            @reset-password="sendPasswordReset"
           />
 
-          <QuotesSection
-            v-else-if="activeTab === 'quotes'"
-            :quotes="filteredQuotes"
-            :totals="{ total: totalQuotes, pending: pendingQuotes, completed: completedQuotes }"
-            :quoteStatus="quoteStatus"
-            :is-admin="isAdmin"
-            :canDeleteQuote="canDeleteQuote"
-            @view="handleViewQuote"
-            @complete="handleCompleteQuote"
-            @delete="id => handleDeleteClick(id, 'quotes')"
-            @download="downloadQuoteSummary"
+          <AdvancedQuotesSection
+            v-else-if="activeTab === 'advanced-quotes' && canAccessQuotes"
+            @view="handleViewAdvancedQuote"
           />
 
           <CategoriesSection
-            v-else-if="activeTab === 'cards'"
+            v-else-if="activeTab === 'cards' && isAdmin"
             :cards="categoryCards"
             @edit="handleEditCard"
             @delete="id => handleDeleteClick(id, 'cards')"
           />
 
           <CatalogsSection
-            v-if="activeTab === 'catalogs'"
+            v-if="activeTab === 'catalogs' && isAdmin"
             :items="catalogs"
             @edit="handleEditCatalog"
             @delete="id => handleDeleteClick(id, 'catalogs')"
           />
 
           <CarouselSection
-            v-if="activeTab === 'carousel'"
+            v-if="activeTab === 'carousel' && isAdmin"
             :items="carousel"
             @edit="handleEditCarousel"
             @delete="id => handleDeleteClick(id, 'carousel')"
           />
 
           <OurClientsSection
-            v-if="activeTab === 'our-clients'"
+            v-if="activeTab === 'our-clients' && isAdmin"
             :items="ourClients"
             @edit="handleEditOurClient"
             @delete="id => handleDeleteClick(id, 'our-clients')"
           />
 
           <ColorSection
-            v-if="activeTab === 'color'"
+            v-if="activeTab === 'color' && isAdmin"
             :items="color"
             @edit="handleEditColor"
             @delete="id => handleDeleteClick(id, 'color')"
           />
 
           <AdvisorsSection
-            v-if="activeTab === 'advisors'"
+            v-if="activeTab === 'advisors' && isAdmin"
             :items="advisors"
             @edit="handleEditAdvisor"
             @delete="id => handleDeleteClick(id, 'advisors')"
+          />
+
+          <PrivacyPolicySection
+            v-if="activeTab === 'privacy-policy' && isAdmin"
+          />
+
+          <MissionVisionSection
+            v-if="activeTab === 'mission-vision' && isAdmin"
           />
         </div>
 
@@ -545,9 +745,19 @@ watch(() => route.query.tab, (newTab) => {
           :is-open="showQuoteDetailsModal"
           :quote="selectedQuote"
           :is-admin="isAdmin"
-          :quote-status="quoteStatus"
+          :quote-status="QuoteStatus"
           @complete="handleCompleteQuote"
           @close="handleCloseQuoteDetails"
+        />
+
+        <AdvancedQuoteDetailsModal
+          :quote="selectedAdvancedQuote"
+          :is-visible="showAdvancedQuoteModal"
+          @close="handleCloseAdvancedQuoteModal"
+          @updateStatus="handleUpdateQuoteStatus"
+          @addComment="handleAddQuoteComment"
+          @deleteComment="handleDeleteQuoteComment"
+          @updateField="handleUpdateQuoteField"
         />
 
         <CarouselForm

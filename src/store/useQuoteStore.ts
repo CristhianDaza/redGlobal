@@ -1,7 +1,7 @@
 import type { Quote, QuoteItem, QuoteState, User } from '@/types/common.d'
+import { QuoteStatus } from '@/types/common.d'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { QuoteStatus } from '@/types/common.d'
 import { useAuthStore, useUserStore } from '@/store'
 import { emailService } from '@/services'
 import { quotesFirebase } from '@/services/firebase'
@@ -109,28 +109,29 @@ export const useQuoteStore = defineStore('quote', () => {
     })
   }
 
-  const submitQuote = async () => {
+  const submitQuote = async (clientNotes?: string) => {
     try {
       if (!authStore.user || state.value.currentQuote.length === 0) return
 
       const userStore = useUserStore()
-      const currentUser = userStore.users.find((user: User) => user.email === authStore.user?.email)
+      const currentUser = userStore.users.find((user: User) => user.email === authStore.user?.email?.toLowerCase())
 
       const quote: Quote = {
         userId: authStore.user.uid,
         userName: currentUser?.name || 'Usuario',
-        userEmail: authStore.user.email || '',
+        userEmail: authStore.user.email?.toLowerCase() || '',
         status: QuoteStatus.PENDING,
         items: [...state.value.currentQuote],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         id: crypto.randomUUID(),
         idDoc: '',
+        clientNotes: clientNotes,
       }
 
       const emailData = {
         name: currentUser?.name || 'Usuario',
-        email: authStore.user.email || '',
+        email: authStore.user.email?.toLowerCase() || '',
         id: quote.id,
       }
 
@@ -165,7 +166,7 @@ export const useQuoteStore = defineStore('quote', () => {
     }
   }
 
-  const updateQuoteStatus = async (id: string, status: string) => {
+  const updateQuoteStatus = async (id: string, status: QuoteStatus) => {
     try {
       await quotesFirebase.updateQuoteStatus(id, status)
       await getQuotes()
@@ -267,6 +268,125 @@ export const useQuoteStore = defineStore('quote', () => {
     }
   };
 
+  const updateQuoteField = async (id: string, field: string, value: any) => {
+    try {
+      await quotesFirebase.updateQuoteField(id, field, value)
+      
+      const quoteIndex = state.value.quotes.findIndex(q => q.id === id)
+      if (quoteIndex !== -1) {
+        ;(state.value.quotes[quoteIndex] as any)[field] = value
+        state.value.quotes[quoteIndex].updatedAt = new Date().toISOString()
+      }
+      
+      NotificationService.push({
+        title: 'Campo actualizado',
+        description: `El campo ${field} ha sido actualizado exitosamente`,
+        type: 'success'
+      })
+    } catch (error) {
+      console.error('Error updating quote field:', error)
+      NotificationService.push({
+        title: 'Error al actualizar campo',
+        description: 'No se pudo actualizar el campo de la cotización.',
+        type: 'error'
+      })
+    }
+  }
+
+  const getQuoteStats = async () => {
+    try {
+      return await quotesFirebase.getQuoteStats()
+    } catch (error) {
+      console.error('Error getting quote stats:', error)
+      return {
+        total: 0,
+        byStatus: {},
+        byPriority: {},
+        avgValue: 0,
+        conversionRate: 0
+      }
+    }
+  }
+
+  const searchQuotes = async (searchTerm: string) => {
+    try {
+      state.value.isLoadingQuotes = true
+      const results = await quotesFirebase.searchQuotes(searchTerm)
+      state.value.quotes = results
+    } catch (error) {
+      console.error('Error searching quotes:', error)
+      NotificationService.push({
+        title: 'Error en la búsqueda',
+        description: 'No se pudo realizar la búsqueda de cotizaciones.',
+        type: 'error'
+      })
+    } finally {
+      state.value.isLoadingQuotes = false
+    }
+  }
+
+  const exportQuotes = async (filters?: any) => {
+    try {
+      const exportData = await quotesFirebase.exportQuotes(filters)
+      
+      const csvContent = convertQuotesToCSV(exportData)
+      downloadCSV(csvContent, 'cotizaciones.csv')
+
+      NotificationService.push({
+        title: 'Exportación exitosa',
+        description: `Se exportaron ${exportData.length} cotizaciones`,
+        type: 'success'
+      })
+    } catch (error) {
+      console.error('Error exporting quotes:', error)
+      NotificationService.push({
+        title: 'Error al exportar',
+        description: 'No se pudieron exportar las cotizaciones.',
+        type: 'error'
+      })
+    }
+  }
+
+  const convertQuotesToCSV = (quotes: Quote[]): string => {
+    const headers = [
+      'ID',
+      'Cliente',
+      'Email',
+      'Estado',
+      'Prioridad',
+      'Valor Estimado',
+      'Fecha Creación',
+      'Última Actualización'
+    ]
+
+    const rows = quotes.map(quote => [
+      quote.id,
+      quote.userName,
+      quote.userEmail,
+      quote.status,
+      quote.priority || 'medium',
+      quote.estimatedValue || 0,
+      quote.createdAt,
+      quote.updatedAt
+    ])
+
+    return [headers, ...rows].map(row => row.join(',')).join('\n')
+  }
+
+  const downloadCSV = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', filename)
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   loadCurrentQuoteFromStorage()
 
   return {
@@ -285,6 +405,10 @@ export const useQuoteStore = defineStore('quote', () => {
     getQuotes,
     updateQuoteStatus,
     deleteQuote,
-    canDeleteQuote
+    canDeleteQuote,
+    updateQuoteField,
+    getQuoteStats,
+    searchQuotes,
+    exportQuotes
   }
 })

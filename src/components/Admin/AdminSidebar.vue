@@ -5,6 +5,7 @@ import { useAuthStore, useUserStore } from '@/store'
 defineProps({
   activeTab: String,
   isAdmin: Boolean,
+  isAdvisor: Boolean,
   pendingQuotes: Number
 })
 
@@ -14,7 +15,7 @@ const userStore = useUserStore()
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
 
 const currentUserName = computed(() => {
-  const user = userStore.users.find(u => u.email === authStore.user?.email)
+  const user = userStore.users.find(u => u.email === authStore.user?.email?.toLowerCase())
   return user?.name || 'Usuario'
 })
 </script>
@@ -94,19 +95,36 @@ const currentUserName = computed(() => {
         <span>Asesores</span>
       </button>
       <button
-        :class="['nav-item', { active: activeTab === 'quotes' }]"
-        @click="$emit('tab-change', 'quotes')"
+        v-if="isAdmin"
+        :class="['nav-item', { active: activeTab === 'privacy-policy' }]"
+        @click="$emit('tab-change', 'privacy-policy')"
+      >
+        <span class="material-icons">policy</span>
+        <span>Políticas de Privacidad</span>
+      </button>
+      <button
+        v-if="isAdmin"
+        :class="['nav-item', { active: activeTab === 'mission-vision' }]"
+        @click="$emit('tab-change', 'mission-vision')"
+      >
+        <span class="material-icons">visibility</span>
+        <span>Misión y Visión</span>
+      </button>
+      <button
+        v-if="isAdmin || isAdvisor"
+        :class="['nav-item', { active: activeTab === 'advanced-quotes' }]"
+        @click="$emit('tab-change', 'advanced-quotes')"
       >
         <span class="material-icons">request_quote</span>
         <span>Cotizaciones</span>
         <span
-          v-if="isAdmin && (pendingQuotes || 0) > 0"
+          v-if="(isAdmin || isAdvisor) && (pendingQuotes || 0) > 0"
           class="quote-badge"
         >
           {{ pendingQuotes }}
         </span>
       </button>
-      <div class="divider"></div>
+      <div class="divider" v-if="isAdmin"></div>
       <RgButton
         v-if="isAdmin"
         @click="$emit('update-products')"
@@ -257,6 +275,15 @@ const currentUserName = computed(() => {
 
 .nav-item .material-icons {
   font-size: 1.25rem;
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .quote-badge {

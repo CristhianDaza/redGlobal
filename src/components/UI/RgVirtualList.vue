@@ -64,9 +64,8 @@ const getItemKey = (item: T, index: number): string | number => {
   return index;
 };
 
-const handleScroll = (event: Event) => {
+const handleScroll = () => {
   // El scroll es manejado por el composable useVirtualScroll
-  console.log('Scroll event:', event);
 };
 </script>
 

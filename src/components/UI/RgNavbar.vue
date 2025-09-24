@@ -59,7 +59,7 @@ const currentUserLogo = computed((): string | undefined => {
     return undefined;
   }
 
-  const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
+  const currentUser = userStore.users.find(user => user.email === authStore.user?.email?.toLowerCase());
 
   if (currentUser?.logo) {
     return currentUser.logo;
@@ -160,9 +160,6 @@ window.addEventListener('resize', () => {
           </div>
         </template>
       </div>
-      <div class="navbar-actions">
-        <!-- Phone number removed, only WhatsApp floating button remains -->
-      </div>
     </div>
   </nav>
   <div v-if="sidebarOpen" class="sidebar-overlay" @click.self="sidebarOpen = false">
@@ -226,7 +223,7 @@ window.addEventListener('resize', () => {
 
       <router-link
         v-if="authStore.isAuthenticated()"
-        :to="{ name: 'admin', query: { tab: 'quotes' } }"
+        :to="{ name: 'admin', query: { tab: 'advanced-quotes' } }"
         class="admin-link"
       >
         <span class="material-icons">admin_panel_settings</span>

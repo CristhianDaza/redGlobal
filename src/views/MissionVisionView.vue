@@ -1,5 +1,19 @@
 <script setup lang="ts">
-import { useHead } from '@vueuse/head';
+import { onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
+import { useGlobalMissionVision } from '@/composable/useGlobalMissionVision'
+
+const {
+  missionImage,
+  visionImage,
+  hasMissionImage,
+  hasVisionImage,
+  loadMissionVisionImages
+} = useGlobalMissionVision()
+
+onMounted(() => {
+  loadMissionVisionImages()
+})
 
 useHead({
   title: 'Misión y Visión – Red Global Promocional',
@@ -14,7 +28,6 @@ useHead({
 
 <template>
   <div class="mission-vision-container">
-    <!-- Professional SVG Background -->
     <svg class="background-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
       <defs>
         <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -33,7 +46,6 @@ useHead({
       <path d="M0,400 Q300,200 600,400 T1200,400 L1200,800 L0,800 Z" fill="var(--primary-color)" opacity="0.03"/>
     </svg>
 
-    <!-- Mission Section -->
     <section class="mission-section">
       <div class="content-wrapper">
         <div class="text-content">
@@ -47,7 +59,18 @@ useHead({
         </div>
         <div class="image-content">
           <div class="image-placeholder mission-image">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" class="placeholder-svg">
+            <img 
+              v-if="hasMissionImage" 
+              :src="missionImage?.imageUrl" 
+              alt="Imagen de Misión" 
+              class="dynamic-image"
+            />
+            <svg 
+              v-else 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 400 300" 
+              class="placeholder-svg"
+            >
               <rect width="100%" height="100%" fill="var(--primary-color)" opacity="0.1"/>
               <circle cx="200" cy="150" r="80" fill="var(--primary-color)" opacity="0.2"/>
               <path d="M120,150 L200,100 L280,150 L200,200 Z" fill="var(--primary-color)" opacity="0.3"/>
@@ -58,7 +81,6 @@ useHead({
       </div>
     </section>
 
-    <!-- Vision Section -->
     <section class="vision-section">
       <div class="content-wrapper reverse">
         <div class="text-content">
@@ -72,7 +94,18 @@ useHead({
         </div>
         <div class="image-content">
           <div class="image-placeholder vision-image">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" class="placeholder-svg">
+            <img 
+              v-if="hasVisionImage" 
+              :src="visionImage?.imageUrl" 
+              alt="Imagen de Visión" 
+              class="dynamic-image"
+            />
+            <svg 
+              v-else 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 400 300" 
+              class="placeholder-svg"
+            >
               <rect width="100%" height="100%" fill="var(--primary-color)" opacity="0.1"/>
               <polygon points="200,50 350,150 200,250 50,150" fill="var(--primary-color)" opacity="0.2"/>
               <circle cx="200" cy="150" r="40" fill="var(--primary-color)" opacity="0.4"/>
@@ -191,6 +224,14 @@ useHead({
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.dynamic-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: rgba(var(--primary-color-rgb, 0, 123, 255), 0.02);
 }
 
 .mission-image {

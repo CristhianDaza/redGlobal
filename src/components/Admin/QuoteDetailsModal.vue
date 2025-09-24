@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { QuoteAdmin } from '@/types/common'
+import type { QuoteAdmin } from '@/types/common.d'
 import { defineAsyncComponent, watch, onUnmounted } from 'vue'
 import TvRelativeTime from '@todovue/tv-relative-time'
+import { formatPrice } from '@/utils/formatNumber'
 import { formatColor } from '@/utils'
 const RgButton = defineAsyncComponent(/* webpackChunkName: "rgButton" */() => import('@/components/UI/RgButton.vue'))
-
 
 const props = defineProps<{
   isOpen: boolean
@@ -97,8 +97,8 @@ onUnmounted(() => {
                   </div>
                   <span v-else>No</span>
                 </td>
-                <td v-if="isAdmin">${{ (item.unitPrice || 0).toLocaleString('es-CO') }} + IVA</td>
-                <td v-if="isAdmin">${{ (item.totalPrice || 0).toLocaleString('es-CO') }}  + IVA</td>
+                <td v-if="isAdmin">{{ formatPrice(item.unitPrice || 0) }} + IVA</td>
+                <td v-if="isAdmin">{{ formatPrice(item.totalPrice || 0) }} + IVA</td>
               </tr>
             </tbody>
           </table>

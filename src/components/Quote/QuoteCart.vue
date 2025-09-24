@@ -16,6 +16,7 @@ const emit = defineEmits<{
 }>()
 
 const isLoading = ref(false)
+const clientNotes = ref('')
 
 const quoteStore = useQuoteStore()
 const userStore = useUserStore()
@@ -25,7 +26,7 @@ const currentQuote = computed(() => quoteStore.currentQuote)
 const hasItems = computed(() => currentQuote.value.length > 0)
 
 const userColor = computed(() => {
-  const user = userStore.users.find(u => u.email === authStore.user?.email)
+  const user = userStore.users.find(u => u.email === authStore.user?.email?.toLowerCase())
   return user?.primaryColor || '#ff4444'
 })
 
@@ -69,7 +70,8 @@ const handleClearCart = () => {
 const handleSubmitQuote = async () => {
   try {
     isLoading.value = true
-    await quoteStore.submitQuote()
+    await quoteStore.submitQuote(clientNotes.value.trim() || undefined)
+    clientNotes.value = '' // Limpiar las notas después del envío
     emit('close')
   } catch (error) {
     console.error('Error al enviar cotización:', error)
@@ -182,6 +184,17 @@ const handleSubmitQuote = async () => {
             <span class="material-icons">close</span>
           </button>
         </div>
+      </div>
+
+      <div class="client-notes-section">
+        <label for="clientNotes" class="notes-label">Notas adicionales (opcional):</label>
+        <textarea
+          id="clientNotes"
+          v-model="clientNotes"
+          class="notes-textarea"
+          placeholder="Agrega cualquier información adicional sobre tu cotización..."
+          rows="3"
+        ></textarea>
       </div>
 
       <div class="cart-actions">
@@ -440,10 +453,49 @@ const handleSubmitQuote = async () => {
   box-shadow: 0 1px 3px rgba(220, 53, 69, 0.2);
 }
 
+.client-notes-section {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.notes-label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.notes-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.notes-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.notes-textarea::placeholder {
+  color: #9ca3af;
+}
+
 .cart-actions {
   display: flex;
-  justify-content: flex-end;
-  padding-top: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
   border-top: 1px solid #e2e8f0;
 }
 

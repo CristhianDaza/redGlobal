@@ -24,7 +24,6 @@ export const getAllProductsStockSur = async (): Promise<StockSurProduct[]> => {
     
     let allProducts: StockSurProduct[] = [];
     
-    // Obtener primera página para conocer el total
     const firstResponse: StockSurResponse = await apiConfigStockSur.get<StockSurResponse>('/products', { params }).then(res => res.data);
     
     if (!firstResponse || !firstResponse.meta) {
@@ -36,7 +35,6 @@ export const getAllProductsStockSur = async (): Promise<StockSurProduct[]> => {
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
     allProducts = [...firstResponse.products];
     
-    // Obtener páginas restantes
     for (let page = 2; page <= totalPages; page++) {
       const pageResponse: StockSurResponse = await apiConfigStockSur.get<StockSurResponse>('/products', {
         params: { ...params, page_number: page }

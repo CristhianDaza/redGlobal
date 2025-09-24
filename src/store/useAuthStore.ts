@@ -13,6 +13,7 @@ import { useUserStore } from '@/store'
 import { NotificationService } from '@/components/Notification/NotificationService'
 import { getDocs, query, collection, where } from 'firebase/firestore'
 import { db } from '@/config'
+import { usersFirebase } from '@/services/firebase/usersFirebase'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<FirebaseUser | null>(null)
@@ -26,7 +27,7 @@ onAuthStateChanged(auth, async (currentUser) => {
   if (currentUser) {
     const userDocs = await getDocs(
       query(collection(db, 'users'),
-      where('email', '==', currentUser.email))
+      where('id', '==', currentUser.uid))
     )
 
     if (!userDocs.empty) {
@@ -61,11 +62,12 @@ const login = async (email: string, password: string) => {
     loading.value = true
     error.value = null
 
-    await signInWithEmailAndPassword(auth, email, password)
+    await signInWithEmailAndPassword(auth, email.toLowerCase(), password)
 
+    const uid = auth.currentUser?.uid
     const userDocs = await getDocs(
       query(collection(db, 'users'),
-      where('email', '==', email))
+      where('id', '==', uid))
     )
 
     if (userDocs.empty) {
@@ -92,12 +94,19 @@ const login = async (email: string, password: string) => {
       return false
     }
 
+    await usersFirebase.updateLastLogin(uid!)
+
     NotificationService.push({
       title: 'Inicio de sesión exitoso',
       description: 'Has iniciado sesión exitosamente',
       type: 'success'
     })
-    await router.push({ name: 'admin', query: { tab: 'quotes' } })
+    
+    if (userData.role === 'admin' || userData.role === 'advisor') {
+      await router.push({ name: 'admin', query: { tab: 'advanced-quotes' } })
+    } else {
+      await router.push({ name: 'home' })
+    }
     return true
 
   } catch (e: any) {
@@ -145,7 +154,7 @@ const login = async (email: string, password: string) => {
 
   const userRole = computed(() => {
     if (!user.value) return null;
-    const currentUser = userStore.users.find(u => u.email === user.value?.email);
+    const currentUser = userStore.users.find(u => u.email === user.value?.email?.toLowerCase());
     return currentUser?.role || null;
   })
 
@@ -153,9 +162,17 @@ const login = async (email: string, password: string) => {
     return userRole.value === UserRole.ADMIN;
   })
 
+  const isAdvisor = computed(() => {
+    return userRole.value === UserRole.ADVISOR;
+  })
+
+  const canAccessQuotes = computed(() => {
+    return userRole.value === UserRole.ADMIN || userRole.value === UserRole.ADVISOR;
+  })
+
   const currenLoggingUser = computed(() => {
     if (!user.value) return null
-    const currentUser = userStore.users.find(u => u.email === user.value?.email)
+    const currentUser = userStore.users.find(u => u.email === user.value?.email?.toLowerCase())
     return currentUser || null
   })
 
@@ -168,6 +185,8 @@ const login = async (email: string, password: string) => {
     isAuthenticated,
     userRole,
     isAdmin,
+    isAdvisor,
+    canAccessQuotes,
     currenLoggingUser
   }
 })

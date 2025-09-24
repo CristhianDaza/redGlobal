@@ -37,7 +37,25 @@ const routes: RouteRecordRaw[] = [
     path: '/admin',
     component: () => import(/* webpackChunkName: "adminView" */ '../views/AdminView.vue'),
     name: 'admin',
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, allowedRoles: ['admin', 'advisor'] }
+  },
+  {
+    path: '/admin/privacy-policy',
+    component: () => import(/* webpackChunkName: "adminView" */ '../views/AdminView.vue'),
+    name: 'admin-privacy-policy',
+    meta: { requiresAuth: true, allowedRoles: ['admin'] }
+  },
+  {
+    path: '/admin/mission-vision',
+    component: () => import(/* webpackChunkName: "adminView" */ '../views/AdminView.vue'),
+    name: 'admin-mission-vision',
+    meta: { requiresAuth: true, allowedRoles: ['admin'] }
+  },
+  {
+    path: '/admin/quotes/:id',
+    component: () => import(/* webpackChunkName: "quoteDetailView" */ '../views/QuoteDetailView.vue'),
+    name: 'quote-detail',
+    meta: { requiresAuth: true, allowedRoles: ['admin', 'advisor'] }
   },
   {
     path: '/contact',
@@ -78,10 +96,16 @@ router.beforeEach(async (to, _, next) => {
       await userStore.getUsers()
     }
 
-    const currentUser = userStore.users.find(u => u.email === authStore.user?.email)
+    const currentUser = userStore.users.find(u => u.email === authStore.user?.email?.toLowerCase())
     if (!currentUser?.active) {
       await authStore.logout()
       return next({ name: 'home' })
+    }
+
+    if (to.meta.allowedRoles && Array.isArray(to.meta.allowedRoles)) {
+      if (!to.meta.allowedRoles.includes(currentUser.role)) {
+        return next({ name: 'home' })
+      }
     }
   }
 

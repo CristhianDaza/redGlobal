@@ -29,6 +29,7 @@ const handleEventButton = () => {
     cards: 'add-card',
     catalogs: 'add-catalog',
     quotes: 'delete-all-quote',
+    'advanced-quotes': 'delete-all-quote',
     carousel: 'add-carousel',
     'our-clients': 'add-our-clients',
     color: 'add-color',
@@ -44,6 +45,7 @@ const activeTabHeader = computed(():string => {
     users: 'Usuarios',
     cards: 'Categorías',
     quotes: 'Cotizaciones',
+    'advanced-quotes': 'Cotizaciones Avanzadas',
     catalogs: 'Catálogos',
     carousel: 'Imágenes del Carrusel',
     'our-clients': 'Imágenes de Clientes',
@@ -59,6 +61,7 @@ const activeTabText = computed(():string => {
     users: 'Crear un Usuario',
     cards: 'Agregar una Categoría',
     quotes: 'Limpiar Cotizaciones',
+    'advanced-quotes': 'Gestionar Cotizaciones',
     catalogs: 'Agregar un Catálogo',
     carousel: 'Agregar Imagen al Carrusel',
     'our-clients': 'Agregar Imagen de Cliente',
@@ -74,7 +77,7 @@ const disabled = computed(() => {
 </script>
 
 <template>
-  <header class="main-header">
+  <header class="main-header" v-if="activeTab !== 'advanced-quotes' && activeTab !== 'privacy-policy' && activeTab !== 'mission-vision'">
     <h1>
       {{ activeTabHeader }}
     </h1>

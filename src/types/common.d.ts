@@ -62,13 +62,19 @@ export interface ImagesRedGlobal {
 
 export enum UserRole {
   ADMIN = 'admin',
-  CLIENT = 'client'
+  CLIENT = 'client',
+  ADVISOR = 'advisor'
 }
 
 export enum QuoteStatus {
   PENDING = 'pending',
+  IN_REVIEW = 'in_review',
+  QUOTED = 'quoted',
+  NEGOTIATING = 'negotiating',
+  APPROVED = 'approved',
   COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired'
 }
 
 export interface QuoteItem {
@@ -111,6 +117,42 @@ export interface Quote {
   createdAt: string
   updatedAt: string
   total?: number
+  priority?: 'low' | 'medium' | 'high' | 'urgent'
+  assignedTo?: string
+  dueDate?: string
+  estimatedValue?: number
+  actualValue?: number
+  conversionRate?: number
+  tags?: string[]
+  source?: string
+  lastContactDate?: string
+  followUpDate?: string
+  clientNotes?: string
+  internalNotes?: string
+  attachments?: string[]
+  statusHistory?: QuoteStatusHistory[]
+  comments?: QuoteComment[]
+}
+
+export interface QuoteStatusHistory {
+  status: QuoteStatus
+  changedBy: string
+  changedByName: string
+  changedByRole: string
+  changedAt: string
+  notes?: string
+}
+
+export interface QuoteComment {
+  id: string
+  quoteId: string
+  userId: string
+  userName: string
+  author: string
+  text: string
+  comment: string
+  isInternal: boolean
+  createdAt: string
 }
 
 export interface User {
@@ -127,6 +169,8 @@ export interface User {
   role: UserRole;
   createdAt: string;
   updatedAt: string;
+  lastLogin?: string;
+  isHidden?: boolean;
 }
 
 export interface UserFormData extends Omit<User, 'id' | 'createdAt' | 'updatedAt'> {
@@ -232,4 +276,12 @@ export interface Advisor {
   telefono: string;
 }
 
-export type tabs = 'menu' | 'users' | 'quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color' | 'advisors';
+export interface MissionVisionImage {
+  id: string;
+  type: 'mission' | 'vision';
+  imageUrl: string;
+  uploadedAt: string;
+  uploadedBy: string;
+}
+
+export type tabs = 'menu' | 'users' | 'quotes' | 'advanced-quotes' | 'cards' | 'catalogs' | 'carousel' | 'our-clients' | 'color' | 'advisors' | 'privacy-policy' | 'mission-vision';

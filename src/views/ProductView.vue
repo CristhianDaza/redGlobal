@@ -5,6 +5,7 @@ import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
 import { formatColor, formatNumber } from '@/utils'
+import { formatPrice, calculatePriceWithIncrease, calculatePriceWithIva } from '@/utils/formatNumber'
 import { useIsMobile } from '@/composable';
 import { useHead } from '@vueuse/head';
 
@@ -220,25 +221,20 @@ const hasAvailableQuantities = computed(() => {
   return product.value?.tableQuantity?.some(entry => entry.quantity > 0) ?? false;
 });
 
-const calculatePriceWithIncrease = (price: number) => {
+const calculatePriceWithUserIncrease = (price: number) => {
   if (!authStore.isAuthenticated()) {
     return price;
   }
 
-  const currentUser = userStore.users.find(user => user.email === authStore.user?.email);
-
-  if (currentUser?.priceIncrease) {
-    const finalPrice = price * (1 + currentUser.priceIncrease / 100);
-    return Math.ceil(finalPrice);
-  }
-
-  return price;
+  const currentUser = userStore.users.find(user => user.email === authStore.user?.email?.toLowerCase());
+  const priceIncrease = currentUser?.priceIncrease || 0;
+  
+  return calculatePriceWithIncrease(price, priceIncrease);
 };
 
-const calculatePriceWithIva = (price: number) => {
-  const priceWithIncrease = calculatePriceWithIncrease(price);
-
-  return Math.ceil(priceWithIncrease * 1.19);
+const calculatePriceWithUserIncreaseAndIva = (price: number) => {
+  const priceWithIncrease = calculatePriceWithUserIncrease(price);
+  return calculatePriceWithIva(priceWithIncrease);
 };
 
 const loadProduct = async () => {
@@ -524,7 +520,6 @@ const hideTooltip = () => {
           </div>
         </div>
         <div class="container-table-quantity">
-          <!-- Desktop Table -->
           <table class="product-table desktop-table">
             <thead>
               <tr>
@@ -532,8 +527,8 @@ const hideTooltip = () => {
                 <th>Cantidades<br />disponible</th>
                 <th v-if="hasAnyTracking">Unidades en<br />tránsito</th>
                 <th v-if="hasAnyTracking">Estado</th>
-                <th v-if="hasAnyTracking">Última<br />Actualización</th>
                 <th v-if="hasAnyTracking">Fecha<br />Estimada</th>
+                <th v-if="hasAnyTracking">Última<br />Actualización</th>
                 <th v-if="authStore.isAuthenticated()">Precio</th>
               </tr>
             </thead>
@@ -559,18 +554,18 @@ const hideTooltip = () => {
                   <span v-else>-</span>
                 </td>
                 <td v-if="hasAnyTracking">
-                  <TvRelativeTime v-if="entry.lastUpdateTracking" :date="entry.lastUpdateTracking" lang="es" />
-                </td>
-                <td v-if="hasAnyTracking">
                   <TvRelativeTime v-if="entry.dataTracking" :date="entry.dataTracking" lang="es" />
                   <span v-else>-</span>
+                </td>
+                <td v-if="hasAnyTracking">
+                  <TvRelativeTime v-if="entry.lastUpdateTracking" :date="entry.lastUpdateTracking" lang="es" />
                 </td>
                 <td v-if="authStore.isAuthenticated()">
                   <div v-if="isPriceLoading" class="price-skeleton"></div>
                   <template v-else>
                     <span class="price-text">{{ showPricesWithIva
-                        ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
-                        : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
+                        ? formatPrice(calculatePriceWithUserIncreaseAndIva(Number(entry.price)))
+                        : formatPrice(calculatePriceWithUserIncrease(Number(entry.price)))
                     }}</span>
                     <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
                   </template>
@@ -579,7 +574,6 @@ const hideTooltip = () => {
             </tbody>
           </table>
 
-          <!-- Mobile Cards -->
           <div class="mobile-cards">
             <div v-for="entry in product?.tableQuantity" :key="entry.colorName" class="mobile-card">
               <div class="mobile-card-header">
@@ -608,14 +602,14 @@ const hideTooltip = () => {
                   </span>
                 </div>
                 
-                <div v-if="hasAnyTracking && entry.lastUpdateTracking" class="mobile-row">
-                  <span class="mobile-label">Última actualización:</span>
-                  <TvRelativeTime :date="entry.lastUpdateTracking" lang="es" class="mobile-date" />
-                </div>
-                
                 <div v-if="hasAnyTracking && entry.dataTracking" class="mobile-row">
                   <span class="mobile-label">Fecha estimada:</span>
                   <TvRelativeTime :date="entry.dataTracking" lang="es" class="mobile-date" />
+                </div>
+                
+                <div v-if="hasAnyTracking && entry.lastUpdateTracking" class="mobile-row">
+                  <span class="mobile-label">Última actualización:</span>
+                  <TvRelativeTime :date="entry.lastUpdateTracking" lang="es" class="mobile-date" />
                 </div>
                 
                 <div v-if="authStore.isAuthenticated()" class="mobile-row mobile-price">
@@ -623,8 +617,8 @@ const hideTooltip = () => {
                   <div v-if="isPriceLoading" class="price-skeleton-mobile"></div>
                   <div v-else class="price-container-mobile">
                     <span class="price-text">{{ showPricesWithIva
-                        ? `$${formatNumber(calculatePriceWithIva(Number(entry.price)))}`
-                        : `$${formatNumber(calculatePriceWithIncrease(Number(entry.price)))}`
+                        ? formatPrice(calculatePriceWithUserIncreaseAndIva(Number(entry.price)))
+                        : formatPrice(calculatePriceWithUserIncrease(Number(entry.price)))
                     }}</span>
                     <span class="price-iva">{{ showPricesWithIva ? 'con IVA' : '+ IVA' }}</span>
                   </div>
