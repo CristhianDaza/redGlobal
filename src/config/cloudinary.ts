@@ -107,7 +107,7 @@ export const uploadPDF = async (file: File): Promise<UploadApiResponse> => {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('upload_preset', uploadPreset)
-    formData.append('public_id', `privacy-policy-${Date.now()}`) 
+    formData.append('public_id', `privacy-policy-${Date.now()}`)
 
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`
 
@@ -120,7 +120,7 @@ export const uploadPDF = async (file: File): Promise<UploadApiResponse> => {
 
     if (!response.ok) {
       console.error('Cloudinary raw upload failed:', data)
-      
+
       return await uploadPDFAsImage(file, uploadPreset, cloudName)
     }
 
@@ -143,7 +143,7 @@ export const uploadPDF = async (file: File): Promise<UploadApiResponse> => {
   }
 }
 
-export const deletePDF = async (publicId: string): Promise<void> => {
+export const deletePDF = async (_publicId: string): Promise<void> => {
   try {
     console.warn('PDF deletion should be handled from backend for security reasons')
   } catch (error) {

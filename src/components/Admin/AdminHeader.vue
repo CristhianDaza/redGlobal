@@ -34,13 +34,15 @@ const handleEventButton = () => {
     'our-clients': 'add-our-clients',
     color: 'add-color',
     advisors: 'add-advisor',
+    'privacy-policy': '', // pestañas sin acción de botón
+    'mission-vision': '' // pestañas sin acción de botón
   }
   const event = eventMap[props.activeTab]
   if (event) emit(event as any)
 }
 
 const activeTabHeader = computed(():string => {
-  const headers = {
+  const headers: Record<tabs, string> = {
     menu: 'Menú',
     users: 'Usuarios',
     cards: 'Categorías',
@@ -51,12 +53,14 @@ const activeTabHeader = computed(():string => {
     'our-clients': 'Imágenes de Clientes',
     color: 'Color Principal',
     advisors: 'Asesores',
+    'privacy-policy': 'Política de Privacidad',
+    'mission-vision': 'Misión y Visión'
   }
   return headers[props.activeTab]
 })
 
 const activeTabText = computed(():string => {
-  const text = {
+  const text: Record<tabs, string> = {
     menu: 'Agregar un Menú',
     users: 'Crear un Usuario',
     cards: 'Agregar una Categoría',
@@ -67,6 +71,8 @@ const activeTabText = computed(():string => {
     'our-clients': 'Agregar Imagen de Cliente',
     color: 'Crear Color Principal',
     advisors: 'Agregar Asesor',
+    'privacy-policy': '',
+    'mission-vision': ''
   }
   return text[props.activeTab]
 })

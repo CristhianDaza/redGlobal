@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import { onMounted } from 'vue';
 import RgModal from '@/components/UI/RgModal.vue';
 import { useGlobalPrivacyPolicy } from '@/composable/useGlobalPrivacyPolicy';
 
@@ -14,7 +14,6 @@ const emit = defineEmits<{
 const {
   hasGlobalPolicy,
   globalIsLoading,
-  globalLastUpdate,
   loadGlobalPolicy,
   downloadGlobalPolicy
 } = useGlobalPrivacyPolicy();
@@ -56,14 +55,14 @@ const handleDownloadPdf = async () => {
 
       <div class="policy-text">
         <p>
-          Informa que en virtud de su Política de Tratamiento de Datos Personales, nos 
-          esforzamos para que los procedimientos a través de los cuales hacemos uso de su 
-          información personal sean seguros y confidenciales, impidiendo el acceso indeseado 
+          Informa que en virtud de su Política de Tratamiento de Datos Personales, nos
+          esforzamos para que los procedimientos a través de los cuales hacemos uso de su
+          información personal sean seguros y confidenciales, impidiendo el acceso indeseado
           por parte de terceras personas a los mismos.
         </p>
-        
+
         <p>
-          puede consultar el nuestras Políticas de Tratamiento de Datos Personales en el 
+          puede consultar el nuestras Políticas de Tratamiento de Datos Personales en el
           siguiente documento:
         </p>
       </div>
@@ -73,8 +72,8 @@ const handleDownloadPdf = async () => {
           <span class="material-icons">sync</span>
           <p>Cargando información de políticas...</p>
         </div>
-        
-        <button 
+
+        <button
           v-else-if="hasGlobalPolicy"
           class="download-button"
           @click="handleDownloadPdf"
@@ -83,7 +82,7 @@ const handleDownloadPdf = async () => {
           <span class="material-icons">download</span>
           Descarga nuestra Política de Tratamiento de Datos Personales
         </button>
-        
+
         <div v-else class="no-policy-message">
           <span class="material-icons">info</span>
           <p>Actualmente no hay un documento de políticas disponible para descargar.</p>
@@ -92,7 +91,7 @@ const handleDownloadPdf = async () => {
 
       <div class="contact-info">
         <p>
-          Si tiene alguna inquietud o quiere cambiar sus preferencias comuníquese con nosotros al correo 
+          Si tiene alguna inquietud o quiere cambiar sus preferencias comuníquese con nosotros al correo
           <a href="mailto:servicioalcliente@redglobalpromo.com.co" class="email-link">
             servicioalcliente@redglobalpromo.com.co
           </a>
@@ -308,16 +307,16 @@ const handleDownloadPdf = async () => {
   .company-header h3 {
     font-size: 1.25rem;
   }
-  
+
   .download-button {
     padding: 0.875rem 1.5rem;
     font-size: 0.9rem;
   }
-  
+
   .policy-text p {
     text-align: left;
   }
-  
+
   .no-policy-message,
   .error-message {
     flex-direction: column;

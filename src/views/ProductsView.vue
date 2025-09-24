@@ -171,8 +171,6 @@ const categories = [
   }
 ];
 
-const totalSubcategories = categories.reduce((total, cat) => total + cat.subcategories.length, 0);
-
 const popularCategories = [
   {
     name: "Tecnología",
@@ -276,8 +274,8 @@ onMounted(async () => {
       </div>
 
       <div class="popular-grid">
-        <div 
-          v-for="popular in popularCategories" 
+        <div
+          v-for="popular in popularCategories"
           :key="popular.name"
           class="popular-card"
           @click="handleCategorySelect(popular.name)"
@@ -504,7 +502,7 @@ onMounted(async () => {
     text-align: center;
     gap: 2rem;
   }
-  
+
   .hero-stats {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -514,42 +512,42 @@ onMounted(async () => {
   .hero-section {
     padding: 3rem 1rem;
   }
-  
+
   .hero-title {
     font-size: 2.5rem;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .hero-icon {
     font-size: 3rem;
   }
-  
+
   .categories-section {
     padding: 0 1rem 2rem;
   }
-  
+
   .categories-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .section-header h2 {
     font-size: 2rem;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .popular-section {
     padding: 2rem 1rem;
   }
-  
+
   .popular-card {
     flex-direction: column;
     text-align: center;
     gap: 1rem;
   }
-  
+
   .hero-stats {
     grid-template-columns: 1fr;
   }
@@ -559,11 +557,11 @@ onMounted(async () => {
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .hero-description {
     font-size: 1rem;
   }
-  
+
   .section-header h2 {
     font-size: 1.75rem;
   }
