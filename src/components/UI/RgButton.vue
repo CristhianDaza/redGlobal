@@ -10,16 +10,28 @@ const props = withDefaults(defineProps<ButtonProps>(), {
   full: false,
 });
 
+const emit = defineEmits<{
+  (e: 'click', ev?: MouseEvent): void
+}>();
+
 const defaultStyle = {
   backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
   color: '#fff',
 };
+
+const onWrapperClick = (e: MouseEvent) => {
+  // Asegura que no se propague al padre (por ejemplo, la tarjeta que abre el catálogo)
+  if (e && typeof e.stopPropagation === 'function') {
+    e.stopPropagation();
+  }
+  if (props.disabled) return;
+  emit('click', e);
+};
 </script>
 
 <template>
-  <div class="button-container" @click.stop>
+  <div class="button-container" @click="onWrapperClick">
     <TvButton
-      @click="$emit('click')"
       :custom-style="props.customStyle || defaultStyle"
       :type="props.type"
       :icon="props.icon"

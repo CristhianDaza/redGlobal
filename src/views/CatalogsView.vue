@@ -12,43 +12,6 @@ const openCatalog = (url: string) => {
   window.open(url, '_blank')
 }
 
-const sanitizeFilename = (name: string) => {
-  return (name || 'catalogo')
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9-_\. ]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .substring(0, 100);
-}
-
-const downloadCatalog = async (url: string, title?: string) => {
-  const fileName = `${sanitizeFilename(title || 'catalogo')}.pdf`;
-  try {
-    const res = await fetch(url, { mode: 'cors' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const blob = await res.blob();
-    const blobUrl = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-  } catch (_err) {
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', fileName);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-}
-
 useHead({
   title: 'Catálogos – Red Global Promocional',
   meta: [
@@ -74,7 +37,6 @@ onMounted(() => {
 
 <template>
   <div class="catalogs-view">
-
     <!-- Loading State -->
     <div v-if="isLoadingCatalog" class="loading-section">
       <div class="loading-container">
@@ -91,7 +53,7 @@ onMounted(() => {
           Catálogos Disponibles
         </h2>
         <p class="section-description">
-          Descarga nuestros catálogos especializados y descubre la amplia gama de productos que tenemos para tu empresa.
+          Explora nuestros catálogos digitales especializados y descubre la amplia gama de productos que tenemos para tu empresa.
         </p>
       </div>
 
@@ -103,19 +65,15 @@ onMounted(() => {
           @click="openCatalog(catalog.toRoute)"
         >
           <div class="catalog-image-container">
-            <img
-              :src="catalog.imageUrl"
-              :alt="catalog.title"
-              class="catalog-image"
-            />
+            <img :src="catalog.imageUrl" :alt="catalog.title" class="catalog-image" />
             <div class="catalog-overlay">
               <div class="catalog-type">
                 <span class="material-icons">picture_as_pdf</span>
                 <span>PDF</span>
               </div>
               <div class="catalog-action">
-                <span class="material-icons">download</span>
-                <span>Descargar</span>
+                <span class="material-icons">open_in_new</span>
+                <span>Ver</span>
               </div>
             </div>
           </div>
@@ -137,14 +95,14 @@ onMounted(() => {
                 <span>Catálogo digital completo</span>
               </div>
               <div class="info-item">
-                <span class="material-icons">file_download</span>
-                <span>Descarga gratuita</span>
+                <span class="material-icons">visibility</span>
+                <span>Visualización en línea</span>
               </div>
             </div>
 
-            <div class="catalog-actions">
+            <div class="catalog-actions single">
               <RgButton
-                icon="view"
+                icon="visibility"
                 @click="openCatalog(catalog.toRoute)"
                 :customStyle="{
                   backgroundColor: 'var(--primary-color)',
@@ -152,17 +110,6 @@ onMounted(() => {
                 }"
               >
                 Ver Catálogo
-              </RgButton>
-              <RgButton
-                icon="download"
-                outlined
-                @click="downloadCatalog(catalog.toRoute, catalog.title)"
-                :customStyle="{
-                  borderColor: 'var(--primary-color)',
-                  color: 'var(--primary-color)',
-                }"
-              >
-                Descargar
               </RgButton>
             </div>
           </div>
@@ -509,6 +456,10 @@ onMounted(() => {
   display: flex;
   gap: 1rem;
 }
+
+.catalog-actions.single { justify-content: flex-start; }
+.catalog-actions.single :deep(button),
+.catalog-actions.single :deep(.modern-button) { width: auto; }
 
 /* Empty State */
 .empty-state {

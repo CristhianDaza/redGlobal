@@ -20,6 +20,7 @@ export const productsFirebase = {
     const commitBatch = async () => {
       if (opsInBatch === 0) return;
       await batch.commit();
+      logger.debug(`Committed batch with ${opsInBatch} ops`, 'productsFirebase');
       batch = writeBatch(db);
       opsInBatch = 0;
     };
@@ -42,9 +43,17 @@ export const productsFirebase = {
 
     if (chunksSaved > 0) {
       await this.updateLastUpdate();
-      cacheService.delete('api:FIREBASE_PRODUCTS:');
-      cacheService.delete('api:FIREBASE_LAST_UPDATE:');
-      logger.info(`Products successfully saved to Firebase (${chunksSaved} chunk docs) and cache cleared`, 'productsFirebase');
+
+      // Limpieza correcta del caché (antes se usaba una clave con ':' sobrante)
+      const deletedProducts = cacheService.delete('api:FIREBASE_PRODUCTS');
+      const deletedLastUpdate = cacheService.delete('api:FIREBASE_LAST_UPDATE');
+      logger.debug(`Cache invalidation -> products:${deletedProducts} lastUpdate:${deletedLastUpdate}`, 'productsFirebase');
+
+      // Opcional: setear en caché inmediatamente para evitar primer re-fetch
+      cacheService.set('api:FIREBASE_PRODUCTS', allProducts, API_CACHE_CONFIG.FIREBASE_PRODUCTS.ttl);
+      cacheService.set('api:FIREBASE_LAST_UPDATE', new Date().toISOString(), 2 * 60 * 1000);
+
+      logger.info(`Products successfully saved to Firebase (${chunksSaved} chunk docs) and cache refreshed`, 'productsFirebase');
     } else {
       logger.warn('No products were saved to Firebase; last update not modified', 'productsFirebase');
     }
