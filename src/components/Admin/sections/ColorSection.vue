@@ -57,7 +57,7 @@ const hexToRgb = (hex: string): string => {
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon preview" :style="{ backgroundColor: items[0]?.hex || '#3b82f6' }">
+        <div class="stat-icon preview">
           <span class="material-icons">visibility</span>
         </div>
         <div class="stat-info">
@@ -175,7 +175,6 @@ const hexToRgb = (hex: string): string => {
 
 <style scoped>
 .color-section {
-  padding: 2rem;
   background: #f8fafc;
   min-height: 100vh;
 }
@@ -239,7 +238,6 @@ const hexToRgb = (hex: string): string => {
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary-color), #4299e1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -247,12 +245,7 @@ const hexToRgb = (hex: string): string => {
   font-size: 1.5rem;
 }
 
-.stat-icon.theme {
-  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-}
-
 .stat-icon.preview {
-  background: var(--primary-color);
   border: 3px solid white;
   box-shadow: 0 0 0 2px #e2e8f0;
 }

@@ -833,7 +833,6 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
 .main-content {
   background: white;
   border-radius: 1rem;
-  padding: 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 

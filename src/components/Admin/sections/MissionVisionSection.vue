@@ -203,7 +203,6 @@ const triggerVisionUpload = () => {
 
 <style scoped>
 .mission-vision-section {
-  padding: 20px;
   position: relative;
 }
 

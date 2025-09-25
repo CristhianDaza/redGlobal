@@ -23,7 +23,6 @@ const allApisCompleted = computed(() => {
           <span class="material-icons">sync</span>
         </div>
         <h2 class="modal-title">Actualización de Productos</h2>
-        <p class="modal-subtitle">Sincronizando inventario desde múltiples proveedores</p>
       </div>
 
       <div class="modal-content">
@@ -180,13 +179,6 @@ const allApisCompleted = computed(() => {
   font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: -0.025em;
-}
-
-.modal-subtitle {
-  margin: 0;
-  font-size: 1rem;
-  opacity: 0.9;
-  font-weight: 400;
 }
 
 .modal-content {

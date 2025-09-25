@@ -239,9 +239,7 @@ const triggerFileInput = () => {
 
 <style scoped>
 .privacy-policy-section {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  min-height: 100vh;
 }
 
 .section-header {

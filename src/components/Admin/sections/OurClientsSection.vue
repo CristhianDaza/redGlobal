@@ -36,16 +36,6 @@ defineEmits<{
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon trust">
-          <span class="material-icons">verified</span>
-        </div>
-        <div class="stat-info">
-          <h3>100%</h3>
-          <p>Confianza</p>
-          <span class="stat-description">Clientes satisfechos con nuestro servicio</span>
-        </div>
-      </div>
-      <div class="stat-card">
         <div class="stat-icon visibility">
           <span class="material-icons">visibility</span>
         </div>
@@ -134,7 +124,6 @@ defineEmits<{
 
 <style scoped>
 .clients-section {
-  padding: 2rem;
   background: #f8fafc;
   min-height: 100vh;
 }
@@ -198,20 +187,11 @@ defineEmits<{
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary-color), #4299e1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 1.5rem;
-}
-
-.stat-icon.trust {
-  background: linear-gradient(135deg, #10b981, #34d399);
-}
-
-.stat-icon.visibility {
-  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
 }
 
 .stat-info h3 {

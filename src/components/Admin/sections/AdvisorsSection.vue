@@ -45,16 +45,6 @@ defineEmits<{
           <span class="stat-description">Todos los asesores con WhatsApp</span>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon support">
-          <span class="material-icons">headset_mic</span>
-        </div>
-        <div class="stat-info">
-          <h3>24/7</h3>
-          <p>Disponibilidad</p>
-          <span class="stat-description">Soporte continuo al cliente</span>
-        </div>
-      </div>
     </div>
 
     <div class="advisors-grid">
@@ -138,7 +128,6 @@ defineEmits<{
 
 <style scoped>
 .advisors-section {
-  padding: 2rem;
   background: #f8fafc;
   min-height: 100vh;
 }
@@ -202,20 +191,11 @@ defineEmits<{
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary-color), #4299e1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 1.5rem;
-}
-
-.stat-icon.whatsapp {
-  background: linear-gradient(135deg, #25D366, #128C7E);
-}
-
-.stat-icon.support {
-  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
 }
 
 .stat-info h3 {
