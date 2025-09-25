@@ -17,9 +17,9 @@ const defaultStyle = {
 </script>
 
 <template>
-  <div class="button-container">
+  <div class="button-container" @click.stop>
     <TvButton
-      @click="$emit('click', $event)"
+      @click="$emit('click')"
       :custom-style="props.customStyle || defaultStyle"
       :type="props.type"
       :icon="props.icon"
@@ -47,7 +47,7 @@ const defaultStyle = {
   font-weight: 600;
   letter-spacing: 0.025em;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
+  box-shadow:
     0 4px 14px 0 rgba(0, 0, 0, 0.1),
     0 2px 4px 0 rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -67,7 +67,7 @@ const defaultStyle = {
 
 .button-container :deep(.modern-button:hover) {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 8px 25px 0 rgba(0, 0, 0, 0.15),
     0 4px 10px 0 rgba(0, 0, 0, 0.1);
 }
@@ -78,14 +78,14 @@ const defaultStyle = {
 
 .button-container :deep(.modern-button:active) {
   transform: translateY(-1px);
-  box-shadow: 
+  box-shadow:
     0 6px 20px 0 rgba(0, 0, 0, 0.12),
     0 3px 8px 0 rgba(0, 0, 0, 0.08);
 }
 
 .button-container :deep(.modern-button:disabled) {
   transform: none;
-  box-shadow: 
+  box-shadow:
     0 2px 8px 0 rgba(0, 0, 0, 0.06),
     0 1px 2px 0 rgba(0, 0, 0, 0.04);
   opacity: 0.6;

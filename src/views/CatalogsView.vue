@@ -12,14 +12,41 @@ const openCatalog = (url: string) => {
   window.open(url, '_blank')
 }
 
-const downloadCatalog = (url: string) => {
-  const link = document.createElement('a')
-  link.href = url
-  link.download = ''
-  link.target = '_blank'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+const sanitizeFilename = (name: string) => {
+  return (name || 'catalogo')
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9-_\. ]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .substring(0, 100);
+}
+
+const downloadCatalog = async (url: string, title?: string) => {
+  const fileName = `${sanitizeFilename(title || 'catalogo')}.pdf`;
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+  } catch (_err) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }
 
 useHead({
@@ -92,7 +119,7 @@ onMounted(() => {
               </div>
             </div>
           </div>
-          
+
           <div class="catalog-content">
             <div class="catalog-header">
               <h3 class="catalog-title">{{ catalog.title }}</h3>
@@ -103,7 +130,7 @@ onMounted(() => {
                 </span>
               </div>
             </div>
-            
+
             <div class="catalog-info">
               <div class="info-item">
                 <span class="material-icons">description</span>
@@ -114,11 +141,11 @@ onMounted(() => {
                 <span>Descarga gratuita</span>
               </div>
             </div>
-            
+
             <div class="catalog-actions">
               <RgButton
                 icon="view"
-                @click.stop="openCatalog(catalog.toRoute)"
+                @click="openCatalog(catalog.toRoute)"
                 :customStyle="{
                   backgroundColor: 'var(--primary-color)',
                   color: '#ffffff',
@@ -129,7 +156,7 @@ onMounted(() => {
               <RgButton
                 icon="download"
                 outlined
-                @click.stop="downloadCatalog(catalog.toRoute)"
+                @click="downloadCatalog(catalog.toRoute, catalog.title)"
                 :customStyle="{
                   borderColor: 'var(--primary-color)',
                   color: 'var(--primary-color)',
@@ -597,7 +624,7 @@ onMounted(() => {
     text-align: center;
     gap: 2rem;
   }
-  
+
   .hero-stats {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -607,56 +634,56 @@ onMounted(() => {
   .hero-section {
     padding: 3rem 1rem;
   }
-  
+
   .hero-title {
     font-size: 2.5rem;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .hero-icon {
     font-size: 3rem;
   }
-  
+
   .catalogs-section {
     padding: 0 1rem 2rem;
   }
-  
+
   .catalogs-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .section-header h2 {
     font-size: 2rem;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .features-section {
     padding: 3rem 1rem;
   }
-  
+
   .feature-card {
     flex-direction: column;
     text-align: center;
     gap: 1rem;
   }
-  
+
   .hero-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .catalog-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .catalog-status {
     margin-left: 0;
   }
-  
+
   .catalog-actions {
     flex-direction: column;
   }
@@ -666,15 +693,15 @@ onMounted(() => {
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .hero-description {
     font-size: 1rem;
   }
-  
+
   .section-header h2 {
     font-size: 1.75rem;
   }
-  
+
   .catalog-content {
     padding: 1.5rem;
   }

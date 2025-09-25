@@ -1,9 +1,9 @@
-import { 
-  doc, 
-  getDoc, 
-  setDoc, 
+import {
+  doc,
+  getDoc,
+  setDoc,
   deleteDoc,
-  serverTimestamp 
+  serverTimestamp
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { uploadPDF } from '@/config/cloudinary';
@@ -22,20 +22,49 @@ export interface PrivacyPolicyDocument {
 const COLLECTION_NAME = 'privacyPolicy';
 const DOCUMENT_ID = 'current';
 
+const sanitizeFilename = (name: string): string => {
+  return (name || 'politicas-tratamiento-datos')
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9-_\. ]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .substring(0, 100) + '.pdf';
+};
+
+const buildAttachmentUrl = (baseUrl: string, fileName?: string): string => {
+  try {
+    const safeName = sanitizeFilename(fileName || 'politicas-tratamiento-datos');
+    // Inserta la transformación fl_attachment[:filename] después de /upload/
+    if (baseUrl.includes('/upload/')) {
+      const parts = baseUrl.split('/upload/');
+      // Nota: Cloudinary acepta fl_attachment o fl_attachment:filename
+      return `${parts[0]}/upload/fl_attachment:${encodeURIComponent(safeName)}/${parts[1]}`;
+    }
+    // Fallback: agrega query (no siempre funciona)
+    const url = new URL(baseUrl);
+    url.searchParams.set('fl_attachment', safeName);
+    return url.toString();
+  } catch (_e) {
+    return baseUrl;
+  }
+};
+
 class PrivacyPolicyCloudinary {
   async getCurrentPolicy(): Promise<PrivacyPolicyDocument | null> {
     try {
       logger.info('Obteniendo política de privacidad actual', 'privacyPolicyCloudinary');
-      
+
       const docRef = doc(db, COLLECTION_NAME, DOCUMENT_ID);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         const data = docSnap.data() as PrivacyPolicyDocument;
         logger.info('Política de privacidad encontrada', 'privacyPolicyCloudinary', { fileName: data.fileName });
         return data;
       }
-      
+
       logger.info('No se encontró política de privacidad', 'privacyPolicyCloudinary');
       return null;
     } catch (error) {
@@ -45,14 +74,14 @@ class PrivacyPolicyCloudinary {
   }
 
   async uploadPolicy(
-    file: File, 
+    file: File,
     uploadedBy: string
   ): Promise<PrivacyPolicyDocument> {
     try {
-      logger.info('Iniciando subida de política de privacidad a Cloudinary', 'privacyPolicyCloudinary', { 
-        fileName: file.name, 
+      logger.info('Iniciando subida de política de privacidad a Cloudinary', 'privacyPolicyCloudinary', {
+        fileName: file.name,
         fileSize: file.size,
-        uploadedBy 
+        uploadedBy
       });
 
       if (file.type !== 'application/pdf') {
@@ -84,7 +113,7 @@ class PrivacyPolicyCloudinary {
       const docRef = doc(db, COLLECTION_NAME, DOCUMENT_ID);
       await setDoc(docRef, policyDoc);
 
-      logger.info('Política de privacidad subida exitosamente a Cloudinary', 'privacyPolicyCloudinary', { 
+      logger.info('Política de privacidad subida exitosamente a Cloudinary', 'privacyPolicyCloudinary', {
         fileName: file.name,
         downloadUrl: downloadUrl,
         publicId: cloudinaryResponse.public_id,
@@ -106,7 +135,7 @@ class PrivacyPolicyCloudinary {
       logger.info('Eliminando política de privacidad actual', 'privacyPolicyCloudinary');
 
       const currentPolicy = await this.getCurrentPolicy();
-      
+
       if (currentPolicy) {
         logger.info('Eliminando documento de Firestore', 'privacyPolicyCloudinary', {
           publicId: currentPolicy.publicId
@@ -114,7 +143,7 @@ class PrivacyPolicyCloudinary {
 
         const docRef = doc(db, COLLECTION_NAME, DOCUMENT_ID);
         await deleteDoc(docRef);
-        
+
         logger.info('Política de privacidad eliminada exitosamente', 'privacyPolicyCloudinary');
       } else {
         logger.info('No hay política de privacidad para eliminar', 'privacyPolicyCloudinary');
@@ -128,12 +157,14 @@ class PrivacyPolicyCloudinary {
   async downloadPolicy(): Promise<string | null> {
     try {
       const currentPolicy = await this.getCurrentPolicy();
-      
+
       if (currentPolicy) {
         logger.info('Iniciando descarga de política de privacidad', 'privacyPolicyCloudinary');
-        return currentPolicy.downloadUrl;
+        // Forzar descarga con URL de Cloudinary usando fl_attachment
+        const forcedUrl = buildAttachmentUrl(currentPolicy.downloadUrl, currentPolicy.fileName);
+        return forcedUrl;
       }
-      
+
       logger.warn('No hay política de privacidad disponible para descargar', 'privacyPolicyCloudinary');
       return null;
     } catch (error) {
