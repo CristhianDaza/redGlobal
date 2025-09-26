@@ -34,7 +34,8 @@ const handleMouse = (e: MouseEvent, state: 'add' | 'remove') => {
 <template>
   <div v-if="props?.images?.length >= 3" class="clients-wrapper">
     <h2 class="clients-title">
-      Nuestros <span>Clientes</span>
+      <span class="title-emphasis">Clientes</span>
+      <span class="title-sub">que confían en nosotros</span>
     </h2>
     <div
       v-for="(rowImages, index) in rows"
@@ -132,5 +133,41 @@ span {
   100% {
     transform: translateX(-50%);
   }
+}
+
+.clients-title {
+  text-align: center;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  margin-top: 5rem;
+  color: var(--text-color);
+  font-weight: 700;
+  line-height: 1.1;
+  position: relative;
+}
+.clients-title::after {
+  content: '';
+  display: block;
+  width: 140px;
+  height: 5px;
+  margin: 0.9rem auto 0;
+  background: linear-gradient(90deg, var(--primary-color), #4da3ff);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.clients-title .title-emphasis {
+  display: block;
+  background: linear-gradient(90deg, var(--primary-color), #4da3ff);
+  -webkit-background-clip: text;
+  color: transparent;
+  letter-spacing: 1px;
+}
+.clients-title .title-sub {
+  display: block;
+  margin-top: .4rem;
+  font-size: clamp(1rem, 1.1vw + .9rem, 1.55rem);
+  font-weight: 400;
+  color: var(--text-color) !important;
+  letter-spacing: .5px;
+  opacity: .9;
 }
 </style>
