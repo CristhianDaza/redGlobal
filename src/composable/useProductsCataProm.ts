@@ -8,20 +8,12 @@ import {
   getStockByProductCataProm,
   getProductByIdCataProm
 } from '@/api';
-import { cacheService, API_CACHE_CONFIG, logger } from '@/services';
+import { logger } from '@/services';
 import noImage from '@/assets/images/no-image.jpg';
 
 export function useProductsCataProm() {
   const isLoadingProductsCataPromComposable = ref<boolean>(true);
   const isSuccessProductsCataPromComposable = ref<boolean>(false);
-
-  const chunkArray = <T>(arr: T[], chunkSize: number): T[][] => {
-    const result: T[][] = [];
-    for (let i = 0; i < arr.length; i += chunkSize) {
-      result.push(arr.slice(i, i + chunkSize));
-    }
-    return result;
-  }
 
   const mapProductDetailsToImages = (details: CataPromProductDetails, stocks: CataPromStock[]): ImagesRedGlobal[] => {
     return details.imagenes.map((img, index) => {
@@ -60,74 +52,54 @@ export function useProductsCataProm() {
   };
 
   const getProductsCataProm = async (): Promise<ProductsRedGlobal[]> => {
-    const cache = cacheService.cacheApiCall<ProductsRedGlobal[]>(
-      'PRODUCTS_CATAPROM',
-      {},
-      API_CACHE_CONFIG.PRODUCTS_CATAPROM.ttl
-    );
-
     try {
-      return await cache.getOrSet(async () => {
-        logger.info('Fetching products from CataProm API', 'useProductsCataProm');
-        
-        const excludedCategoryIds = [1];
-        const categories = await getCategoriesCataProm();
-        const filteredCategories = categories.filter(
-          (category) => !excludedCategoryIds.includes(category.id)
-        );
+      logger.info('Fetching products from CataProm API (no cache)', 'useProductsCataProm');
+      const excludedCategoryIds = [1];
+      const categories = await getCategoriesCataProm();
+      const filteredCategories = categories.filter(c => !excludedCategoryIds.includes(c.id));
 
-        const productsResults = await Promise.allSettled(
-          filteredCategories.map((category) =>
-          getProductsByCategoryCataProm(String(category.id))
-        ));
+      const productsResults = await Promise.allSettled(
+        filteredCategories.map(category => getProductsByCategoryCataProm(String(category.id)))
+      );
 
-        const productsArrays = productsResults
-          .filter(result => result.status === 'fulfilled')
-          .map((result: PromiseFulfilledResult<CataPromProduct[]>) => result.value);
+      const productsArrays = productsResults
+        .filter(r => r.status === 'fulfilled')
+        .map((r: PromiseFulfilledResult<CataPromProduct[]>) => r.value);
 
-        const allProducts = productsArrays.flat();
+      const allProducts = productsArrays.flat();
+      const uniqueProducts = Array.from(new Map(allProducts.map(p => [p.id, p])).values());
 
-        const uniqueProducts = Array.from(
-          new Map(allProducts.map(product => [product.id, product])).values()
-        );
+      const normalizedProducts: ProductsRedGlobal[] = uniqueProducts.map(product => _normalizeProducts(product, categories));
 
-        const normalizedProducts: ProductsRedGlobal[] = uniqueProducts.map(product =>
-          _normalizeProducts(product, categories)
-        );
+      const CHUNK_SIZE = 100;
+      const finalProducts: ProductsRedGlobal[] = [];
+      for (let i = 0; i < normalizedProducts.length; i += CHUNK_SIZE) {
+        const slice = normalizedProducts.slice(i, i + CHUNK_SIZE);
+        const updated = await Promise.all(slice.map(async (product) => {
+          try {
+            const [details, stocks] = await Promise.all([
+              getProductByIdCataProm(product.id),
+              getStockByProductCataProm(product.id)
+            ]);
+            const mappedStock = mapStockToTableEntries(stocks, details.precio1);
+            const totalProducts = calculateTotalQuantity(mappedStock);
+            return {
+              ...product,
+              images: mapProductDetailsToImages(details, stocks),
+              tableQuantity: mappedStock,
+              totalProducts,
+            } as ProductsRedGlobal;
+          } catch (e) {
+            logger.error(`Error procesando producto ${product.id}`, 'useProductsCataProm', e);
+            return product;
+          }
+        }));
+        finalProducts.push(...updated);
+      }
 
-        const CHUNK_SIZE = 100;
-        const productChunks = chunkArray(normalizedProducts, CHUNK_SIZE);
-        const finalProducts: ProductsRedGlobal[] = [];
-
-        for (const chunk of productChunks) {
-          const updatedProducts = await Promise.all(
-              chunk.map(async (product) => {
-                try {
-                  const [details, stocks] = await Promise.all([
-                    getProductByIdCataProm(product.id),
-                    getStockByProductCataProm(product.id)
-                  ]);
-                  const mappedStock = mapStockToTableEntries(stocks, details.precio1);
-                  const totalProducts = calculateTotalQuantity(mappedStock);
-                  return {
-                    ...product,
-                    images: mapProductDetailsToImages(details, stocks),
-                    tableQuantity: mappedStock,
-                    totalProducts,
-                  } as ProductsRedGlobal;
-                } catch (error) {
-                  logger.error(`Error procesando producto ${product.id}`, 'useProductsCataProm', error);
-                  return product;
-                }
-              })
-          );
-          finalProducts.push(...updatedProducts);
-        }
-
-        logger.info(`Successfully fetched ${finalProducts.length} products from CataProm API`, 'useProductsCataProm');
-        isSuccessProductsCataPromComposable.value = true;
-        return finalProducts;
-      });
+      logger.info(`Successfully fetched ${finalProducts.length} products from CataProm API`, 'useProductsCataProm');
+      isSuccessProductsCataPromComposable.value = true;
+      return finalProducts;
     } catch (error) {
       logger.error('Failed to fetch products from CataProm API', 'useProductsCataProm', error);
       isSuccessProductsCataPromComposable.value = false;

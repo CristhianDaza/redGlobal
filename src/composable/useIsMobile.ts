@@ -1,24 +1,33 @@
-import {onMounted, onUnmounted, ref} from "vue";
+import { onMounted, onUnmounted, ref } from 'vue';
 
 export function useIsMobile() {
-  const isSize878 = ref(window.innerWidth < 878);
-  const isSize610 = ref(window.innerWidth < 610);
-  const isSize320 = ref(window.innerWidth < 320);
-  const isSize483 =  ref(window.innerWidth < 483);
+  const hasWindow = typeof window !== 'undefined';
+
+  const isSize878 = ref(hasWindow ? window.innerWidth < 878 : false);
+  const isSize610 = ref(hasWindow ? window.innerWidth < 610 : false);
+  const isSize320 = ref(hasWindow ? window.innerWidth < 320 : false);
+  const isSize483 = ref(hasWindow ? window.innerWidth < 483 : false);
 
   const _handleResize = () => {
-    isSize878.value = window.innerWidth < 878;
-    isSize610.value = window.innerWidth < 610;
-    isSize320.value = window.innerWidth < 320;
-    isSize483.value = window.innerWidth < 483;
+    if (!hasWindow) return;
+    const w = window.innerWidth;
+    isSize878.value = w < 878;
+    isSize610.value = w < 610;
+    isSize320.value = w < 320;
+    isSize483.value = w < 483;
   };
 
   onMounted(() => {
-    window.addEventListener('resize', _handleResize);
-    _handleResize();
+    if (hasWindow) {
+      window.addEventListener('resize', _handleResize, { passive: true });
+      _handleResize();
+    }
   });
+
   onUnmounted(() => {
-    window.removeEventListener('resize', _handleResize);
+    if (hasWindow) {
+      window.removeEventListener('resize', _handleResize);
+    }
   });
 
   return {
@@ -26,5 +35,5 @@ export function useIsMobile() {
     isSize320,
     isSize878,
     isSize483,
-  }
+  };
 }

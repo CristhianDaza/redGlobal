@@ -81,32 +81,14 @@ export const useProductsStore = defineStore('products', {
       this.isSuccessApiStockSur = isSuccessProductsStockSurComposable
       this.isSuccessApiCataProm = isSuccessProductsCataPromComposable
 
-      const results = await Promise.allSettled([
-        getProductsPromos(),
-        getProductsMarpico(),
-        getProductsStockSur(),
-        getProductsCataProm(),
-      ])
+      const apiOrder = [
+        { name: 'promos', fetcher: getProductsPromos },
+        { name: 'marpico', fetcher: getProductsMarpico },
+        { name: 'stocksur', fetcher: getProductsStockSur },
+        { name: 'cataprom', fetcher: getProductsCataProm },
+      ] as const;
 
-      const productsPromos = results[0].status === 'fulfilled'
-        ? results[0].value
-        : (logger.error('Promos API failed', 'useProductsStore', results[0].reason), []);
-      const productsMarpico = results[1].status === 'fulfilled'
-        ? results[1].value
-        : (logger.error('Marpico API failed', 'useProductsStore', results[1].reason), []);
-      const productsStockSur = results[2].status === 'fulfilled'
-        ? results[2].value
-        : (logger.error('StockSur API failed', 'useProductsStore', results[2].reason), []);
-      const productsCataProm = results[3].status === 'fulfilled'
-        ? results[3].value
-        : (logger.error('CataProm API failed', 'useProductsStore', results[3].reason), []);
-
-      const allProducts = [
-        ...productsPromos,
-        ...productsMarpico,
-        ...productsStockSur,
-        ...productsCataProm
-      ].sort((a, b) => a.name.localeCompare(b.name));
+      const results = await Promise.allSettled(apiOrder.map(a => a.fetcher()));
 
       while (
         isLoadingProductsPromosComposable.value ||
@@ -114,20 +96,77 @@ export const useProductsStore = defineStore('products', {
         isLoadingProductsStockSurComposable.value ||
         isLoadingProductsCataPromComposable.value
       ) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(response => setTimeout(response, 100));
       }
 
       this.isLoadingSaveProducts = true;
+      const failedApis: string[] = [];
+      const emptyApis: string[] = [];
+      let savedApis: string[] = [];
+
       try {
-        if (allProducts.length > 0) {
-          await productsFirebase.saveProducts(allProducts)
-          this.$patch({ products: allProducts })
-          this.$patch({ lastUpdateProducts: new Date().toISOString() })
-        } else {
-          logger.warn('No se guardaron productos porque todas las APIs fallaron', 'useProductsStore');
+        for (let i = 0; i < results.length; i++) {
+          const apiMeta = apiOrder[i];
+          const result = results[i];
+
+            if (result.status === 'fulfilled') {
+              const products = result.value as ProductsRedGlobal[];
+              if (products && products.length > 0) {
+                try {
+                  const { chunks } = await productsFirebase.saveProductsForApi(apiMeta.name, products);
+                  if (chunks > 0) {
+                    savedApis.push(apiMeta.name);
+                  } else {
+                    emptyApis.push(apiMeta.name);
+                  }
+                } catch (saveErr) {
+                  logger.error(`Error saving products for API ${apiMeta.name}`, 'useProductsStore', saveErr);
+                  failedApis.push(apiMeta.name);
+                }
+              } else {
+                emptyApis.push(apiMeta.name);
+              }
+            } else {
+              logger.error(`${apiMeta.name} API failed`, 'useProductsStore', result.reason);
+              failedApis.push(apiMeta.name);
+            }
         }
-      } catch (saveError) {
-        logger.error('Error saving products to Firebase', 'useProductsStore', saveError);
+
+        if (savedApis.length > 0) {
+          await productsFirebase.updateLastUpdate();
+          this.lastUpdateProducts = new Date().toISOString();
+        }
+
+        this.products = await productsFirebase.getAllProducts();
+
+        if (failedApis.length > 0) {
+          NotificationService.push({
+            title: 'Actualización parcial de productos',
+            description: `Fallaron las APIs: ${failedApis.join(', ')}. Se mantiene la última data disponible de esas fuentes si existía.`,
+            type: 'warning'
+          });
+        }
+        if (emptyApis.length > 0 && emptyApis.length === apiOrder.length) {
+          NotificationService.push({
+            title: 'Sin datos nuevos',
+            description: 'Ninguna API devolvió productos nuevos. Se mantiene la data anterior.',
+            type: 'info'
+          });
+        } else if (savedApis.length > 0) {
+          NotificationService.push({
+            title: 'Productos actualizados',
+            description: `Se actualizaron correctamente: ${savedApis.join(', ')}`,
+            type: 'success'
+          });
+        }
+
+      } catch (globalErr) {
+        logger.error('Error en actualización parcial de productos', 'useProductsStore', globalErr);
+        NotificationService.push({
+          title: 'Error al actualizar productos',
+                      description: 'Ocurrió un error inesperado durante la actualización parcial.',
+          type: 'error'
+        });
       } finally {
         this.isLoadingSaveProducts = false;
         this.isUpdating = false;
