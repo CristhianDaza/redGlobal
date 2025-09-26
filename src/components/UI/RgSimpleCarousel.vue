@@ -27,8 +27,7 @@
               class="rg-sc__image"
               :class="imageFitClass"
               draggable="false"
-              @load="onImageLoad(idx, item)"
-            />
+              @load="onImageLoad(item)" />
             <div class="rg-sc__caption" v-if="showCaptions && item.title">{{ item.title }}</div>
           </router-link>
         </div>
@@ -42,7 +41,9 @@
       aria-label="Anterior"
       @click="prev"
     >
-      <span class="rg-sc__nav-icon">‹</span>
+      <svg class="rg-sc__nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" role="img">
+        <polyline points="15 4 9 12 15 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
     </button>
     <button
       v-if="showArrows"
@@ -51,7 +52,9 @@
       aria-label="Siguiente"
       @click="next"
     >
-      <span class="rg-sc__nav-icon">›</span>
+      <svg class="rg-sc__nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" role="img">
+        <polyline points="9 4 15 12 9 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
     </button>
 
     <button
@@ -293,10 +296,9 @@ function togglePlay() { isPlaying.value = !isPlaying.value; }
 function onMouseEnter() { if (props.pauseOnHover) isHovered.value = true; }
 function onMouseLeave() { if (props.pauseOnHover) isHovered.value = false; }
 
-function onImageLoad(idx: number, item: CarouselItem) {
+function onImageLoad(item: CarouselItem) {
   if (!props.autoAspect) return;
-  if (internalAspect.value) return; // ya calculado
-  // Intentar obtener proporción real usando un objeto Image
+  if (internalAspect.value) return;
   const img = new Image();
   img.src = item.imageUrl;
   img.onload = () => {
@@ -403,7 +405,13 @@ function fadeSlideClass(idx:number) {
 
 /* NAV BUTTONS */
 .rg-sc__nav { position:absolute; top:50%; transform:translateY(-50%); width: var(--nav-size,54px); height: var(--nav-size,54px); border:none; border-radius:50%; background:rgba(255,255,255,0.97); color:#ff4444; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.35); transition:background .25s, transform .25s, color .25s; z-index:10; }
-.rg-sc__nav-icon { font-size: calc(var(--nav-size,54px) * 0.55); line-height:0; display:flex; align-items:center; justify-content:center; position:relative; top: var(--nav-icon-offset-y, 0px); }
+.rg-sc__nav-icon {
+  width: calc(var(--nav-size,54px) * 0.52); /* ligeramente mayor para compensar stroke */
+  height: calc(var(--nav-size,54px) * 0.52);
+  display:block;
+  pointer-events:none;
+}
+
 .rg-sc__nav:hover { background:#ff4444; color:#fff; transform:translateY(-50%) scale(1.08); }
 .rg-sc__nav:active { transform:translateY(-50%) scale(.9); }
 .rg-sc__nav--prev { left:18px; }
@@ -431,7 +439,6 @@ function fadeSlideClass(idx:number) {
 @media (max-width: 768px) {
   .rg-simple-carousel { height:auto; }
   .rg-sc__nav { width:50px; height:50px; }
-  .rg-sc__nav-icon { font-size:2rem; }
-  .rg-sc__play { width:40px; height:40px; font-size:1rem; }
+  .rg-sc__nav-icon { width: calc(var(--nav-size,54px) * 0.56); height: calc(var(--nav-size,54px) * 0.56); }
 }
 </style>
