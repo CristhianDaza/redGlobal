@@ -93,6 +93,12 @@ const pageSizeOptions = computed(() => {
   const options: { value: number; label: string }[] = [];
   const totalProducts = productsLength.value;
 
+  if (totalProducts > 0 && totalProducts < 12) {
+    return [
+      { value: totalProducts, label: `Todos (${totalProducts})` }
+    ];
+  }
+
   if (totalProducts === 0) {
     return [
       { value: 16, label: '16' },
@@ -123,6 +129,21 @@ const pageSizeOptions = computed(() => {
   }
 
   return options;
+});
+
+// Sincronizar pageSize automáticamente cuando haya menos de 12 productos
+watch(productsLength, (n) => {
+  if (n > 0 && n < 12) {
+    if (pageSize.value !== n) {
+      pageSize.value = n;
+      // Ajustar query si es diferente
+      if (route.query.size?.toString() !== n.toString()) {
+        router.push({
+          query: { ...route.query, size: n.toString(), page: '1' }
+        });
+      }
+    }
+  }
 });
 
 const getButtonStyle = (page: number) => ({
