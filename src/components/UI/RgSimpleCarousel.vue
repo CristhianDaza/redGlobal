@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick, type CSSProperties } from 'vue';
 import type { CarouselItem } from '@/types/common.d';
 
 interface Props {
@@ -239,15 +239,15 @@ function onPointerUp(e: PointerEvent) {
   if (dx < 0) next(); else prev();
 }
 
-const trackStyle = computed(() => {
+const trackStyle = computed<CSSProperties>(() => {
   if (isFade.value) {
-    return { position: 'relative', width: '100%', height: '100%' };
+    return { position: 'relative', width: '100%', height: '100%' } as CSSProperties;
   }
-  const pct = slidePos.value * 100;
+  const pct = slidePos.value * 100; // cada slide ocupa 100% viewport
   return {
     transform: `translateX(-${pct}%)`,
     transition: isTransitioning.value ? `transform ${props.transitionMs}ms ease` : 'transform 0ms linear'
-  };
+  } as CSSProperties;
 });
 
 const showArrows = computed(() => hasMultiple.value);
@@ -372,12 +372,17 @@ function fadeSlideClass(idx:number) {
 </template>
 
 <style scoped>
+/* Eliminado :root; definimos variables por defecto en el contenedor para que el analizador las resuelva */
 .rg-simple-carousel {
+  --carousel-height: 600px;
+  --carousel-bg: #000;
+  --nav-size: 54px;
+  --fade-ms: 600ms;
   position: relative;
   width: 100%;
-  height: var(--carousel-height, 600px);
+  height: var(--carousel-height);
   overflow: hidden;
-  background: var(--carousel-bg, #000);
+  background: var(--carousel-bg);
   border-radius: 6px;
   display: block;
 }
@@ -391,13 +396,8 @@ function fadeSlideClass(idx:number) {
 .rg-sc__caption { position:absolute; left:0; right:0; bottom:0; padding:.75rem 1rem; background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 100%); color:#fff; font-size:.95rem; line-height:1.2; }
 
 /* NAV BUTTONS */
-.rg-sc__nav { position:absolute; top:50%; transform:translateY(-50%); width: var(--nav-size,54px); height: var(--nav-size,54px); border:none; border-radius:50%; background:rgba(255,255,255,0.97); color:#ff4444; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.35); transition:background .25s, transform .25s, color .25s; z-index:10; }
-.rg-sc__nav-icon {
-  width: calc(var(--nav-size,54px) * 0.52); /* ligeramente mayor para compensar stroke */
-  height: calc(var(--nav-size,54px) * 0.52);
-  display:block;
-  pointer-events:none;
-}
+.rg-sc__nav { position:absolute; top:50%; transform:translateY(-50%); width: var(--nav-size); height: var(--nav-size); border:none; border-radius:50%; background:rgba(255,255,255,0.97); color:#ff4444; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.35); transition:background .25s, transform .25s, color .25s; z-index:10; }
+.rg-sc__nav-icon { width: calc(var(--nav-size) * 0.52); height: calc(var(--nav-size) * 0.52); display:block; pointer-events:none; }
 
 .rg-sc__nav:hover { background:#ff4444; color:#fff; transform:translateY(-50%) scale(1.08); }
 .rg-sc__nav:active { transform:translateY(-50%) scale(.9); }
@@ -417,7 +417,7 @@ function fadeSlideClass(idx:number) {
 .rg-sc__sr { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; }
 
 /* Fade effect */
-.rg-fade-slide { position:absolute; inset:0; opacity:0; pointer-events:none; transition: opacity var(--fade-ms,600ms) ease; }
+.rg-fade-slide { position:absolute; inset:0; opacity:0; pointer-events:none; transition: opacity var(--fade-ms) ease; }
 .rg-fade-slide.is-active { opacity:1; pointer-events:auto; }
 
 /* Para fade el track debe permitir stacking */
@@ -426,6 +426,6 @@ function fadeSlideClass(idx:number) {
 @media (max-width: 768px) {
   .rg-simple-carousel { height:auto; }
   .rg-sc__nav { width:50px; height:50px; }
-  .rg-sc__nav-icon { width: calc(var(--nav-size,54px) * 0.56); height: calc(var(--nav-size,54px) * 0.56); }
+  .rg-sc__nav-icon { width: calc(var(--nav-size) * 0.56); height: calc(var(--nav-size) * 0.56); }
 }
 </style>

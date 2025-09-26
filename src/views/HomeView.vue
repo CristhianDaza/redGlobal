@@ -56,7 +56,7 @@ useHead({
       </div>
     </div>
     <div v-else class="carousel-wrapper">
-      <RgSimpleCarousel :items="carouselStore.carousel" :interval="8000" :show-indicators="true" />
+      <RgSimpleCarousel :items="carouselStore.carousel || []" :interval="8000" :show-indicators="true" />
     </div>
 
     <div class="container">
