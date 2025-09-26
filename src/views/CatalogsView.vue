@@ -102,7 +102,7 @@ onMounted(() => {
 
             <div class="catalog-actions single">
               <RgButton
-                icon="visibility"
+                icon="view"
                 @click="openCatalog(catalog.toRoute)"
                 :customStyle="{
                   backgroundColor: 'var(--primary-color)',
