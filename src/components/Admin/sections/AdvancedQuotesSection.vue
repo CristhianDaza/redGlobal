@@ -466,7 +466,6 @@ onMounted(async () => {
 
 <style scoped>
 .advanced-quotes-section {
-  padding: 1.5rem;
   background: #f8fafc;
   min-height: 100vh;
 }
@@ -515,7 +514,6 @@ onMounted(async () => {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -12,16 +12,6 @@ const openCatalog = (url: string) => {
   window.open(url, '_blank')
 }
 
-const downloadCatalog = (url: string) => {
-  const link = document.createElement('a')
-  link.href = url
-  link.download = ''
-  link.target = '_blank'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
-
 useHead({
   title: 'Catálogos – Red Global Promocional',
   meta: [
@@ -47,7 +37,6 @@ onMounted(() => {
 
 <template>
   <div class="catalogs-view">
-
     <!-- Loading State -->
     <div v-if="isLoadingCatalog" class="loading-section">
       <div class="loading-container">
@@ -64,7 +53,7 @@ onMounted(() => {
           Catálogos Disponibles
         </h2>
         <p class="section-description">
-          Descarga nuestros catálogos especializados y descubre la amplia gama de productos que tenemos para tu empresa.
+          Explora nuestros catálogos digitales especializados y descubre la amplia gama de productos que tenemos para tu empresa.
         </p>
       </div>
 
@@ -76,23 +65,19 @@ onMounted(() => {
           @click="openCatalog(catalog.toRoute)"
         >
           <div class="catalog-image-container">
-            <img
-              :src="catalog.imageUrl"
-              :alt="catalog.title"
-              class="catalog-image"
-            />
+            <img :src="catalog.imageUrl" :alt="catalog.title" class="catalog-image" />
             <div class="catalog-overlay">
               <div class="catalog-type">
                 <span class="material-icons">picture_as_pdf</span>
                 <span>PDF</span>
               </div>
               <div class="catalog-action">
-                <span class="material-icons">download</span>
-                <span>Descargar</span>
+                <span class="material-icons">open_in_new</span>
+                <span>Ver</span>
               </div>
             </div>
           </div>
-          
+
           <div class="catalog-content">
             <div class="catalog-header">
               <h3 class="catalog-title">{{ catalog.title }}</h3>
@@ -103,39 +88,28 @@ onMounted(() => {
                 </span>
               </div>
             </div>
-            
+
             <div class="catalog-info">
               <div class="info-item">
                 <span class="material-icons">description</span>
                 <span>Catálogo digital completo</span>
               </div>
               <div class="info-item">
-                <span class="material-icons">file_download</span>
-                <span>Descarga gratuita</span>
+                <span class="material-icons">visibility</span>
+                <span>Visualización en línea</span>
               </div>
             </div>
-            
-            <div class="catalog-actions">
+
+            <div class="catalog-actions single">
               <RgButton
                 icon="view"
-                @click.stop="openCatalog(catalog.toRoute)"
+                @click="openCatalog(catalog.toRoute)"
                 :customStyle="{
                   backgroundColor: 'var(--primary-color)',
                   color: '#ffffff',
                 }"
               >
                 Ver Catálogo
-              </RgButton>
-              <RgButton
-                icon="download"
-                outlined
-                @click.stop="downloadCatalog(catalog.toRoute)"
-                :customStyle="{
-                  borderColor: 'var(--primary-color)',
-                  color: 'var(--primary-color)',
-                }"
-              >
-                Descargar
               </RgButton>
             </div>
           </div>
@@ -483,6 +457,10 @@ onMounted(() => {
   gap: 1rem;
 }
 
+.catalog-actions.single { justify-content: flex-start; }
+.catalog-actions.single :deep(button),
+.catalog-actions.single :deep(.modern-button) { width: auto; }
+
 /* Empty State */
 .empty-state {
   text-align: center;
@@ -597,7 +575,7 @@ onMounted(() => {
     text-align: center;
     gap: 2rem;
   }
-  
+
   .hero-stats {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -607,56 +585,56 @@ onMounted(() => {
   .hero-section {
     padding: 3rem 1rem;
   }
-  
+
   .hero-title {
     font-size: 2.5rem;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .hero-icon {
     font-size: 3rem;
   }
-  
+
   .catalogs-section {
     padding: 0 1rem 2rem;
   }
-  
+
   .catalogs-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .section-header h2 {
     font-size: 2rem;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .features-section {
     padding: 3rem 1rem;
   }
-  
+
   .feature-card {
     flex-direction: column;
     text-align: center;
     gap: 1rem;
   }
-  
+
   .hero-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .catalog-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .catalog-status {
     margin-left: 0;
   }
-  
+
   .catalog-actions {
     flex-direction: column;
   }
@@ -666,15 +644,15 @@ onMounted(() => {
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .hero-description {
     font-size: 1rem;
   }
-  
+
   .section-header h2 {
     font-size: 1.75rem;
   }
-  
+
   .catalog-content {
     padding: 1.5rem;
   }

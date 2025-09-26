@@ -9,7 +9,15 @@ Got you, Cris. I reworked everything into a clean, English-only **CHANGELOG** (n
 
 ---
 
-# Changelog
+# [1.7.1] - 25/09/2025
+### ♻️ Changed
+- Carousel replaced with a custom implementation for better control and customization.
+- Removed colors from admin icons.
+- Fixed propagation of the main button.
+- Removed download button from catalogs.
+- Removed description from the product call modal.
+- Changed the title of our clients section.
+- Improved API calls.
 
 ## [1.7.0] - 23/09/2025
 

@@ -48,13 +48,16 @@ const productsLength = computed(() => storeProducts.getProductsToView?.length ||
 const totalPages = computed(() => Math.ceil(productsLength.value / pageSize.value));
 
 const getPageNumbers = computed(() => {
-  const totalNumbers = isSize320.value
+  const size320 = isSize320?.value === true;
+  const size610 = isSize610?.value === true;
+
+  const totalNumbers = size320
     ? 3
-    : (isSize610.value ? 5 : 10);
+    : (size610 ? 5 : 10);
 
   const pages: number[] = [];
-  const total = totalPages.value;
-  const current = currentPage.value;
+  const total = totalPages.value || 0;
+  const current = currentPage.value || 1;
   const half = Math.floor(totalNumbers / 2);
 
   if (total <= totalNumbers) {
@@ -89,7 +92,13 @@ const handlePageSizeChange = (event: Event) => {
 const pageSizeOptions = computed(() => {
   const options: { value: number; label: string }[] = [];
   const totalProducts = productsLength.value;
-  
+
+  if (totalProducts > 0 && totalProducts < 12) {
+    return [
+      { value: totalProducts, label: `Todos (${totalProducts})` }
+    ];
+  }
+
   if (totalProducts === 0) {
     return [
       { value: 16, label: '16' },
@@ -98,23 +107,43 @@ const pageSizeOptions = computed(() => {
       { value: 64, label: '64' }
     ];
   }
-  
+
   let size = 16;
-  
+
   while (size <= Math.min(64, totalProducts)) {
     options.push({ value: size, label: size.toString() });
     size += 16;
   }
 
+  if (options.length === 0) {
+    const base = Math.min(16, Math.max(1, totalProducts));
+    options.push({ value: base, label: base.toString() });
+  }
+
   const lastOption = options[options.length - 1];
-  if (totalProducts > lastOption.value) {
-    options.push({ 
-      value: totalProducts, 
-      label: `Todos (${totalProducts})` 
+  if (lastOption && totalProducts > lastOption.value) {
+    options.push({
+      value: totalProducts,
+      label: `Todos (${totalProducts})`
     });
   }
-  
+
   return options;
+});
+
+// Sincronizar pageSize automáticamente cuando haya menos de 12 productos
+watch(productsLength, (n) => {
+  if (n > 0 && n < 12) {
+    if (pageSize.value !== n) {
+      pageSize.value = n;
+      // Ajustar query si es diferente
+      if (route.query.size?.toString() !== n.toString()) {
+        router.push({
+          query: { ...route.query, size: n.toString(), page: '1' }
+        });
+      }
+    }
+  }
 });
 
 const getButtonStyle = (page: number) => ({
@@ -255,7 +284,7 @@ watch(
               Página {{ currentPage }} de {{ totalPages }} • Mostrando {{ Math.min(pageSize, productsLength - (currentPage - 1) * pageSize) }} de {{ productsLength }} productos
             </span>
           </div>
-          
+
           <div class="pagination-controls">
             <RgButton
               :disabled="currentPage === 1"
@@ -268,7 +297,7 @@ watch(
                 color: 'var(--primary-color)',
               }"
             />
-            
+
             <div class="page-numbers">
               <RgButton
                 v-for="page in getPageNumbers"
@@ -280,7 +309,7 @@ watch(
                 {{ page }}
               </RgButton>
             </div>
-            
+
             <RgButton
               :disabled="currentPage === totalPages"
               @click="handlePageChange(currentPage + 1)"
@@ -618,7 +647,7 @@ watch(
     gap: 1rem;
     text-align: center;
   }
-  
+
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
@@ -628,31 +657,31 @@ watch(
   .search-section {
     padding: 1rem;
   }
-  
+
   .section-header {
     padding: 1.5rem;
   }
-  
+
   .section-header h2 {
     font-size: 2rem;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .products-container {
     padding: 1.5rem;
   }
-  
+
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1.5rem;
   }
-  
+
   .pagination-controls {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .view-options {
     flex-direction: column;
     gap: 0.5rem;
@@ -663,15 +692,15 @@ watch(
   .section-header h2 {
     font-size: 1.75rem;
   }
-  
+
   .products-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .results-summary {
     padding: 1rem;
   }
-  
+
   .pagination-section {
     padding: 1.5rem;
   }

@@ -138,7 +138,6 @@ defineEmits<{
 
 <style scoped>
 .carousel-section {
-  padding: 2rem;
   background: #f8fafc;
   min-height: 100vh;
 }
@@ -202,20 +201,11 @@ defineEmits<{
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary-color), #4299e1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 1.5rem;
-}
-
-.stat-icon.active {
-  background: linear-gradient(135deg, #10b981, #34d399);
-}
-
-.stat-icon.performance {
-  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
 }
 
 .stat-info h3 {
