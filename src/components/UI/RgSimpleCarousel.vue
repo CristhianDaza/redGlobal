@@ -1,3 +1,291 @@
+<script setup lang="ts">
+import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import type { CarouselItem } from '@/types/common.d';
+
+interface Props {
+  items: CarouselItem[];
+  interval?: number;
+  pauseOnHover?: boolean;
+  height?: string;
+  aspectRatio?: string;
+  showIndicators?: boolean;
+  showCaptions?: boolean;
+  transitionMs?: number;
+  imageFit?: 'cover' | 'contain';
+  swipeThreshold?: number;
+  showPlayPause?: boolean;
+  loopSeamless?: boolean;
+  autoAspect?: boolean;
+  backgroundColor?: string;
+  effect?: 'slide' | 'fade';
+  navSize?: number;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  interval: 4000,
+  pauseOnHover: true,
+  height: '600px',
+  aspectRatio: '',
+  showIndicators: true,
+  showCaptions: false,
+  transitionMs: 600,
+  imageFit: 'contain',
+  swipeThreshold: 40,
+  showPlayPause: true,
+  loopSeamless: true,
+  autoAspect: true,
+  backgroundColor: '#000',
+  effect: 'slide',
+  navSize: 54
+});
+
+const isFade = computed(() => props.effect === 'fade');
+
+const slidePos = ref(0);
+const currentIndex = ref(0);
+let timer: number | undefined;
+const isHovered = ref(false);
+const isTransitioning = ref(false);
+const isPlaying = ref(true);
+const internalAspect = ref<string | null>(null);
+
+const pointerStartX = ref(0);
+const pointerStartY = ref(0);
+const pointerDown = ref(false);
+const pointerMoved = ref(false);
+
+const total = computed(() => props.items.length);
+const hasMultiple = computed(() => total.value > 1);
+const useClones = computed(() => hasMultiple.value && props.loopSeamless && !isFade.value);
+
+const displayItems = computed<CarouselItem[]>(() => {
+  if (!useClones.value) return props.items;
+  if (props.items.length === 0) return [];
+  const first = props.items[0];
+  const last = props.items[props.items.length - 1];
+  return [last, ...props.items, first];
+});
+
+function initPositions() {
+  if (isFade.value) {
+    slidePos.value = 0;
+    currentIndex.value = 0;
+    return;
+  }
+  if (useClones.value) {
+    slidePos.value = 1;
+    currentIndex.value = 0;
+  } else {
+    slidePos.value = 0;
+    currentIndex.value = 0;
+  }
+}
+
+const carouselStyle = computed(() => {
+  const style: Record<string, string> = {
+    '--carousel-height': props.height,
+    '--carousel-bg': props.backgroundColor,
+    '--nav-size': props.navSize + 'px',
+    '--fade-ms': props.transitionMs + 'ms',
+    '--nav-icon-offset-y': '0px'
+  };
+  const ar = props.aspectRatio || internalAspect.value;
+  if (ar) {
+    style.aspectRatio = ar;
+    style.height = 'auto';
+  }
+  return style;
+});
+
+const imageFitClass = computed(() => props.imageFit === 'contain' ? 'fit-contain' : 'fit-cover');
+
+function clearTimer() {
+  if (timer) { clearInterval(timer); timer = undefined; }
+}
+
+function startTimer() {
+  clearTimer();
+  if (!hasMultiple.value || !isPlaying.value) return;
+  timer = window.setInterval(() => {
+    if (props.pauseOnHover && isHovered.value) return;
+    next();
+  }, props.interval);
+}
+
+function next() {
+  if (!hasMultiple.value || isTransitioning.value) return;
+  if (isFade.value) {
+    currentIndex.value = (currentIndex.value + 1) % total.value;
+    return;
+  }
+  isTransitioning.value = true;
+  slidePos.value += 1;
+  updateLogicalIndex();
+}
+
+function prev() {
+  if (!hasMultiple.value || isTransitioning.value) return;
+  if (isFade.value) {
+    currentIndex.value = (currentIndex.value - 1 + total.value) % total.value;
+    return;
+  }
+  isTransitioning.value = true;
+  slidePos.value -= 1;
+  updateLogicalIndex();
+}
+
+function goTo(i: number) {
+  if (i < 0 || i >= total.value) return;
+  if (isTransitioning.value && !isFade.value) return;
+  if (isFade.value) {
+    currentIndex.value = i;
+    return;
+  }
+  isTransitioning.value = true;
+  if (useClones.value) {
+    slidePos.value = i + 1;
+  } else {
+    slidePos.value = i;
+  }
+  currentIndex.value = i;
+}
+
+function updateLogicalIndex() {
+  if (!useClones.value) {
+    if (slidePos.value >= total.value) slidePos.value = 0;
+    if (slidePos.value < 0) slidePos.value = total.value - 1;
+    currentIndex.value = slidePos.value;
+    return;
+  }
+  const lastRealIndex = total.value - 1;
+  if (slidePos.value === displayItems.value.length - 1) {
+    currentIndex.value = 0;
+  } else if (slidePos.value === 0) {
+    currentIndex.value = lastRealIndex;
+  } else {
+    currentIndex.value = slidePos.value - 1;
+  }
+}
+
+function onTransitionEnd() {
+  if (isFade.value) return; // no-op en fade
+  if (!useClones.value) { isTransitioning.value = false; return; }
+  const len = displayItems.value.length;
+  if (slidePos.value === len - 1) {
+    disableTransitionOnce();
+    slidePos.value = 1;
+  } else if (slidePos.value === 0) {
+    disableTransitionOnce();
+    slidePos.value = len - 2;
+  }
+  isTransitioning.value = false;
+}
+
+/* Transición instantánea (sin flicker) */
+const trackEl = ref<HTMLElement | null>(null);
+let restoreTransitionTimeout: number | undefined;
+
+function disableTransitionOnce() {
+  const el = trackEl.value;
+  if (!el) return;
+  const original = el.style.transition;
+  el.style.transition = 'none';
+  void el.offsetHeight;
+  restoreTransitionTimeout && clearTimeout(restoreTransitionTimeout);
+  restoreTransitionTimeout = window.setTimeout(() => {
+    el.style.transition = original;
+  }, 20);
+}
+
+function togglePlay() { isPlaying.value = !isPlaying.value; }
+function onMouseEnter() { if (props.pauseOnHover) isHovered.value = true; }
+function onMouseLeave() { if (props.pauseOnHover) isHovered.value = false; }
+
+function onImageLoad(item: CarouselItem) {
+  if (!props.autoAspect) return;
+  if (internalAspect.value) return;
+  const img = new Image();
+  img.src = item.imageUrl;
+  img.onload = () => {
+    if (img.naturalWidth && img.naturalHeight) {
+      internalAspect.value = `${img.naturalWidth}/${img.naturalHeight}`;
+    }
+  };
+}
+
+function onPointerDown(e: PointerEvent) {
+  if (!hasMultiple.value) return;
+  pointerDown.value = true;
+  pointerMoved.value = false;
+  pointerStartX.value = e.clientX;
+  pointerStartY.value = e.clientY;
+  window.addEventListener('pointermove', onPointerMove, { passive: true });
+  window.addEventListener('pointerup', onPointerUp, { once: true });
+}
+function onPointerMove(e: PointerEvent) {
+  if (!pointerDown.value) return;
+  const dx = e.clientX - pointerStartX.value;
+  const dy = e.clientY - pointerStartY.value;
+  if (Math.abs(dx) > 5) pointerMoved.value = true;
+  if (Math.abs(dy) > Math.abs(dx)) return;
+}
+function onPointerUp(e: PointerEvent) {
+  window.removeEventListener('pointermove', onPointerMove);
+  if (!pointerDown.value) return;
+  pointerDown.value = false;
+  const dx = e.clientX - pointerStartX.value;
+  const absDx = Math.abs(dx);
+  if (!pointerMoved.value || absDx < props.swipeThreshold) return;
+  if (dx < 0) next(); else prev();
+}
+
+const trackStyle = computed(() => {
+  if (isFade.value) {
+    return { position: 'relative', width: '100%', height: '100%' };
+  }
+  const pct = slidePos.value * 100;
+  return {
+    transform: `translateX(-${pct}%)`,
+    transition: isTransitioning.value ? `transform ${props.transitionMs}ms ease` : 'transform 0ms linear'
+  };
+});
+
+const showArrows = computed(() => hasMultiple.value);
+
+watch(() => props.items, () => {
+  initPositions();
+  nextTick(() => startTimer());
+});
+
+watch(isPlaying, () => startTimer());
+watch(useClones, () => initPositions());
+watch(isFade, () => initPositions());
+
+onMounted(() => {
+  initPositions();
+  startTimer();
+});
+
+onBeforeUnmount(() => {
+  clearTimer();
+  window.removeEventListener('pointermove', onPointerMove);
+  restoreTransitionTimeout && clearTimeout(restoreTransitionTimeout);
+});
+
+function play() { if (!isPlaying.value) { isPlaying.value = true; startTimer(); } }
+function pause() { if (isPlaying.value) { isPlaying.value = false; clearTimer(); } }
+
+defineExpose({ next, prev, goTo, play, pause });
+
+function fadeSlideClass(idx:number) {
+  if (!isFade.value) return null;
+  return {
+    'rg-fade-slide': true,
+    'is-active': idx === (currentIndex.value)
+  };
+}
+</script>
+
 <template>
   <div
     class="rg-simple-carousel"
@@ -82,307 +370,6 @@
     <p class="rg-sc__sr" aria-live="polite">Slide {{ currentIndex + 1 }} de {{ total }}</p>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import type { CarouselItem } from '@/types/common.d';
-
-interface Props {
-  items: CarouselItem[];
-  interval?: number; // ms
-  pauseOnHover?: boolean;
-  height?: string;
-  aspectRatio?: string; // CSS aspect-ratio
-  showIndicators?: boolean;
-  showCaptions?: boolean;
-  transitionMs?: number;
-  imageFit?: 'cover' | 'contain';
-  swipeThreshold?: number;
-  showPlayPause?: boolean;
-  loopSeamless?: boolean; // Usa clones para transición sin salto
-  autoAspect?: boolean;   // Detectar aspect ratio de la primera imagen
-  backgroundColor?: string;
-  effect?: 'slide' | 'fade'; // NUEVO: tipo de transición
-  navSize?: number;          // NUEVO: tamaño botones navegación px
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  interval: 4000,
-  pauseOnHover: true,
-  height: '600px',
-  aspectRatio: '',
-  showIndicators: true,
-  showCaptions: false,
-  transitionMs: 600,
-  imageFit: 'contain',
-  swipeThreshold: 40,
-  showPlayPause: true,
-  loopSeamless: true,
-  autoAspect: true,
-  backgroundColor: '#000',
-  effect: 'slide',
-  navSize: 54
-});
-
-const isFade = computed(() => props.effect === 'fade');
-
-/* Estado */
-const slidePos = ref(0);              // Índice POS en displayItems
-const currentIndex = ref(0);          // Índice lógico (0..items-1) para indicadores
-let timer: number | undefined;
-const isHovered = ref(false);
-const isTransitioning = ref(false);
-const isPlaying = ref(true);
-const internalAspect = ref<string | null>(null);
-
-// Swipe
-const pointerStartX = ref(0);
-const pointerStartY = ref(0);
-const pointerDown = ref(false);
-const pointerMoved = ref(false);
-
-const total = computed(() => props.items.length);
-const hasMultiple = computed(() => total.value > 1);
-const useClones = computed(() => hasMultiple.value && props.loopSeamless && !isFade.value);
-
-/* Clones: [last, ...items, first] */
-const displayItems = computed<CarouselItem[]>(() => {
-  if (!useClones.value) return props.items;
-  if (props.items.length === 0) return [];
-  const first = props.items[0];
-  const last = props.items[props.items.length - 1];
-  return [last, ...props.items, first];
-});
-
-function initPositions() {
-  if (isFade.value) {
-    slidePos.value = 0;
-    currentIndex.value = 0;
-    return;
-  }
-  if (useClones.value) {
-    slidePos.value = 1; // Posición real primer item
-    currentIndex.value = 0;
-  } else {
-    slidePos.value = 0;
-    currentIndex.value = 0;
-  }
-}
-
-/* Aspect Ratio dinámico */
-const carouselStyle = computed(() => {
-  const style: Record<string, string> = {
-    '--carousel-height': props.height,
-    '--carousel-bg': props.backgroundColor,
-    '--nav-size': props.navSize + 'px',
-    '--fade-ms': props.transitionMs + 'ms',
-    '--nav-icon-offset-y': '0px'
-  };
-  const ar = props.aspectRatio || internalAspect.value;
-  if (ar) {
-    style.aspectRatio = ar;
-    style.height = 'auto';
-  }
-  return style;
-});
-
-const imageFitClass = computed(() => props.imageFit === 'contain' ? 'fit-contain' : 'fit-cover');
-
-function clearTimer() {
-  if (timer) { clearInterval(timer); timer = undefined; }
-}
-
-function startTimer() {
-  clearTimer();
-  if (!hasMultiple.value || !isPlaying.value) return;
-  timer = window.setInterval(() => {
-    if (props.pauseOnHover && isHovered.value) return;
-    next();
-  }, props.interval);
-}
-
-function next() {
-  if (!hasMultiple.value || isTransitioning.value) return;
-  if (isFade.value) {
-    currentIndex.value = (currentIndex.value + 1) % total.value;
-    return; // fade no usa slidePos
-  }
-  isTransitioning.value = true;
-  slidePos.value += 1;
-  updateLogicalIndex();
-}
-
-function prev() {
-  if (!hasMultiple.value || isTransitioning.value) return;
-  if (isFade.value) {
-    currentIndex.value = (currentIndex.value - 1 + total.value) % total.value;
-    return;
-  }
-  isTransitioning.value = true;
-  slidePos.value -= 1;
-  updateLogicalIndex();
-}
-
-function goTo(i: number) {
-  if (i < 0 || i >= total.value) return;
-  if (isTransitioning.value && !isFade.value) return;
-  if (isFade.value) {
-    currentIndex.value = i;
-    return;
-  }
-  isTransitioning.value = true;
-  if (useClones.value) {
-    slidePos.value = i + 1;
-  } else {
-    slidePos.value = i;
-  }
-  currentIndex.value = i;
-}
-
-function updateLogicalIndex() {
-  if (!useClones.value) {
-    // Simple loop lógico
-    if (slidePos.value >= total.value) slidePos.value = 0;
-    if (slidePos.value < 0) slidePos.value = total.value - 1;
-    currentIndex.value = slidePos.value;
-    return;
-  }
-  // Con clones
-  const lastRealIndex = total.value - 1;
-  if (slidePos.value === displayItems.value.length - 1) {
-    // Estamos en clon final (después del último real)
-    currentIndex.value = 0; // lógicamente primer real
-  } else if (slidePos.value === 0) {
-    currentIndex.value = lastRealIndex; // clon inicial -> último real
-  } else {
-    currentIndex.value = slidePos.value - 1; // Ajustar offset
-  }
-}
-
-function onTransitionEnd() {
-  if (isFade.value) return; // no-op en fade
-  if (!useClones.value) { isTransitioning.value = false; return; }
-  const len = displayItems.value.length;
-  if (slidePos.value === len - 1) {
-    // Pasó al clon final, saltar sin animación al primero real
-    disableTransitionOnce();
-    slidePos.value = 1;
-  } else if (slidePos.value === 0) {
-    disableTransitionOnce();
-    slidePos.value = len - 2; // último real
-  }
-  isTransitioning.value = false;
-}
-
-/* Transición instantánea (sin flicker) */
-const trackEl = ref<HTMLElement | null>(null);
-let restoreTransitionTimeout: number | undefined;
-
-function disableTransitionOnce() {
-  const el = trackEl.value;
-  if (!el) return;
-  const original = el.style.transition;
-  el.style.transition = 'none';
-  // Forzar reflow
-  void el.offsetHeight;
-  // Restaurar en siguiente frame
-  restoreTransitionTimeout && clearTimeout(restoreTransitionTimeout);
-  restoreTransitionTimeout = window.setTimeout(() => {
-    el.style.transition = original;
-  }, 20);
-}
-
-function togglePlay() { isPlaying.value = !isPlaying.value; }
-function onMouseEnter() { if (props.pauseOnHover) isHovered.value = true; }
-function onMouseLeave() { if (props.pauseOnHover) isHovered.value = false; }
-
-function onImageLoad(item: CarouselItem) {
-  if (!props.autoAspect) return;
-  if (internalAspect.value) return;
-  const img = new Image();
-  img.src = item.imageUrl;
-  img.onload = () => {
-    if (img.naturalWidth && img.naturalHeight) {
-      internalAspect.value = `${img.naturalWidth}/${img.naturalHeight}`;
-    }
-  };
-}
-
-// Swipe
-function onPointerDown(e: PointerEvent) {
-  if (!hasMultiple.value) return;
-  pointerDown.value = true;
-  pointerMoved.value = false;
-  pointerStartX.value = e.clientX;
-  pointerStartY.value = e.clientY;
-  window.addEventListener('pointermove', onPointerMove, { passive: true });
-  window.addEventListener('pointerup', onPointerUp, { once: true });
-}
-function onPointerMove(e: PointerEvent) {
-  if (!pointerDown.value) return;
-  const dx = e.clientX - pointerStartX.value;
-  const dy = e.clientY - pointerStartY.value;
-  if (Math.abs(dx) > 5) pointerMoved.value = true;
-  if (Math.abs(dy) > Math.abs(dx)) return; // scroll vertical
-}
-function onPointerUp(e: PointerEvent) {
-  window.removeEventListener('pointermove', onPointerMove);
-  if (!pointerDown.value) return;
-  pointerDown.value = false;
-  const dx = e.clientX - pointerStartX.value;
-  const absDx = Math.abs(dx);
-  if (!pointerMoved.value || absDx < props.swipeThreshold) return;
-  if (dx < 0) next(); else prev();
-}
-
-/* Estilos dinámicos track */
-const trackStyle = computed(() => {
-  if (isFade.value) {
-    return { position: 'relative', width: '100%', height: '100%' };
-  }
-  const pct = slidePos.value * 100; // cada slide ocupa 100% viewport
-  return {
-    transform: `translateX(-${pct}%)`,
-    transition: isTransitioning.value ? `transform ${props.transitionMs}ms ease` : 'transform 0ms linear'
-  };
-});
-
-const showArrows = computed(() => hasMultiple.value);
-
-watch(() => props.items, () => {
-  initPositions();
-  nextTick(() => startTimer());
-});
-
-watch(isPlaying, () => startTimer());
-watch(useClones, () => initPositions());
-watch(isFade, () => initPositions());
-
-onMounted(() => {
-  initPositions();
-  startTimer();
-});
-
-onBeforeUnmount(() => {
-  clearTimer();
-  window.removeEventListener('pointermove', onPointerMove);
-  restoreTransitionTimeout && clearTimeout(restoreTransitionTimeout);
-});
-
-// Exponer API externa
-function play() { if (!isPlaying.value) { isPlaying.value = true; startTimer(); } }
-function pause() { if (isPlaying.value) { isPlaying.value = false; clearTimer(); } }
-
-defineExpose({ next, prev, goTo, play, pause });
-
-function fadeSlideClass(idx:number) {
-  if (!isFade.value) return null;
-  return {
-    'rg-fade-slide': true,
-    'is-active': idx === (currentIndex.value) // en fade no hay clones en displayItems
-  };
-}
-</script>
 
 <style scoped>
 .rg-simple-carousel {
