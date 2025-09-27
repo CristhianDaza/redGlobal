@@ -143,20 +143,23 @@ export const useProductsStore = defineStore('products', {
           NotificationService.push({
             title: 'Actualización parcial de productos',
             description: `Fallaron las APIs: ${failedApis.join(', ')}. Se mantiene la última data disponible de esas fuentes si existía.`,
-            type: 'warning'
+            type: 'warning',
+            duration: 5000
           });
         }
         if (emptyApis.length > 0 && emptyApis.length === apiOrder.length) {
           NotificationService.push({
             title: 'Sin datos nuevos',
             description: 'Ninguna API devolvió productos nuevos. Se mantiene la data anterior.',
-            type: 'info'
+            type: 'info',
+            duration: 3500
           });
         } else if (savedApis.length > 0) {
           NotificationService.push({
             title: 'Productos actualizados',
             description: `Se actualizaron correctamente: ${savedApis.join(', ')}`,
-            type: 'success'
+            type: 'success',
+            duration: 4500
           });
         }
 
