@@ -192,9 +192,10 @@ export function useAdvancedQuotes() {
   const deleteQuote = async (quoteId: string) => {
     try {
       isUpdating.value = true
-      await quotesFirebase.deleteQuote(quoteId)
-
-      quotes.value = quotes.value.filter(q => q.id !== quoteId)
+      const toDelete = quotes.value.find(q => q.id === quoteId || q.idDoc === quoteId)
+      const docId = toDelete?.idDoc || quoteId
+      await quotesFirebase.deleteQuote(docId)
+      quotes.value = quotes.value.filter(q => q.id !== toDelete?.id && q.idDoc !== docId)
 
       NotificationService.push({
         title: 'Cotización eliminada',

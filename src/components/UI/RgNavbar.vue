@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ProductsRedGlobal } from '@/types/common.d';
-import { computed, defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, ref, onMounted, watch } from 'vue';
 import TvButton from '@todovue/tv-button';
 import { useRouter } from 'vue-router';
 import { useAuthStore, useMenuStore, useQuoteStore, useUserStore } from '@/store';
@@ -132,6 +132,26 @@ const isActiveRoute = (path: string) => {
 window.addEventListener('resize', () => {
   windowWidth.value = window.innerWidth;
 });
+
+const isOnAdmin = computed(() => router.currentRoute.value.path.startsWith('/admin'))
+const pendingCount = computed(() => quoteStore.pendingQuotes.length)
+const showAdminBadge = computed(() => authStore.isAuthenticated() && authStore.isAdvisor && !isOnAdmin.value && pendingCount.value > 0)
+
+onMounted(async () => {
+  if (authStore.isAuthenticated() && authStore.isAdvisor && !isOnAdmin.value) {
+    try {
+      await quoteStore.getQuotes();
+    } catch {}
+  }
+})
+
+watch(() => router.currentRoute.value.path, async (path) => {
+  if (authStore.isAuthenticated() && authStore.isAdvisor && !path.startsWith('/admin')) {
+    try {
+      await quoteStore.getQuotes();
+    } catch {}
+  }
+})
 </script>
 
 <template>
@@ -224,10 +244,11 @@ window.addEventListener('resize', () => {
       <router-link
         v-if="authStore.isAuthenticated() && (authStore.isAdmin || authStore.isAdvisor)"
         :to="{ name: 'admin', query: { tab: 'advanced-quotes' } }"
-        class="admin-link"
+        class="nav-link quote-cart-btn admin-link"
       >
         <span class="material-icons">admin_panel_settings</span>
         <span class="auth-button" v-if="!isSize320">Admin</span>
+        <span v-if="showAdminBadge" class="quote-badge">{{ pendingCount }}</span>
       </router-link>
 
       <p @click="authStore.isAuthenticated() ? handleLogout() : toggleLoginModal()" style="cursor: pointer;">
@@ -561,73 +582,6 @@ window.addEventListener('resize', () => {
     gap: 0.75rem;
   }
 
-  .admin-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    color: #666;
-    padding: 0.75rem 1rem;
-    border-radius: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 14px;
-    font-weight: 500;
-    border: 2px solid rgba(0, 0, 0, 0.08);
-    background: linear-gradient(145deg, #ffffff, #f8f9fa);
-    box-shadow:
-      0 2px 8px rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.05);
-    min-height: 40px;
-    position: relative;
-    overflow: hidden;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-      transition: left 0.5s ease;
-      pointer-events: none;
-    }
-
-    .material-icons {
-      font-size: 18px;
-      color: var(--primary-color);
-      transition: all 0.3s ease;
-    }
-
-    &:hover {
-      background: linear-gradient(145deg, var(--primary-color), var(--primary-color));
-      color: white;
-      border: 2px solid var(--primary-color);
-      box-shadow:
-        0 6px 20px rgba(var(--primary-color-rgb, 0, 123, 255), 0.25),
-        0 2px 8px rgba(var(--primary-color-rgb, 0, 123, 255), 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-
-      &::before {
-        left: 100%;
-      }
-
-      .material-icons {
-        color: white;
-        transform: scale(1.1);
-      }
-    }
-
-    &:active {
-      transform: translateY(-1px);
-      box-shadow:
-        0 3px 12px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    }
-  }
-
   .nav-link {
     display: flex;
     align-items: center;
@@ -718,7 +672,6 @@ window.addEventListener('resize', () => {
     z-index: 10;
     pointer-events: none;
   }
-
 }
 
 .menu-toggle {

@@ -14,7 +14,7 @@ export const quotesFirebase = {
     return await cache.getOrSet(async () => {
       try {
         logger.info('Fetching quotes from Firebase', 'quotesFirebase');
-        
+
         const quotesRef = collection(db, 'quotes')
         const snapshot = await getDocs(quotesRef)
         const quotes = await Promise.all(
@@ -28,7 +28,7 @@ export const quotesFirebase = {
               const commentsRef = collection(db, 'quotes', docSnap.id, 'comments')
               const commentsQuery = query(commentsRef, orderBy('createdAt', 'desc'))
               const commentsSnapshot = await getDocs(commentsQuery)
-              
+
               quoteData.comments = commentsSnapshot.docs.map(commentDoc => ({
                 id: commentDoc.id,
                 ...commentDoc.data()
@@ -42,7 +42,7 @@ export const quotesFirebase = {
               const historyRef = collection(db, 'quotes', docSnap.id, 'statusHistory')
               const historyQuery = query(historyRef, orderBy('changedAt', 'desc'))
               const historySnapshot = await getDocs(historyQuery)
-              
+
               quoteData.statusHistory = historySnapshot.docs.map(historyDoc => ({
                 ...historyDoc.data()
               })) as QuoteStatusHistory[]
@@ -126,14 +126,14 @@ export const quotesFirebase = {
     try {
       const quotes = await this.getQuotes()
       const quote = quotes.find(q => q.id === quoteId)
-      
+
       if (!quote || !quote.idDoc) {
         throw new Error(`Quote with ID ${quoteId} not found`)
       }
 
       const quoteRef = doc(db, 'quotes', quote.idDoc)
       const now = new Date().toISOString()
-      
+
       const historyEntry: QuoteStatusHistory = {
         status,
         changedBy: changedBy || 'System',
@@ -213,6 +213,8 @@ export const quotesFirebase = {
     try {
       const quoteRef = doc(db, 'quotes', id)
       await deleteDoc(quoteRef)
+      cacheService.delete('api:FIREBASE_QUOTES:');
+      logger.info(`Deleted quote ${id}`, 'quotesFirebase');
     } catch (error) {
       console.error('Error deleting quote:', error)
       throw error
@@ -239,7 +241,7 @@ export const quotesFirebase = {
     try {
       const quotes = await this.getQuotes()
       const quote = quotes.find(q => q.id === quoteId)
-      
+
       if (!quote || !quote.idDoc) {
         throw new Error(`Quote with ID ${quoteId} not found`)
       }
@@ -250,7 +252,7 @@ export const quotesFirebase = {
       }
 
       await addDoc(collection(db, 'quotes', quote.idDoc, 'comments'), commentData)
-      
+
       cacheService.delete('api:FIREBASE_QUOTES:');
       logger.info(`Comment added to quote ${quoteId}`, 'quotesFirebase');
     } catch (error) {
@@ -263,7 +265,7 @@ export const quotesFirebase = {
     try {
       const quotes = await this.getQuotes()
       const quote = quotes.find(q => q.id === quoteId)
-      
+
       if (!quote || !quote.idDoc) {
         logger.warn(`Quote with ID ${quoteId} not found for comments`, 'quotesFirebase');
         return []
@@ -272,7 +274,7 @@ export const quotesFirebase = {
       const commentsRef = collection(db, 'quotes', quote.idDoc, 'comments')
       const q = query(commentsRef, orderBy('createdAt', 'desc'))
       const snapshot = await getDocs(q)
-      
+
       return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -287,14 +289,14 @@ export const quotesFirebase = {
     try {
       const quotes = await this.getQuotes()
       const quote = quotes.find(q => q.id === quoteId)
-      
+
       if (!quote || !quote.idDoc) {
         throw new Error(`Quote with ID ${quoteId} not found`)
       }
 
       const commentRef = doc(db, 'quotes', quote.idDoc, 'comments', commentId)
       await deleteDoc(commentRef)
-      
+
       cacheService.delete('api:FIREBASE_QUOTES:');
       logger.info(`Comment ${commentId} deleted from quote ${quoteId}`, 'quotesFirebase');
     } catch (error) {
@@ -312,7 +314,7 @@ export const quotesFirebase = {
   }> {
     try {
       const quotes = await this.getQuotes()
-      
+
       const byStatus = quotes.reduce((acc, quote) => {
         acc[quote.status] = (acc[quote.status] || 0) + 1
         return acc
@@ -326,7 +328,7 @@ export const quotesFirebase = {
 
       const totalValue = quotes.reduce((sum, quote) => sum + (quote.estimatedValue || 0), 0)
       const avgValue = quotes.length > 0 ? totalValue / quotes.length : 0
-      
+
       const completedQuotes = quotes.filter(q => q.status === 'completed').length
       const conversionRate = quotes.length > 0 ? (completedQuotes / quotes.length) * 100 : 0
 
@@ -353,8 +355,8 @@ export const quotesFirebase = {
     try {
       const quotes = await this.getQuotes()
       const term = searchTerm.toLowerCase()
-      
-      return quotes.filter(quote => 
+
+      return quotes.filter(quote =>
         quote.userName.toLowerCase().includes(term) ||
         quote.userEmail.toLowerCase().includes(term) ||
         quote.id.toLowerCase().includes(term) ||

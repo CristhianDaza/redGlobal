@@ -111,6 +111,7 @@ const {
 
 const showAdvancedQuoteModal = ref(false);
 const selectedAdvancedQuote = ref<any>(null);
+const quotesViewKey = ref(0);
 
 const {
   categoryCards,
@@ -220,6 +221,7 @@ const handleConfirmModal = async () => {
         break;
       case 'deleteAllQuotes':
         await deleteAllCompletedQuotes();
+        quotesViewKey.value++;
         break;
       case 'carousel':
         await deleteCarousel(itemToConfirmModal.value.id);
@@ -667,6 +669,7 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
 
           <AdvancedQuotesSection
             v-else-if="activeTab === 'advanced-quotes' && canAccessQuotes"
+            :key="quotesViewKey"
             @view="handleViewAdvancedQuote"
             @delete-all-quotes="confirmDeleteQuotes"
           />
