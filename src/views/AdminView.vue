@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { tabs } from '@/types/common.d'
-import { QuoteStatus, UserFormData, User } from '@/types/common.d'
+import { QuoteStatus, User } from '@/types/common.d'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore, useProductsStore, useUserStore } from '@/store';
@@ -668,6 +668,7 @@ watch(() => route.query.quoteId, async (newQuoteId, oldQuoteId) => {
           <AdvancedQuotesSection
             v-else-if="activeTab === 'advanced-quotes' && canAccessQuotes"
             @view="handleViewAdvancedQuote"
+            @delete-all-quotes="confirmDeleteQuotes"
           />
 
           <CategoriesSection

@@ -4,9 +4,28 @@ import { quotesFirebase } from '@/services/firebase/quotesFirebase'
 import { useAuthStore } from '@/store'
 import { NotificationService } from '@/components/Notification/NotificationService'
 
+// Mapeos locales para etiquetas en español
+const statusLabels: Record<QuoteStatus, string> = {
+  pending: 'Pendiente',
+  in_review: 'En Revisión',
+  quoted: 'Cotizada',
+  negotiating: 'Negociando',
+  approved: 'Aprobada',
+  completed: 'Completada',
+  cancelled: 'Cancelada',
+  expired: 'Expirada'
+}
+
+const priorityLabels: Record<string, string> = {
+  low: 'Baja',
+  medium: 'Media',
+  high: 'Alta',
+  urgent: 'Urgente'
+}
+
 export function useAdvancedQuotes() {
   const authStore = useAuthStore()
-  
+
   const quotes = ref<Quote[]>([])
   const isLoading = ref(false)
   const isUpdating = ref(false)
@@ -21,7 +40,7 @@ export function useAdvancedQuotes() {
   })
 
   const currentUser = computed(() => authStore.currenLoggingUser)
-  
+
   const quotesTotals = computed(() => {
     const total = quotes.value.length
     const pending = quotes.value.filter(q => q.status === 'pending').length
@@ -76,14 +95,14 @@ export function useAdvancedQuotes() {
       const changedBy = currentUser.value?.id || 'system'
       const changedByName = currentUser.value?.name || 'Sistema'
       const changedByRole = currentUser.value?.role || 'system'
-      
+
       await quotesFirebase.updateQuoteStatus(quoteId, status, notes, changedBy, changedByName, changedByRole)
-      
+
       await loadQuotes()
 
       NotificationService.push({
         title: 'Estado actualizado',
-        description: `La cotización ha sido actualizada a ${status}`,
+        description: `La cotización ha sido actualizada a ${statusLabels[status] || '—'}`,
         type: 'success'
       })
 
@@ -104,14 +123,14 @@ export function useAdvancedQuotes() {
     try {
       isUpdating.value = true
       const updatedBy = currentUser.value?.name || 'Admin'
-      
+
       const quote = quotes.value.find(q => q.id === quoteId)
       if (!quote) {
         throw new Error('Cotización no encontrada')
       }
-      
+
       await quotesFirebase.updateQuoteField(quote.idDoc, 'priority', priority, updatedBy)
-      
+
       const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
       if (quoteIndex !== -1) {
         quotes.value[quoteIndex].priority = priority as any
@@ -120,7 +139,7 @@ export function useAdvancedQuotes() {
 
       NotificationService.push({
         title: 'Prioridad actualizada',
-        description: `La prioridad ha sido actualizada a ${priority}`,
+        description: `La prioridad ha sido actualizada a ${priorityLabels[priority] || '—'}`,
         type: 'success'
       })
     } catch (error) {
@@ -139,14 +158,14 @@ export function useAdvancedQuotes() {
     try {
       isUpdating.value = true
       const updatedBy = currentUser.value?.name || 'Admin'
-      
+
       const quote = quotes.value.find(q => q.id === quoteId)
       if (!quote) {
         throw new Error('Cotización no encontrada')
       }
-      
+
       await quotesFirebase.updateQuoteField(quote.idDoc, field, value, updatedBy)
-      
+
       const quoteIndex = quotes.value.findIndex(q => q.id === quoteId)
       if (quoteIndex !== -1) {
         ;(quotes.value[quoteIndex] as any)[field] = value
@@ -174,7 +193,7 @@ export function useAdvancedQuotes() {
     try {
       isUpdating.value = true
       await quotesFirebase.deleteQuote(quoteId)
-      
+
       quotes.value = quotes.value.filter(q => q.id !== quoteId)
 
       NotificationService.push({
@@ -216,7 +235,7 @@ export function useAdvancedQuotes() {
       }
 
       await quotesFirebase.addQuoteComment(quoteId, commentData)
-      
+
       await loadQuotes()
 
       NotificationService.push({
@@ -245,7 +264,7 @@ export function useAdvancedQuotes() {
       const commentId = comment.id
 
       await quotesFirebase.deleteQuoteComment(quoteId, commentId)
-      
+
       await loadQuotes()
 
       NotificationService.push({
@@ -319,7 +338,7 @@ export function useAdvancedQuotes() {
   }) => {
     try {
       const exportData = await quotesFirebase.exportQuotes(filters)
-      
+
       const csvContent = convertQuotesToCSV(exportData)
       downloadCSV(csvContent, 'cotizaciones.csv')
 
@@ -368,11 +387,11 @@ export function useAdvancedQuotes() {
     const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
-    
+
     link.setAttribute('href', url)
     link.setAttribute('download', filename)
     link.style.visibility = 'hidden'
-    
+
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -400,24 +419,24 @@ export function useAdvancedQuotes() {
     quoteComments,
     quoteStats,
     quotesTotals,
-    
+
     loadQuotes,
     loadQuoteStats,
     updateQuoteStatus,
     updateQuotePriority,
     updateQuoteField,
     deleteQuote,
-    
+
     loadQuoteComments,
     addQuoteComment,
     deleteQuoteComment,
-    
+
     searchQuotes,
     getQuotesByStatus,
     getQuotesByUser,
-    
+
     exportQuotes,
-    
+
     setSelectedQuote,
     refreshData
   }

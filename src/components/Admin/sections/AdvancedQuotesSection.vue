@@ -8,6 +8,10 @@ import { formatPrice } from '@/utils/formatNumber'
 
 const RgButton = defineAsyncComponent(() => import('@/components/UI/RgButton.vue'))
 
+const emit = defineEmits<{
+  (e: 'delete-all-quotes'): void
+}>()
+
 const router = useRouter()
 
 const {
@@ -50,7 +54,7 @@ const filteredQuotes = computed(() => {
 
   if (searchTerm.value) {
     const term = searchTerm.value.toLowerCase()
-    filtered = filtered.filter(quote => 
+    filtered = filtered.filter(quote =>
       quote.userName.toLowerCase().includes(term) ||
       quote.userEmail.toLowerCase().includes(term) ||
       quote.id.toLowerCase().includes(term) ||
@@ -69,7 +73,7 @@ const filteredQuotes = computed(() => {
   if (dateFilter.value !== 'all') {
     const now = new Date()
     const filterDate = new Date()
-    
+
     switch (dateFilter.value) {
       case 'today':
         filterDate.setHours(0, 0, 0, 0)
@@ -181,13 +185,16 @@ onMounted(async () => {
       <div class="actions-left">
         <p class="results-count">{{ stats.total }} cotizaciones encontradas</p>
       </div>
-      
+
       <div class="actions-right">
         <RgButton @click="handleExportQuotes" icon="download" outlined>
           Exportar
         </RgButton>
         <RgButton @click="viewMode = viewMode === 'table' ? 'cards' : 'table'" icon="view" outlined>
           {{ viewMode === 'table' ? 'Vista Tarjetas' : 'Vista Tabla' }}
+        </RgButton>
+        <RgButton @click="emit('delete-all-quotes')" icon="remove" outlined>
+          Eliminar completadas
         </RgButton>
       </div>
     </div>
@@ -202,7 +209,7 @@ onMounted(async () => {
           <p>Total Cotizaciones</p>
         </div>
       </div>
-      
+
       <div class="stat-card">
         <div class="stat-icon">
           <span class="stat-icon-text">📈</span>
@@ -212,7 +219,7 @@ onMounted(async () => {
           <p>Tasa Conversión</p>
         </div>
       </div>
-      
+
       <div class="stat-card">
         <div class="stat-icon">
           <span class="stat-icon-text">💰</span>
@@ -222,7 +229,7 @@ onMounted(async () => {
           <p>Valor Promedio</p>
         </div>
       </div>
-      
+
       <div class="stat-card">
         <div class="stat-icon">
           <span class="stat-icon-text">⏳</span>
@@ -238,14 +245,14 @@ onMounted(async () => {
       <div class="filters-row">
         <div class="filter-group">
           <label>Buscar</label>
-          <input 
-            v-model="searchTerm" 
-            type="text" 
+          <input
+            v-model="searchTerm"
+            type="text"
             placeholder="Cliente, email, ID, producto..."
             class="filter-input"
           >
         </div>
-        
+
         <div class="filter-group">
           <label>Estado</label>
           <select v-model="statusFilter" class="filter-select">
@@ -255,7 +262,7 @@ onMounted(async () => {
             </option>
           </select>
         </div>
-        
+
         <div class="filter-group">
           <label>Prioridad</label>
           <select v-model="priorityFilter" class="filter-select">
@@ -265,7 +272,7 @@ onMounted(async () => {
             </option>
           </select>
         </div>
-        
+
         <div class="filter-group">
           <label>Fecha</label>
           <select v-model="dateFilter" class="filter-select">
@@ -275,7 +282,7 @@ onMounted(async () => {
             <option value="month">Último mes</option>
           </select>
         </div>
-        
+
         <div class="filter-actions">
           <RgButton @click="clearFilters" outlined size="small">
             Limpiar
@@ -320,20 +327,20 @@ onMounted(async () => {
                 <small class="quote-id">ID: {{ quote.id.slice(-6) }}</small>
               </div>
             </td>
-            
+
             <td>
               <div class="client-cell">
                 <strong>{{ quote.userName }}</strong>
                 <small>{{ quote.userEmail }}</small>
               </div>
             </td>
-            
+
             <td>
-              <select 
-                :value="quote.status" 
+              <select
+                :value="quote.status"
                 @change="handleUpdateQuoteStatus(quote, ($event.target as HTMLSelectElement).value as QuoteStatus)"
                 class="status-select"
-                :style="{ 
+                :style="{
                   color: getStatusColor(quote.status),
                   backgroundColor: getStatusBgColor(quote.status)
                 }"
@@ -343,10 +350,10 @@ onMounted(async () => {
                 </option>
               </select>
             </td>
-            
+
             <td>
-              <select 
-                :value="quote.priority || 'medium'" 
+              <select
+                :value="quote.priority || 'medium'"
                 @change="handleUpdateQuotePriority(quote, ($event.target as HTMLSelectElement).value)"
                 class="priority-select"
                 :style="{ color: getPriorityColor(quote.priority) }"
@@ -356,7 +363,7 @@ onMounted(async () => {
                 </option>
               </select>
             </td>
-            
+
             <td>
               <div class="items-cell">
                 <span class="items-count">{{ quote.items.length }} productos</span>
@@ -370,7 +377,7 @@ onMounted(async () => {
                 </div>
               </div>
             </td>
-            
+
             <td>
               <div class="value-cell">
                 <strong v-if="quote.estimatedValue">
@@ -379,7 +386,7 @@ onMounted(async () => {
                 <span v-else class="no-value">Sin estimar</span>
               </div>
             </td>
-            
+
             <td>
               <div class="actions-cell">
                 <RgButton @click="viewQuoteDetails(quote)" icon="view" type="icon" size="small" outlined>
@@ -400,9 +407,9 @@ onMounted(async () => {
               <span class="quote-id">{{ quote.id.slice(-6) }}</span>
             </div>
             <div class="card-status">
-              <span 
+              <span
                 class="status-badge"
-                :style="{ 
+                :style="{
                   color: getStatusColor(quote.status),
                   backgroundColor: getStatusBgColor(quote.status)
                 }"
@@ -411,7 +418,7 @@ onMounted(async () => {
               </span>
             </div>
           </div>
-          
+
           <div class="card-content">
             <div class="card-info">
               <div class="info-item">
@@ -431,9 +438,9 @@ onMounted(async () => {
                 <span>{{ formatPrice(quote.estimatedValue) }}</span>
               </div>
             </div>
-            
+
             <div class="card-priority" v-if="quote.priority">
-              <span 
+              <span
                 class="priority-badge"
                 :style="{ color: getPriorityColor(quote.priority) }"
               >
@@ -441,7 +448,7 @@ onMounted(async () => {
               </span>
             </div>
           </div>
-          
+
           <div class="card-actions">
             <RgButton @click="viewQuoteDetails(quote)" size="small" outlined>
               Ver Detalles
@@ -822,15 +829,15 @@ onMounted(async () => {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .quotes-table-container {
     overflow-x: auto;
   }
-  
+
   .quotes-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
