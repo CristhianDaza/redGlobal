@@ -94,8 +94,8 @@ const closePrivacyModal = () => {
               <router-link :to="menuItem.path">{{ menuItem.title }}</router-link>
             </li>
             <li>
-              <button 
-                class="privacy-link" 
+              <button
+                class="privacy-link"
                 @click="openPrivacyModal"
                 type="button"
               >
@@ -114,13 +114,26 @@ const closePrivacyModal = () => {
       </div>
     </div>
   </footer>
-  <div class="footer-bottom">
-    <p>Design by <a href="https://co.linkedin.com/in/cristhiandaza" target="_blank" rel="noopener noreferrer">Cristhian Daza</a> With <span class="heart">💙</span></p>
+  <div class="footer">
+    <p>
+      Design by
+      <a
+        href="https://cris-dev.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer__link"
+      >
+        Cristhian Daza
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="footer__icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5H19.5V10.5M10.5 13.5L19.5 4.5M19.5 4.5L4.5 19.5" />
+        </svg>
+      </a>
+      <span class="footer__heart">💙</span>
+    </p>
   </div>
-
-  <PrivacyPolicyModal 
-    :is-open="isPrivacyModalOpen" 
-    @close="closePrivacyModal" 
+  <PrivacyPolicyModal
+    :is-open="isPrivacyModalOpen"
+    @close="closePrivacyModal"
   />
 </template>
 
@@ -245,30 +258,48 @@ const closePrivacyModal = () => {
   }
 }
 
-.footer-bottom {
-  border-top: 1px solid #eee;
+.footer {
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
   padding: 1rem 0;
   text-align: center;
-  color: #999;
-  font-size: 0.9rem;
-
-  a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: #ff4444;
-    }
-  }
-
-  .heart {
-    display: inline-block;
-    margin: 0 2px;
-    animation: heartBeat 1s infinite;
-  }
+  font-size: 0.875rem;
+  color: #6b7280;
 }
+
+.footer__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+  color: #374151;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: #9ca3af;
+  transition: color 0.3s ease, text-decoration-color 0.3s ease;
+}
+
+.footer__link:hover {
+  color: #4f46e5;
+  text-decoration-color: #4f46e5;
+}
+
+.footer__icon {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.footer__link:hover .footer__icon {
+  opacity: 1;
+}
+
+.footer__heart {
+  margin-left: 0.25rem;
+  color: #3b82f6;
+}
+
 
 @keyframes heartBeat {
   0%, 100% { transform: scale(1); }
