@@ -114,21 +114,21 @@ const closePrivacyModal = () => {
       </div>
     </div>
   </footer>
-  <div class="footer">
+  <div class="footer__cris">
     <p>
       Design by
       <a
         href="https://cris-dev.com/"
         target="_blank"
         rel="noopener noreferrer"
-        class="footer__link"
+        class="footer__cris__link"
       >
         Cristhian Daza
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="footer__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="footer__cris__icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5H19.5V10.5M10.5 13.5L19.5 4.5M19.5 4.5L4.5 19.5" />
         </svg>
       </a>
-      <span class="footer__heart">💙</span>
+      <span class="footer__cris__heart">💙</span>
     </p>
   </div>
   <PrivacyPolicyModal
@@ -258,7 +258,7 @@ const closePrivacyModal = () => {
   }
 }
 
-.footer {
+.footer__cris {
   border-top: 1px solid #e5e7eb;
   background-color: #f9fafb;
   padding: 1rem 0;
@@ -267,7 +267,7 @@ const closePrivacyModal = () => {
   color: #6b7280;
 }
 
-.footer__link {
+.footer__cris__link {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -279,23 +279,23 @@ const closePrivacyModal = () => {
   transition: color 0.3s ease, text-decoration-color 0.3s ease;
 }
 
-.footer__link:hover {
+.footer__cris__link:hover {
   color: #4f46e5;
   text-decoration-color: #4f46e5;
 }
 
-.footer__icon {
+.footer__cris__icon {
   width: 1rem;
   height: 1rem;
   opacity: 0.7;
   transition: opacity 0.3s ease;
 }
 
-.footer__link:hover .footer__icon {
+.footer__cris__link:hover .footer__cris__icon {
   opacity: 1;
 }
 
-.footer__heart {
+.footer__cris__heart {
   margin-left: 0.25rem;
   color: #3b82f6;
 }
