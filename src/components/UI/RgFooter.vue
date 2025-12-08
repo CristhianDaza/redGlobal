@@ -116,18 +116,16 @@ const closePrivacyModal = () => {
   </footer>
   <div class="footer__cris">
     <p>
-      Design by
+      Designed & Developed by
       <a
         href="https://cris-dev.com/"
         target="_blank"
         rel="noopener noreferrer"
         class="footer__cris__link"
       >
-        Cristhian Daza
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="footer__cris__icon">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5H19.5V10.5M10.5 13.5L19.5 4.5M19.5 4.5L4.5 19.5" />
-        </svg>
+        cris-dev.com
       </a>
+      <span> | Made with </span>
       <span class="footer__cris__heart">💙</span>
     </p>
   </div>
@@ -298,6 +296,7 @@ const closePrivacyModal = () => {
 .footer__cris__heart {
   margin-left: 0.25rem;
   color: #3b82f6;
+  animation: heartBeat 1s infinite;
 }
 
 

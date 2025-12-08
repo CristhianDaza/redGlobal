@@ -1,6 +1,6 @@
 <template>
   <div
-    ref="containerRef"
+    :ref="setContainerRef"
     class="virtual-list-container"
     :style="{ height: containerHeight + 'px' }"
     @scroll="handleScroll"
@@ -27,7 +27,7 @@
 
 <script setup lang="ts" generic="T">
 import { useVirtualScroll } from '@/composable/useVirtualScroll';
-import { toRefs } from 'vue';
+import { toRefs, type ComponentPublicInstance } from 'vue';
 
 interface Props {
   items: T[];
@@ -55,6 +55,13 @@ const {
   containerHeight: props.containerHeight,
   overscan: props.overscan
 });
+
+const setContainerRef = (
+  ref: Element | ComponentPublicInstance | null,
+  _refs: Record<string, unknown>
+) => {
+  containerRef.value = ref instanceof HTMLElement ? ref : null;
+};
 
 const getItemKey = (item: T, index: number): string | number => {
   if (props.keyField && item && typeof item === 'object') {
